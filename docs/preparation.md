@@ -55,5 +55,5 @@ Le site contiendra les pages suivantes :
 
 ---
 
-📌 **Dernière mise à jour :** _22 Janvier 2025_  
-✍️ **Équipe :** Wassim + collaborateurs
+📌 **Dernière mise à jour :** _29 Janvier 2025_  
+✍️ **Équipe :** Wassim + Mouad
