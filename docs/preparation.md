@@ -1,8 +1,8 @@
 # 📌 Description du Projet
 
-Ce projet vise à construire un site web moderne et interactif avec **Next.js 15**.  
-Il s’agit d’un site web ergonomique et professionnel, conçu pour être ajouté à un **portfolio**.  
-L’application sera **responsive**, c’est-à-dire qu’elle fonctionnera bien sur **mobile et ordinateur**.
+Ce projet vise à construire un site web moderne et interactif avec Next.js 15, dédié à l’équipe nationale de football du Maroc. Il s’agit d’un site web ergonomique et professionnel, conçu pour :
+
+Présenter l’histoire, les joueurs, et les exploits de l’équipe nationale. Mettre en avant les évènements marquants de son parcours (matches historiques, qualifications, trophées, etc.). Servir d’exemple pour un portfolio professionnel. L’application est responsive, s’adaptant parfaitement à tous les types d’appareils : mobile, tablette et ordinateur.
 
 ## 🔗 Liens de Référence
 
@@ -55,5 +55,5 @@ Le site contiendra les pages suivantes :
 
 ---
 
-📌 **Dernière mise à jour :** _22 Janvier 2025_  
-✍️ **Équipe :** Wassim + collaborateurs
+📌 **Dernière mise à jour :** _29 Janvier 2025_  
+✍️ **Équipe :** Wassim + Mouad
