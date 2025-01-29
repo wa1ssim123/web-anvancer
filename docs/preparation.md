@@ -41,10 +41,6 @@ Le site comprendra plusieurs sections interactives :
 
 📌 Composants et Fonctionnalités Principales
 ✅ 🔄 Layout Global : Un système réutilisable comprenant l’en-tête (header), le menu de navigation, et le pied de page (footer).
-✅ 📅 Affichage dynamique des événements : Chaque événement inclut une image, un titre, une description, et une date.
-✅ 🔗 Navigation fluide : Utilisation de next/link pour passer d’une page à une autre sans rechargement.
-✅ 📱 Responsive Design : Le site s’adapte parfaitement aux mobiles, tablettes et écrans larges.
-✅ 🎨 Style et animations : Ajout d’animations et de transitions pour une interface fluide et agréable.
 
 📌 📅 Dernière mise à jour : 29 Janvier 2025
 ✍️ 👨‍💻 Équipe de développement : Wassim + Mouad
