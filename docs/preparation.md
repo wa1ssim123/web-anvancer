@@ -1,0 +1,59 @@
+# 📌 Description du Projet
+
+Ce projet vise à construire un site web moderne et interactif avec **Next.js 15**.  
+Il s’agit d’un site web ergonomique et professionnel, conçu pour être ajouté à un **portfolio**.  
+L’application sera **responsive**, c’est-à-dire qu’elle fonctionnera bien sur **mobile et ordinateur**.
+
+## 🔗 Liens de Référence
+
+- [📖 Next.js Documentation](https://nextjs.org/docs)
+- [📖 React Documentation](https://reactjs.org/docs)
+- [📖 GitHub Documentation](https://docs.github.com)
+- [📖 Tailwind CSS](https://tailwindcss.com/docs/installation)
+
+## 🎨 Couleurs Utilisées
+
+Le design du site suivra une palette de couleurs cohérente :
+
+- **Bleu Principal** : `#0070f3`
+- **Blanc** : `#ffffff`
+- **Gris Clair** : `#eaeaea`
+- **Noir pour le texte** : `#222222`
+
+## ✏️ Wireframes (Esquisses)
+
+📌 Les wireframes sont des croquis représentant la structure des pages du site web.  
+Elles doivent être ajoutées ici sous forme d’images ou de fichiers PDF.
+
+## 🛠️ Technologies Utilisées
+
+Le projet est développé avec les outils suivants :
+
+- **📌 Next.js 15** (Framework React pour le web moderne)
+- **📌 React.js** (Librairie pour construire l’interface utilisateur)
+- **📌 CSS Modules** (Styling organisé et optimisé)
+- **📌 GitHub** (Versionnement du code et collaboration)
+- **📌 Visual Studio Code** (Environnement de développement)
+
+## 📄 Pages du Site Web
+
+Le site contiendra les pages suivantes :
+
+1. **🏠 Page d'accueil** : Présentation du site et de son objectif.
+2. **📅 Page d'évènement 1** : Informations détaillées sur un premier évènement.
+3. **📅 Page d'évènement 2** : Informations détaillées sur un second évènement.
+4. **📩 Page de contact** : Un formulaire de contact avec des informations.
+5. **❓ À propos** : Présentation du projet et de l’équipe.
+
+## 📌 Composants et Fonctionnalités Principales
+
+- **🔄 Layout Global** : Un système réutilisable contenant l’**en-tête (header)**, le **menu de navigation**, et le **pied de page (footer)**.
+- **📅 Affichage dynamique des événements** : Chaque événement affiche une **image**, un **titre**, une **description**, et une **date**.
+- **🔗 Navigation fluide** : Utilisation de **`next/link`** pour naviguer entre les pages sans recharger.
+- **📱 Responsive Design** : Le site s’adapte parfaitement aux **mobiles, tablettes et ordinateurs**.
+- **🎨 Style et animations** : Ajout d’animations et de transitions pour rendre l’interface plus fluide.
+
+---
+
+📌 **Dernière mise à jour :** _22 Janvier 2025_  
+✍️ **Équipe :** Wassim + collaborateurs
