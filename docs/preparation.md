@@ -15,11 +15,10 @@ Présenter l’histoire, les joueurs, et les exploits de l’équipe nationale. 
 
 Le design du site suivra une palette de couleurs cohérente :
 
-- **Bleu Principal** : `#0070f3`
-- **Blanc** : `#ffffff`
-- **Gris Clair** : `#eaeaea`
-- **Noir pour le texte** : `#222222`
-
+🔴 Rouge Principal : #c1272d
+⚪ Blanc : #ffffff
+🟢 Vert : #007a33
+⚫ Noir (Texte, contrastes) : #222222
 ## ✏️ Wireframes (Esquisses)
 
 📌 Les wireframes sont des croquis représentant la structure des pages du site web.  
