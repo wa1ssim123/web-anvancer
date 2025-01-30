@@ -1,3 +1,4 @@
+
 body {
   font-family: Arial, sans-serif;
   margin: 0;
@@ -17,8 +18,18 @@ nav ul {
   display: flex;
   gap: 1rem;
   padding: 0;
-  margin: 0;
 }
+
+/* globals.css */
+body {
+  font-family: Arial, sans-serif;
+
+  margin: 0;
+  padding: 0;
+  background-color: #ffffff; /* Fond blanc */
+  color: #333; /* Texte principal */
+}
+
 
 nav ul li a {
   text-decoration: none;
@@ -35,4 +46,147 @@ footer {
   color: white;
   text-align: center;
   padding: 1rem;
+}
+
+h1, h2 {
+  color: #c1272d; /* Rouge principal */
+  text-align: center;
+}
+
+p {
+  line-height: 1.6;
+  font-size: 1.1rem;
+  margin: 10px 0;
+  text-align: justify;
+}
+
+header {
+  background-color: #c1272d; /* Rouge principal */
+  color: white;
+  padding: 1rem;
+  text-align: center;
+}
+
+nav ul {
+  list-style: none;
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  padding: 0;
+}
+
+nav a {
+  text-decoration: none;
+  color: white;
+  font-weight: bold;
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
+  transition: background-color 0.3s;
+}
+
+nav a:hover {
+  background-color: #007f5f; /* Vert pour le survol */
+}
+
+footer {
+  background-color: #c1272d; /* Rouge principal */
+  color: white;
+  text-align: center;
+  padding: 1rem;
+  margin-top: 20px;
+}
+
+.container {
+  padding: 20px;
+  max-width: 800px;
+  margin: 20px auto;
+  background-color: #f7f7f7; /* Gris très clair pour contraste */
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  border: 2px solid #007f5f; /* Bordure verte */
+}
+
+img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border-radius: 10px;
+  margin: 20px 0;
+  border: 3px solid #c1272d; /* Bordure rouge */
+
+}/* globals.css */
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #ffffff; /* Fond blanc */
+  color: #333; /* Texte principal */
+}
+
+h1, h2 {
+  color: #c1272d; /* Rouge principal */
+  text-align: center;
+}
+
+p {
+  line-height: 1.6;
+  font-size: 1.1rem;
+  margin: 10px 0;
+  text-align: justify;
+}
+
+header {
+  background-color: #c1272d; /* Rouge principal */
+  color: white;
+  padding: 1rem;
+  text-align: center;
+}
+
+nav ul {
+  list-style: none;
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  padding: 0;
+}
+
+nav ul li a {
+  text-decoration: none;
+  color: white;
+  font-weight: bold;
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
+  transition: background-color 0.3s;
+}
+
+nav ul li a:hover {
+  text-decoration: underline;
+  background-color: #007f5f; /* Vert pour le survol */
+}
+
+footer {
+  background-color: #006233; /* Vert */
+  color: white;
+  text-align: center;
+  padding: 1rem;
+  margin-top: 20px;
+}
+
+.container {
+  padding: 20px;
+  max-width: 800px;
+  margin: 20px auto;
+  background-color: #f7f7f7; /* Gris très clair pour contraste */
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  border: 2px solid #007f5f; /* Bordure verte */
+}
+
+img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border-radius: 10px;
+  margin: 20px 0;
+  border: 3px solid #c1272d; /* Bordure rouge */
 }
