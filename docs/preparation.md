@@ -47,10 +47,6 @@ Le site contiendra les pages suivantes :
 ## 📌 Composants et Fonctionnalités Principales
 
 - **🔄 Layout Global** : Un système réutilisable contenant l’**en-tête (header)**, le **menu de navigation**, et le **pied de page (footer)**.
-- **📅 Affichage dynamique des événements** : Chaque événement affiche une **image**, un **titre**, une **description**, et une **date**.
-- **🔗 Navigation fluide** : Utilisation de **`next/link`** pour naviguer entre les pages sans recharger.
-- **📱 Responsive Design** : Le site s’adapte parfaitement aux **mobiles, tablettes et ordinateurs**.
-- **🎨 Style et animations** : Ajout d’animations et de transitions pour rendre l’interface plus fluide.
 
 ---
 
