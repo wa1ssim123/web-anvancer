@@ -1,10 +1,13 @@
+import Header from '@/components/Header';
+import Footer from '@/components/Footer';
+
 import './globals.css';
 
 export default function RootLayout({ children }) {
   return (
     <html lang="fr">
       <body>
-        <header>
+        {/* <header>
           <nav>
             <ul>
               <li><a href="/">Accueil</a></li>
@@ -13,18 +16,19 @@ export default function RootLayout({ children }) {
               <li><a href="/evenement2">Événement 2</a></li>
               <li><a href="/about">À propos</a></li>
 
-              <li><a href="/evenement1">Évènement 1</a></li>
-              <li><a href="/evenement2">Évènement 2</a></li>
+
 
             </ul>
           </nav>
-        </header>
+        </header> */}
+        <Header />
+
         <main>{children}</main>
 
-        
-        <footer>
-          <p>© 2025 Équipe Nationale du Maroc. Tous droits réservés.</p>
-        </footer>
+        <Footer />
+        {/* <footer>
+          <p>© 2025 Équipe Nationale du Maroc.</p>
+        </footer> */}
 
       </body>
     </html>
