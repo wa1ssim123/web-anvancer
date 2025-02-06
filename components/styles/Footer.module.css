@@ -1,7 +1,11 @@
 .footer {
-    background-color: #007a33; /* Vert */
-    color: white;
-    text-align: center;
-    padding: 1rem;
-  }
-  
+  background-color: #007a33;
+  color: white;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 30px;
+  font-family: Arial, sans-serif;
+  font-size: 1rem;
+}
