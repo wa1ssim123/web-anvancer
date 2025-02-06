@@ -8,7 +8,7 @@ export default function Header() {
           <li><Link href="/">Accueil</Link></li>
           <li><Link href="/events/worldcup">Coupe du Monde</Link></li>
           <li><Link href="/events/africancup">Coupe d'Afrique</Link></li>
-          <li><Link href="/about">À propos</Link></li>
+          <li><Link href="/events/apropos">À propos</Link></li>
         </ul>
       </nav>
     </header>
