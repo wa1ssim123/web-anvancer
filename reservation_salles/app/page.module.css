@@ -1,0 +1,279 @@
+.bloc {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  margin-left: 4rem;
+  margin-right: 4rem;
+  margin-bottom: 3rem;
+  background-color: #f5f5f5;
+  height: 600px;
+  border-radius: 2rem;
+  
+}
+
+/* Section de réservation */
+.reservation {
+  max-width: 40%;
+  padding: 20px;
+  font-family: 'Arial', sans-serif;
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* Centre verticalement */
+  align-items: center; /* Centre horizontalement */
+  text-align: center; 
+}
+.reservation h1 {
+  font-size: 2.5rem;
+  color: #394941;
+  font-weight: bold;
+}
+
+.texte{
+  font-family: 'Roboto'; 
+  font-size: 1.2rem; 
+  line-height: 1.6; 
+  color: #333;
+}
+
+.texte span {
+  display: block; 
+  margin-bottom: 2px; 
+}
+.slogan {
+  font-family: 'Poppins'; 
+  font-size: 1.2rem; 
+  line-height: 1.6; 
+  color: #333;
+}
+.button {
+  background-color: #28a745; /* Vert */
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: bold;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s ease-in-out, transform 0.2s ease;
+}
+
+.button:hover {
+  background-color: #218838; /* Vert foncé au survol */
+  transform: scale(1.05); /* Léger effet zoom */
+}
+
+.button:active {
+  background-color: #1e7e34; /* Encore plus foncé quand on clique */
+  transform: scale(0.98);
+}
+
+.partenaires {
+  display: flex;
+  justify-content: space-between; 
+  align-items: center; 
+  gap: 20px; 
+  flex-wrap: wrap; 
+  padding: 15px; 
+  margin: 3rem;
+}
+.image{
+  width: 90px;
+  Height:60px;
+}
+
+
+.bloc2 {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: auto; /* Ajuste la hauteur selon le contenu */
+  margin-left: 4rem;
+  margin-right: 4rem;
+  margin-bottom: 3rem;
+}
+
+.image_container {
+  width: 50%;
+  height: auto; 
+  display: flex; 
+  justify-content: center;
+  align-items: center;
+}
+
+.imagetraitee {
+  width: 100%;
+  height: 100%; 
+  object-fit: cover; /* S'assure que l'image remplit bien son espace */
+  border-radius: 15px; 
+}
+
+.bloc2_texte {
+  width: 35%;
+  font-size: 1rem;
+  color: #555;
+  line-height: 1.8;
+  margin-top: 1rem;
+  
+  /* Centrer le texte */
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* Centre verticalement si le parent a une hauteur définie */
+  align-items: center; /* Centre horizontalement */
+  text-align: center; /* Centre le texte à l'intérieur */
+}
+
+
+.bloc2 h2 {
+  font-size: 2rem;
+  margin-bottom: 1.2rem;
+}
+
+.bloc2 p {
+  font-size: 1.2rem;
+  margin-bottom: 2rem;
+}
+
+
+.button2 {
+  background-color: white;
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: bold;
+  border-radius: 8px ;
+  color:#1e7e34;
+  border: 2px solid #1e7e34;
+  cursor: pointer;
+  transition: background 0.3s ease-in-out, transform 0.2s ease;
+}
+
+.button2:hover {
+  background-color: #cad0cc; 
+  transform: scale(1.05); 
+}
+
+.button2:active {
+  background-color: #adb0ae; 
+  transform: scale(0.98);
+}
+
+@keyframes fadeInSlideUp {
+  0% {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.texte {
+  color: #394941;
+  opacity: 0; /* Caché au début */
+  animation: fadeInSlideUp 1.5s ease-out forwards;
+}
+
+@keyframes typewriter {
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+.slogan {
+  overflow: hidden;
+  white-space: nowrap;
+  width: 0;
+  animation: typewriter 3s steps(30, end) forwards, blinkCursor 0.75s step-end infinite;
+}
+
+
+/* Pour les appareils Android (ou autres mobiles de petite taille) */
+@media (max-width: 750px) {
+  /* Bloc principal de la page */
+  .bloc, .bloc2 {
+    flex-direction: column; 
+    align-items: center; 
+    padding: 2px; 
+    margin: 2px; 
+    gap: 1px; 
+    font-size: smaller;
+  }
+
+  /* Section de réservation */
+  .reservation, .bloc2_texte {
+    max-width: 100%; 
+    padding: 10px; 
+    font-size: 1rem; 
+  }
+
+  .reservation h1, .bloc2_texte h2 {
+    font-size: 1.8rem;
+    padding-bottom: 10px; 
+  }
+
+  .texte, .bloc2_texte p {
+    font-size: 0.9rem; 
+  }
+
+  .slogan {
+    font-size: 1rem; 
+    padding-top: 10px; 
+  }
+
+  .button {
+    width: 80%; 
+    font-size: 14px; 
+    padding: 10px; 
+  }
+  .image_container {
+    width: 90%; 
+    height: auto; 
+    display: flex;
+    justify-content: center; 
+  }
+  .partenaires {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: nowrap; /* Empêche le passage à la ligne */
+    padding: 10px;
+    margin: 1rem;
+    white-space: nowrap; /* Empêche les éléments de se casser en plusieurs lignes */
+  }
+  .image_traitee1 {
+    width: 100%; 
+    height: auto;
+    border-radius: 15px; 
+    object-fit: cover; 
+  }
+
+  .bloc2_texte {
+    width: 90%; 
+    text-align: center; 
+    font-size: 1rem;
+    padding: 15px;
+  }
+
+  .bloc2_texte h2 {
+    font-size: 1.5rem; 
+    margin-bottom: 10px;
+  }
+
+  .bloc2_texte p {
+    font-size: 0.95rem; 
+    line-height: 1.6;
+  }
+  .button2 {
+    width: 100%; 
+    max-width: 300px; 
+    font-size: 1rem;
+    padding: 12px;
+    border: 2px solid #1e7e34; 
+  }
+}
+

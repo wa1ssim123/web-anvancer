@@ -1,0 +1,17 @@
+.image_container {
+    position: relative;
+    width: 100%;
+    height: 600px;
+    overflow: hidden;
+  }
+  
+  .image {
+    position: absolute;
+    width: 90%;
+    height: 100%;
+    opacity: 0;
+    transition: opacity 1s ease-in-out;
+    object-fit: cover;
+    border-radius: 10px;
+  }
+  
