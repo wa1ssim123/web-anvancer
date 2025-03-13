@@ -1,4 +1,6 @@
-import EventCard from '@/components/EventCard';
+import { getMetadata } from "@/lib/metadata";
+
+export const metadata = getMetadata("worldcup");
 
 export default function WorldCup() {
   return (
@@ -25,4 +27,4 @@ export default function WorldCup() {
       </p>
     </div>
   );
-}
+} 

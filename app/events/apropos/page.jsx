@@ -1,19 +1,20 @@
-import EventCard from '@/components/EventCard';
+import Image from "next/image";
+import { getMetadata } from "@/lib/metadata";
+
+export const metadata = getMetadata("apropos");
 
 export default function Apropos() {
     return (
       <div style={{ padding: '20px', textAlign: 'center' }}>
         <h1 style={{ color: '#c1272d', textAlign: 'center' }}>À propos</h1>
 
-        <img 
+        <Image 
           src="/logo.jpg" 
           alt="Image de l'équipe nationale du Maroc" 
+          width={500}
+          height={300}
+          priority={true}
           style={{
-            maxWidth: '500px', 
-            width: '100%', 
-            height: 'auto', 
-            margin: '20px auto', 
-            display: 'block', 
             borderRadius: '10px', 
             border: '3px solid #c1272d'
           }} 
@@ -34,6 +35,4 @@ export default function Apropos() {
         </p>
       </div>
     );
-  }
-  
-  
+}

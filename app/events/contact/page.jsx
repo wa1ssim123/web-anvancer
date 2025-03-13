@@ -1,7 +1,11 @@
-"use client";
+"use client";  
 
 import { useState } from "react";
-import { handleContact } from "@/actions/contact"; 
+import { handleContact } from "@/actions/contact";
+import { getMetadata } from "@/lib/metadata";
+
+
+const metadata = getMetadata("contact");
 
 export default function Contact() {
     const [formData, setFormData] = useState({ name: "", email: "", message: "" });
@@ -12,7 +16,6 @@ export default function Contact() {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-    
     const handleSubmit = async (e) => {
         e.preventDefault();
 

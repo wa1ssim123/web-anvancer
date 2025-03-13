@@ -188,4 +188,18 @@ img {
   border-radius: 10px;
   margin: 20px 0;
   border: 3px solid #c1272d; /* Bordure rouge */
+
+}
+* {
+  font-display: swap;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  
 }
