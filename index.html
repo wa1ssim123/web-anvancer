@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#071b23"><meta name="description" content="HORENZA — Démonstration interactive de gestion HORECA, caisse POS, articles, stocks, entrées-sorties, inventaires périodiques, pré-comptabilité et agent IA simulé.">
+<meta name="theme-color" content="#071b23"><meta name="description" content="HORENZA — Démonstration interactive de gestion HORECA, caisse POS, stock, tableaux de bord et agent IA simulé.">
 <title>HORENZA | Démonstration interactive</title>
 <style>
 :root{--bg:#06171e;--surface:#0c2530;--pane:#102e38;--line:rgba(205,175,122,.19);--gold:#e7bd79;--lightgold:#ffebc6;--text:#f2f4f1;--muted:#9fb2b6;--teal:#1bb9a1;--warn:#eeb078;--red:#ed8690}
@@ -58,5 +58,7 @@ function askAI(which){let l=low().map(x=>x.name).join(', ')||'aucun article';let
 function exportCsv(){let rows=[['Article','Categorie','Stock fictif','Seuil','Prix MAD'],...products.map(p=>[p.name,p.cat,p.qty,p.min,p.price])];const csv='\ufeff'+rows.map(r=>r.map(c=>'"'+String(c).replaceAll('"','""')+'"').join(';')).join('\r\n');let blob=new Blob([csv],{type:'text/csv;charset=utf-8'});let url=URL.createObjectURL(blob);let a=document.createElement('a');a.href=url;a.download='horenza-stock-demo.csv';a.click();URL.revokeObjectURL(url);toast('Export CSV fictif généré.')}
 renderTabs();renderProducts();renderCart();renderAll();if(location.hash&&document.querySelector(location.hash+'.view'))go(location.hash.slice(1));
 </script>
-<script src="assets/operations-v2.js"></script>
+<script src="assets/operations-v3-core.js"></script>
+<script src="assets/product-pics-v3.js"></script>
+<script src="assets/recipes-v3.js"></script>
 </body></html>
