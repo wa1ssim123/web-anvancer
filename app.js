@@ -1,4 +1,5 @@
-// Live HORENOVA data is loaded from the Wix CMS; no sample applications or ratings are displayed.\nconst $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+// Live HORENOVA data is loaded from the Wix CMS; no sample applications or ratings are displayed.
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const state=JSON.parse(localStorage.getItem('mihna-v3-temp')||'{}');
 state.intent=state.intent||'job'; state.role=state.role||'Barista'; state.city=state.city||'Casablanca'; state.saved=state.saved||[]; state.trip=state.trip||[]; state.customJobs=state.customJobs||[];
 const persist=()=>localStorage.setItem('mihna-v3-temp',JSON.stringify(state));
