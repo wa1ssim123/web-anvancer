@@ -1,5 +1,6 @@
 import { requireRole } from '/mihna-global.js';
 import { queryItems, insertItem } from '/js/wix/items.js';
+import { hub } from '/hn-api.js';
 const auth=await requireRole(['recruiter','admin']);
 if(!auth)throw new Error('Accès non autorisé');
 const root=document.getElementById('recruitGate');
@@ -25,7 +26,7 @@ root.innerHTML=`<div class='recruit-page'><form class='recruit-form' id='liveRec
 <button class='cta-main' type='submit'>Envoyer ma demande à Horenova ↗</button></form>
 <aside class='recruit-aside'><span class='small-title'>INTERMÉDIATION</span><h2>Un contact unique : Horenova.</h2><p>Nous recevons les candidatures et coordonnons les échanges. Aucun candidat ne reçoit directement vos coordonnées. Tout partage de données privées nécessite un accord.</p><a class='soft-btn' href='/talents.html'>Voir les profils anonymes →</a></aside></div>
 <section class='listing-page compact'><div class='listing-toolbar'><div><span class='small-title'>MES DEMANDES</span><h2>Suivi de mes recrutements.</h2></div></div><div class='jobs-grid-page' id='liveRecruitJobs'></div>
-<div class='listing-toolbar'><div><span class='small-title'>CANDIDATURES</span><h2>Horenova prépare votre sélection.</h2></div></div><div class='recruit-inbox'><article><div><span>CONTACT INTERMÉDIAIRE</span><h3>Équipe Horenova</h3><p>Notre équipe prendra contact après examen des profils et validation des échanges.</p></div></article></div></section>`;
+<div class='listing-toolbar'><div><span class='small-title'>CANDIDATURES</span><h2>Horenova prépare votre sélection.</h2></div></div><div class='recruit-inbox'><article><div><span>HORENOVA RECRUTEMENT</span><h3>Équipe HORENOVA</h3><p>Les conversations sont ouvertes uniquement après validation d’une mise en relation par HORENOVA. Notre équipe conserve la visibilité sur chaque échange.</p><a href='/conversations.html' class='soft-btn'>Mes conversations ↗</a></div></article></div></section>`;
 const form=document.getElementById('liveRecruitForm');
 const status=document.getElementById('recruitStatus');
 async function render(){
@@ -46,9 +47,13 @@ form.addEventListener('submit',async event=>{
  try{
   const d=Object.fromEntries(new FormData(form).entries());
   d.requestStatus='À examiner';
-  if(auth.demo)throw new Error('La soumission nécessite un compte réel.');
-  await insertItem('JobRequests',d);
-  status.textContent='✓ Demande reçue par Horenova. Notre équipe examine vos conditions avant publication.';
+  const wixRequest=await insertItem('JobRequests',d);
+  try {
+    await hub('/api/recruiter-requests',{method:'POST',body:{...d,wixRequestId:wixRequest._id}});
+    status.textContent='✓ Demande reçue par HORENOVA. Le suivi et le chat seront ouverts après mise en relation.';
+  } catch(apiError) {
+    status.textContent='✓ Demande enregistrée dans Wix. Suivi central temporairement indisponible : '+apiError.message;
+  }
   form.elements.title.value='';form.elements.description.value='';
   await render();
  }catch(errObj){err.textContent=errObj?.message||String(errObj);status.textContent='';}

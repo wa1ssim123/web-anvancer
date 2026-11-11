@@ -1,1 +1,56 @@
-import { requireRole } from "/mihna-global.js";import { queryItems,insertItem } from "/js/wix/items.js";const auth=await requireRole(['candidate']);if(!auth)throw new Error('auth');const q=new URLSearchParams(location.search),jobId=q.get('id')||'',role=q.get('role')||'Serveur',title=q.get('title')||'Offre Horenova',business='Employeur partenaire Horenova · identité confidentielle';const esc=s=>String(s??'').replace(/[&<>\"']/g,x=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[x]));document.getElementById('applyJob').innerHTML=`<span>${esc(role)}</span><h2>${esc(title)}</h2><p>${esc(business)}</p>`;let p=null,pub=null,passed=false,score=0;if(auth.demo){p=JSON.parse(localStorage.getItem('mihna-demo-candidate')||'null');const z=JSON.parse(localStorage.getItem('mihna-demo-quiz-'+role)||'null');passed=!!z?.passed;score=z?.score||0}else{p=(await queryItems('CandidateProfiles',{limit:1})).items[0]||null;pub=(await queryItems('CandidatePublicProfiles',{limit:1})).items[0]||null;const a=(await queryItems('QuizAttempts',{filters:[{field:'jobFamily',op:'eq',value:role}],sort:[{field:'_createdDate',direction:'desc'}],limit:1})).items[0];passed=!!a?.passed;score=a?.score||p?.quizScore||0}const box=document.getElementById('applyChecks');box.innerHTML=`<div class="check-row ${p?.profileComplete||auth.demo?'ok':'bad'}"><b>${p?.profileComplete||auth.demo?'✓':'!'}</b><span>Profil candidat</span><em>${p?.profileComplete||auth.demo?'Prêt':'À compléter'}</em></div><div class="check-row ${p?.videoFileId||auth.demo?'ok':'bad'}"><b>${p?.videoFileId||auth.demo?'✓':'!'}</b><span>Vidéo privée</span><em>${p?.videoFileId||auth.demo?'Enregistrée':'Obligatoire'}</em></div><div class="check-row ${passed?'ok':'bad'}"><b>${passed?'✓':'!'}</b><span>Quiz ${role}</span><em>${passed?score+'%':'À passer'}</em></div>`;if(!(p?.profileComplete||auth.demo)||!(p?.videoFileId||auth.demo))box.insertAdjacentHTML('beforeend','<a class="cta-main button-link" href="/candidate-setup.html">Compléter mon profil ↗</a>');else if(!passed)box.insertAdjacentHTML('beforeend',`<a class="cta-main button-link" href="/quiz.html?role=${encodeURIComponent(role)}&returnTo=${encodeURIComponent(location.pathname+location.search)}">Passer le quiz ↗</a>`);else{const btn=document.createElement('button');btn.className='cta-main';btn.textContent='Envoyer ma candidature ↗';box.appendChild(btn);btn.onclick=async()=>{btn.disabled=true;try{if(auth.demo){const apps=JSON.parse(localStorage.getItem('mihna-demo-applications')||'[]');apps.unshift({jobId,jobTitle:title,businessName:business,status:'Envoyée'});localStorage.setItem('mihna-demo-applications',JSON.stringify(apps))}else{await insertItem('Applications',{jobId,jobTitle:title,businessName:business,candidatePublicProfileId:pub?._id||'',quizScore:score,status:'En étude par Horenova',recruiterHint:'Mise en relation et négociation gérées par Horenova'})}box.innerHTML='<div class="success-state"><b>✓</b><h2>Candidature reçue par Horenova.</h2><p>Votre dossier sera examiné par notre équipe. Aucune identité ni vidéo privée n’est transmise directement à un établissement. Nous vous contacterons avant toute mise en relation.</p><a href="/account.html">Retour à mon espace →</a></div>'}catch(x){alert(x.message||String(x));btn.disabled=false}}}
+import {requireRole} from '/mihna-global.js';
+import {queryItems,insertItem} from '/js/wix/items.js';
+import {hub} from '/hn-api.js';
+const auth=await requireRole(['candidate']);
+if(!auth)throw Error('Connexion requise');
+const q=new URLSearchParams(location.search);
+const jobId=q.get('id')||'',role=q.get('role')||'Serveur',title=q.get('title')||'Offre HORENOVA';
+const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+document.getElementById('applyJob').innerHTML='<span>'+esc(role)+'</span><h2>'+esc(title)+'</h2><p>Employeur partenaire · HORENOVA</p>';
+const box=document.getElementById('applyChecks');
+let profile,passed=false,score=0,publicProfile=null;
+try{
+ profile=(await queryItems('CandidateProfiles',{limit:1})).items[0]||null;
+ publicProfile=(await queryItems('CandidatePublicProfiles',{limit:1})).items[0]||null;
+ const attempts=(await queryItems('QuizAttempts',{filters:[{field:'jobFamily',op:'eq',value:role}],limit:50})).items;
+ const best=attempts.filter(a=>a.passed).sort((a,b)=>(b.score||0)-(a.score||0))[0];
+ passed=!!best;score=best?.score||0;
+}catch(e){box.textContent='Impossible de vérifier le profil. '+e.message;throw e;}
+const ready=!!(profile?.profileComplete&&profile?.videoFileId&&profile?.videoConsent&&passed&&jobId);
+const checks=[
+ ['Profil complet',!!profile?.profileComplete],
+ ['Vidéo de présentation privée',!!profile?.videoFileId&&!!profile?.videoConsent],
+ ['Quiz '+role,passed],
+ ['Offre réelle sélectionnée',!!jobId]
+];
+box.innerHTML=checks.map(([name,ok])=>'<div class="check-row '+(ok?'ok':'bad')+'"><b>'+(ok?'✓':'!')+'</b><span>'+esc(name)+'</span><em>'+(ok?'Validé':'À compléter')+'</em></div>').join('');
+if(!profile?.profileComplete||!profile?.videoFileId){box.insertAdjacentHTML('beforeend','<a class="cta-main button-link" href="/candidate-setup.html">Compléter mon profil ↗</a>');}
+else if(!passed){box.insertAdjacentHTML('beforeend','<a class="cta-main button-link" href="/quiz.html?role='+encodeURIComponent(role)+'&returnTo='+encodeURIComponent(location.pathname+location.search)+'">Passer le quiz ↗</a>');}
+else if(!jobId){box.insertAdjacentHTML('beforeend','<p class="form-error">Choisissez une offre depuis la liste des emplois avant de postuler.</p><a href="/jobs.html">Voir les offres →</a>');}
+else if(ready){
+ const consent=document.createElement('label');consent.style.cssText='display:flex;gap:10px;align-items:flex-start;margin:18px 0;line-height:1.5;font-size:13px';consent.innerHTML='<input type="checkbox" id="applyConsent" required style="margin-top:5px"><span>J’autorise HORENOVA à étudier mon profil, ma photo si fournie et ma candidature, puis à partager ces informations avec un recruteur sélectionné après validation. Je comprends que HORENOVA a accès à la conversation de recrutement.</span>';
+ box.appendChild(consent);
+ const message=document.createElement('p');message.className='form-error';message.setAttribute('role','alert');box.appendChild(message);
+ const button=document.createElement('button');button.className='cta-main';button.type='button';button.textContent='Envoyer ma candidature à HORENOVA ↗';box.appendChild(button);
+ button.onclick=async()=>{
+  message.textContent='';
+  if(!document.getElementById('applyConsent').checked){message.textContent='Votre consentement est nécessaire pour une mise en relation.';return;}
+  button.disabled=true;
+  let centralCase=null,wixSaved=false,notes=[];
+  try{
+   try{
+    const result=await hub('/api/applications',{method:'POST',body:{jobId,consentToIntro:true}});
+    centralCase=result.item;
+   }catch(e){notes.push('Messagerie en attente : '+e.message);}
+   try{
+    const existing=(await queryItems('Applications',{filters:[{field:'jobId',op:'eq',value:jobId}],limit:1})).items;
+    if(!existing.length){
+      await insertItem('Applications',{jobId,jobTitle:title,businessName:'Employeur partenaire HORENOVA',candidatePublicProfileId:publicProfile?._id||'',quizScore:score,status:'En étude par HORENOVA',recruiterHint:'Mise en relation organisée par HORENOVA'});
+    }
+    wixSaved=true;
+   }catch(e){notes.push('Archivage Wix : '+e.message);}
+   if(!centralCase&&!wixSaved)throw Error(notes.join(' · ')||'La candidature n’a pas été enregistrée.');
+   box.innerHTML='<div class="success-state"><b>✓</b><h2>Candidature reçue par HORENOVA</h2><p>'+(centralCase?'Votre dossier privé est enregistré dans le centre de recrutement.':'Votre candidature est enregistrée dans Wix. Le chat sécurisé n’est pas encore disponible pour ce dossier.')+'</p>'+(centralCase?'<a href="/conversations.html?id='+encodeURIComponent(centralCase.id)+'">Ouvrir ma conversation ↗</a>':'<a href="/account.html">Retour à mon espace →</a>')+'</div>';
+  }catch(e){message.textContent=e.message;button.disabled=false;}
+ };
+}
