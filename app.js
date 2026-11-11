@@ -1,20 +1,4 @@
-const BASE_JOBS=[
-{id:'j1',kind:'job',title:'Barista, passion café',business:'Café Atelier · démo',role:'Barista',city:'Casablanca',pay:'5.500 DH',period:'/ mois',img:'https://headless-tfcfvgrbhgw-xwassim04-1409.wix-site-host.com/assets/barista.jpg',desc:'Emploi à temps plein',sponsored:true,details:'Un poste de barista dans un café urbain : préparation espresso, accueil et service.'},
-{id:'j2',kind:'job',title:'Serveur, sens du détail',business:'Riad Noya · démo',role:'Serveur',city:'Marrakech',pay:'4.800 DH',period:'/ mois',img:'https://headless-tfcfvgrbhgw-xwassim04-1409.wix-site-host.com/assets/restaurant.jpg',desc:'Service en salle',details:'Service en salle dans un riad : mise en place, accueil des clients et coordination avec la cuisine.'},
-{id:'j3',kind:'job',title:'Chef de partie',business:'Table 33 · démo',role:'Chef de cuisine',city:'Rabat',pay:'7.500 DH',period:'/ mois',img:'https://headless-tfcfvgrbhgw-xwassim04-1409.wix-site-host.com/assets/chef-action.jpg',desc:'Cuisine chaude',details:'Renfort d’une brigade sur la cuisine chaude, préparation et suivi du service.'},
-{id:'s1',kind:'shift',title:'Barista, soirée',business:'Coffee District · démo',role:'Barista',city:'Casablanca',pay:'220 DH',period:'/ shift',time:'18:00–23:00',dateOffset:0,img:'https://headless-tfcfvgrbhgw-xwassim04-1409.wix-site-host.com/assets/barista.jpg',details:'Shift de soirée pour renforcer le bar café.'},
-{id:'s2',kind:'shift',title:'Service événement',business:'Palais Events · démo',role:'Serveur',city:'Casablanca',pay:'280 DH',period:'/ shift',time:'17:00–00:00',dateOffset:1,img:'https://headless-tfcfvgrbhgw-xwassim04-1409.wix-site-host.com/assets/restaurant.jpg',details:'Service ponctuel pour un événement privé.'},
-{id:'s3',kind:'shift',title:'Renfort cuisine',business:'Medina Food Lab · démo',role:'Commis',city:'Marrakech',pay:'250 DH',period:'/ shift',time:'12:00–18:00',dateOffset:2,img:'https://headless-tfcfvgrbhgw-xwassim04-1409.wix-site-host.com/assets/chef-action.jpg',details:'Renfort cuisine pour la préparation et le service.'}
-];
-const TALENTS=[
-{id:'t1',name:'Yasmine A.',role:'Serveur',city:'Casablanca',rating:4.9,reviews:27,sponsored:true,bio:'Service premium · FR / AR / EN'},
-{id:'t2',name:'Anas B.',role:'Barista',city:'Casablanca',rating:4.9,reviews:18,bio:'Latte art · espresso · service rapide'},
-{id:'t3',name:'Sara M.',role:'Chef de cuisine',city:'Rabat',rating:4.8,reviews:31,bio:'Cuisine marocaine & méditerranéenne'},
-{id:'t4',name:'Omar K.',role:'Serveur',city:'Marrakech',rating:4.8,reviews:22,bio:'Riad · événementiel · clientèle internationale'},
-{id:'t5',name:'Mehdi R.',role:'Barista',city:'Rabat',rating:4.7,reviews:16,bio:'Specialty coffee · ouverture / fermeture'},
-{id:'t6',name:'Imane L.',role:'Chef de cuisine',city:'Casablanca',rating:4.7,reviews:12,bio:'Brigade · production · hygiène'}
-];
-const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+// Live HORENOVA data is loaded from the Wix CMS; no sample applications or ratings are displayed.\nconst $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const state=JSON.parse(localStorage.getItem('mihna-v3-temp')||'{}');
 state.intent=state.intent||'job'; state.role=state.role||'Barista'; state.city=state.city||'Casablanca'; state.saved=state.saved||[]; state.trip=state.trip||[]; state.customJobs=state.customJobs||[];
 const persist=()=>localStorage.setItem('mihna-v3-temp',JSON.stringify(state));
