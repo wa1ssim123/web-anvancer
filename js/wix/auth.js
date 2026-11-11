@@ -62,7 +62,7 @@ const message = (e) => (e instanceof Error ? e.message : String(e));
 export async function loginMember(email, password, _options = {}) {
     let raw;
     try {
-        raw = await wixRequest("/_api/iam/authentication/v2/login", { body: { loginId: { email }, password } });
+        raw = await wixRequest("/_api/iam/authentication/v2/login", { body: { loginId: { email }, password, ...(_options.captchaTokens ? { captchaTokens: _options.captchaTokens } : {}) } });
     }
     catch (e) {
         return failure(message(e), e instanceof WixApiError ? loginErrorCode(e.code) : undefined);
@@ -79,7 +79,7 @@ export async function registerMember(email, password, profile, _options = {}) {
     let raw;
     try {
         raw = await wixRequest("/_api/iam/authentication/v2/register", {
-            body: { loginId: { email }, password, ...(profile ? { profile } : {}) },
+            body: { loginId: { email }, password, ...(profile ? { profile } : {}), ...(_options.captchaTokens ? { captchaTokens: _options.captchaTokens } : {}) },
         });
     }
     catch (e) {

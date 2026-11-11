@@ -1,5 +1,5 @@
 import { login, register, verifyEmail, subscribeMember, getMemberState } from "/js/wix/member-store.js";
-import { queryItems, insertItem, patchItemFields } from "/js/wix/items.js";
+import { queryItems, insertItem, patchItemFields } from "/js/wix/items.js";\nimport { prepareCaptcha, captchaTokensFor, resetCaptcha, invisibleCaptchaTokens } from "/wix-captcha.js";
 
 const HINT_KEY='horenova-session-hint-v1';
 const params=new URLSearchParams(location.search);
@@ -33,6 +33,18 @@ function init(){
   function show(which){
     signin.hidden=which!=='signin'; signup.hidden=which!=='signup'; verify.hidden=true;
     qa('[data-auth-tab]').forEach(b=>b.classList.toggle('active',b.dataset.authTab===which));
+    if(which==='signup') prepareCaptcha(signup).catch(x=>err(signup,x.message));
+  }
+  function captchaError(r){
+    return ['missingCaptchaToken','invalidCaptchaToken','captchaRequired'].includes(r?.errorCode)
+      || /captcha/i.test(r?.error||'');
+  }
+  function messageFor(r, defaultMessage){
+    if(captchaError(r)) return 'La vérification de sécurité n’a pas été acceptée. Cochez à nouveau « Je ne suis pas un robot ».';
+    if(r?.errorCode==='emailAlreadyExists') return 'Cette adresse e-mail possède déjà un compte. Choisissez Se connecter.';
+    if(r?.errorCode==='invalidEmail') return 'Adresse e-mail invalide.';
+    if(r?.errorCode==='invalidPassword') return 'Mot de passe non accepté. Choisissez un mot de passe plus fort.';
+    return r?.error || defaultMessage;
   }
   function err(form,msg){const el=form.querySelector('[data-error]');if(el)el.textContent=msg||''}
   function status(msg){const el=q('#signinStatus');if(el)el.textContent=msg||''}
@@ -46,12 +58,24 @@ function init(){
     err(signin,''); status('Connexion en cours…'); btn.disabled=true; btn.textContent='Connexion…';
     const email=signin.elements.email.value.trim(), password=signin.elements.password.value;
     try{
-      localStorage.setItem(HINT_KEY,'1');const r=await login(email,password,{returnTo:safeReturn||'/account.html'});
+      const loginCaptchaShown=!signin.querySelector('[data-captcha-area]').hidden;
+      const captchaTokens=loginCaptchaShown?await captchaTokensFor(signin):undefined;
+      localStorage.setItem(HINT_KEY,'1');
+      const r=await login(email,password,{returnTo:safeReturn||'/account.html',...(captchaTokens?{captchaTokens}:{})});
+      if(captchaError(r)){
+        localStorage.removeItem(HINT_KEY);status('');
+        await prepareCaptcha(signin);
+        resetCaptcha(signin);
+        err(signin,'Confirmez que vous n’êtes pas un robot, puis réessayez.');
+        return;
+      }
       if(r.state==='SUCCESS'){status('Connexion réussie. Ouverture…');location.assign(safeReturn||'/account.html');return}
       if(r.state==='EMAIL_VERIFICATION_REQUIRED'){status('');verify.hidden=false;signin.hidden=true;return}
       if(r.state==='OWNER_APPROVAL_REQUIRED'){status('');err(signin,'Votre compte doit être approuvé avant la connexion.');return}
-      localStorage.removeItem(HINT_KEY);status('');err(signin,r.error||'Connexion impossible. Vérifiez votre e-mail et votre mot de passe.');
-    }catch(x){localStorage.removeItem(HINT_KEY);status('');err(signin,x?.message||String(x))}
+      localStorage.removeItem(HINT_KEY);status('');
+      resetCaptcha(signin);
+      err(signin,messageFor(r,'Connexion impossible. Vérifiez votre e-mail et votre mot de passe.'));
+    }catch(x){localStorage.removeItem(HINT_KEY);status('');err(signin,x?.message||'Connexion impossible. Réessayez.')}
     finally{btn.disabled=false;btn.textContent='Se connecter'}
   });
 
@@ -60,12 +84,29 @@ function init(){
     const btn=signup.querySelector('button[type=submit]');err(signup,'');btn.disabled=true;const old=btn.textContent;btn.textContent='Création…';pendingRole=role;
     try{
       const f=signup.elements;
-      localStorage.setItem(HINT_KEY,'1');const r=await register(f.email.value.trim(),f.password.value,{firstName:f.firstName.value.trim(),lastName:f.lastName.value.trim()},{returnTo:safeReturn||'/onboarding.html'});
+      const credentials=[f.email.value.trim(),f.password.value,{firstName:f.firstName.value.trim(),lastName:f.lastName.value.trim()}];
+      const options={returnTo:safeReturn||'/onboarding.html',captchaTokens:await captchaTokensFor(signup)};
+      localStorage.setItem(HINT_KEY,'1');
+      let r=await register(...credentials,options);
+      if(captchaError(r)){
+        // The headless project may require invisible reCAPTCHA instead of visible.
+        try {
+          options.captchaTokens=await invisibleCaptchaTokens();
+          r=await register(...credentials,options);
+        } catch (captchaFailure) {
+          err(signup,captchaFailure.message||'La vérification n’a pas abouti. Rechargez la page.');
+        }
+      }
       if(r.state==='SUCCESS'){await ensureRole(role,currentLang());redirectFor(role);return}
       if(r.state==='EMAIL_VERIFICATION_REQUIRED'){verify.hidden=false;signup.hidden=true;return}
       if(r.state==='OWNER_APPROVAL_REQUIRED'){err(signup,'Compte créé. Il doit être approuvé avant connexion.');return}
-      localStorage.removeItem(HINT_KEY);err(signup,r.error||'Inscription impossible.');
-    }catch(x){localStorage.removeItem(HINT_KEY);err(signup,x?.message||String(x))}
+      localStorage.removeItem(HINT_KEY);
+      resetCaptcha(signup);
+      err(signup,messageFor(r,'Inscription impossible. Réessayez après vérification.'));
+    }catch(x){
+      localStorage.removeItem(HINT_KEY);
+      err(signup,x?.message||'Inscription impossible. Réessayez.');
+    }
     finally{btn.disabled=false;btn.textContent=old}
   });
 
