@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: horenova-site-officiel
+    runtime: static
+    repo: https://github.com/wa1ssim123/web-anvancer
+    branch: horenova-free-deploy-2026
+    buildCommand: echo 'HORENOVA frontend static deployment'
+    staticPublishPath: .
+    autoDeployTrigger: commit
+    domains:
+      - horenova.com
