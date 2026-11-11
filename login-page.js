@@ -1,5 +1,6 @@
 import { login, register, verifyEmail, subscribeMember, getMemberState } from "/js/wix/member-store.js";
-import { queryItems, insertItem, patchItemFields } from "/js/wix/items.js";\nimport { prepareCaptcha, captchaTokensFor, resetCaptcha, invisibleCaptchaTokens } from "/wix-captcha.js";
+import { queryItems, insertItem, patchItemFields } from "/js/wix/items.js";
+import { prepareCaptcha, captchaTokensFor, resetCaptcha, invisibleCaptchaTokens } from "/wix-captcha.js";
 
 const HINT_KEY='horenova-session-hint-v1';
 const params=new URLSearchParams(location.search);
