@@ -1,21 +1,7 @@
 import { login, register, verifyEmail, subscribeMember, getMemberState } from "/js/wix/member-store.js";
 import { queryItems, insertItem, patchItemFields } from "/js/wix/items.js";
 
-const DEMO_KEY='mihna-demo-session-v1';
 const HINT_KEY='horenova-session-hint-v1';
-const DEMO_ACCOUNTS={};
-
-function demoLogin(email,password){
-  for(const [key,a] of Object.entries(DEMO_ACCOUNTS)){
-    if(a.email===email && a.password===password){
-      const s={...a,key,demo:true};
-      localStorage.setItem(DEMO_KEY,JSON.stringify(s));
-      return s;
-    }
-  }
-  return null;
-}
-
 const params=new URLSearchParams(location.search);
 const requestedMode=params.get('mode');
 const requestedReturn=params.get('returnTo')||'';
@@ -59,8 +45,6 @@ function init(){
     const btn=q('#signinSubmit')||signin.querySelector('button[type=submit]');
     err(signin,''); status('Connexion en cours…'); btn.disabled=true; btn.textContent='Connexion…';
     const email=signin.elements.email.value.trim(), password=signin.elements.password.value;
-    const demo=demoLogin(email,password);
-    if(demo){localStorage.setItem(HINT_KEY,'1');status('Connexion réussie. Ouverture de votre espace…');redirectFor(demo.role);return}
     try{
       localStorage.setItem(HINT_KEY,'1');const r=await login(email,password,{returnTo:safeReturn||'/account.html'});
       if(r.state==='SUCCESS'){status('Connexion réussie. Ouverture…');location.assign(safeReturn||'/account.html');return}
@@ -96,14 +80,8 @@ function init(){
   });
 
   const showDemo=q('#showDemo'), demoAccess=q('#demoAccess');
-  if(showDemo) showDemo.hidden=true;
-  if(demoAccess) demoAccess.hidden=true;
-  if(showDemo&&demoAccess) showDemo.addEventListener('click',()=>{
-    demoAccess.hidden=!demoAccess.hidden;
-    if(demoAccess.hidden)return;
-    demoAccess.innerHTML=Object.values(DEMO_ACCOUNTS).map(a=>`<button type="button" class="demo-login" data-email="${esc(a.email)}" data-pass="${esc(a.password)}"><b>${esc(a.role.toUpperCase())}</b><span>${esc(a.email)}</span><small>${esc(a.password)}</small></button>`).join('');
-    demoAccess.querySelectorAll('.demo-login').forEach(b=>b.addEventListener('click',()=>{const d=demoLogin(b.dataset.email,b.dataset.pass);if(d){localStorage.setItem(HINT_KEY,'1');redirectFor(d.role)}}));
-  });
+  if(showDemo) showDemo.remove();
+  if(demoAccess) demoAccess.remove();
 
   // If already signed in, never leave the user stuck on login.
   const state=getMemberState();
