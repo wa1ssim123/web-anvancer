@@ -1,0 +1,3 @@
+User-agent: *
+Disallow: /
+# Render preview only: original HORENOVA site remains canonical until domain migration.

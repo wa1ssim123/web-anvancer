@@ -1,0 +1,3 @@
+if('serviceWorker'in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(()=>{}));}
+let deferredInstall=null;window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredInstall=e;document.querySelectorAll('[data-install-horenova]').forEach(b=>b.hidden=false)});
+document.addEventListener('click',async e=>{const b=e.target.closest('[data-install-horenova]');if(!b||!deferredInstall)return;deferredInstall.prompt();await deferredInstall.userChoice;deferredInstall=null;b.hidden=true});
