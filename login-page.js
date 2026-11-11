@@ -3,11 +3,7 @@ import { queryItems, insertItem, patchItemFields } from "/js/wix/items.js";
 
 const DEMO_KEY='mihna-demo-session-v1';
 const HINT_KEY='horenova-session-hint-v1';
-const DEMO_ACCOUNTS={
-  admin:{email:'admin-demo@mihna.app',password:'MiH!Admin_6Qp9#27',role:'admin',name:'Admin Horenova'},
-  recruiter:{email:'recruteur-demo@mihna.app',password:'MiH!Rec_4Vk8#52',role:'recruiter',name:'Riad Démo'},
-  candidate:{email:'candidat-demo@mihna.app',password:'MiH!Tal_8Ns3#64',role:'candidate',name:'Yasmine Demo'}
-};
+const DEMO_ACCOUNTS={};
 
 function demoLogin(email,password){
   for(const [key,a] of Object.entries(DEMO_ACCOUNTS)){
@@ -100,6 +96,8 @@ function init(){
   });
 
   const showDemo=q('#showDemo'), demoAccess=q('#demoAccess');
+  if(showDemo) showDemo.hidden=true;
+  if(demoAccess) demoAccess.hidden=true;
   if(showDemo&&demoAccess) showDemo.addEventListener('click',()=>{
     demoAccess.hidden=!demoAccess.hidden;
     if(demoAccess.hidden)return;
