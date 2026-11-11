@@ -1,0 +1,14 @@
+/* Full-viewport HORENOVA intro screens: the underlying page is invisible until Enter. */
+html.hn-entry-active,html.hn-entry-active body{overflow:hidden!important;overscroll-behavior:none!important}
+.hn-entry{position:fixed;inset:0;width:100%;height:100vh;height:100dvh;z-index:2147483646;background:#07090a;overflow:hidden;isolation:isolate;clip-path:circle(155% at 50% 50%);transform:translateZ(0);transition:clip-path .92s cubic-bezier(.7,0,.18,1),filter .92s ease,opacity .92s ease}
+.hn-entry__video,.hn-entry__poster{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center center;display:block}
+.hn-entry__poster{z-index:0}.hn-entry__video{z-index:1;filter:none;transform:translateZ(0)}
+.hn-entry__video::-webkit-media-controls{display:none!important}
+.hn-entry__button{position:absolute;left:50%;top:50%;z-index:3;transform:translate(-50%,-50%);display:flex;align-items:center;justify-content:center;min-width:169px;min-height:57px;padding:15px 29px;appearance:none;border:1px solid rgba(255,255,255,.82);border-radius:3px;background:rgba(12,16,18,.36);color:#fff;font-family:Arial,Helvetica,sans-serif;font-weight:650;font-size:14px;line-height:1;letter-spacing:.20em;text-align:center;cursor:pointer;backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px);box-shadow:0 5px 28px rgba(0,0,0,.15);text-shadow:0 1px 5px rgba(0,0,0,.55);transition:background .25s ease,border-color .25s ease,transform .25s ease,opacity .35s ease}
+.hn-entry__button:hover{background:rgba(9,12,14,.70);border-color:#fff;transform:translate(-50%,-50%) scale(1.06)}
+.hn-entry__button:focus-visible{outline:3px solid #fff;outline-offset:5px;background:rgba(0,0,0,.75)}
+.hn-entry__button:active{transform:translate(-50%,-50%) scale(.96)}
+.hn-entry.hn-entry--exit{clip-path:circle(0% at 50% 50%);filter:blur(5px);pointer-events:none}
+.hn-entry.hn-entry--exit .hn-entry__button{opacity:0;transform:translate(-50%,-50%) scale(1.4)}
+@media(max-width:600px){.hn-entry__button{min-width:155px;min-height:55px;padding:14px 24px;font-size:13px}}
+@media(prefers-reduced-motion:reduce){.hn-entry{transition:opacity .2s ease}.hn-entry.hn-entry--exit{clip-path:none;filter:none;opacity:0}.hn-entry__button{transition:none}}
