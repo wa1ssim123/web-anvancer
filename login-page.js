@@ -17,6 +17,7 @@ function validReturn(value){
 const safeReturn=validReturn(requestedReturn);
 const HINT_KEY='horenova-session-hint-v1';
 let selectedRole='candidate',pendingRole=null,working=false,navigating=false,initialCheckComplete=false;
+let existingCompletionMode=false;
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const signin=$('#signinForm'),signup=$('#signupForm'),verify=$('#verifyForm');
 const supportedRoles=['candidate','recruiter'];
@@ -39,7 +40,14 @@ function info(form,message){
 function changeMode(mode){
   signin.hidden=mode!=='signin';signup.hidden=mode!=='signup';verify.hidden=true;
   $$('[data-auth-tab]').forEach(el=>el.classList.toggle('active',el.dataset.authTab===mode));
-  if(mode==='signup'&&!verifiedMember())prepareCaptcha(signup).catch(e=>err(signup,e.message));
+  if(mode==='signup'&&!existingCompletionMode){
+    const state=getMemberState();
+    if(!state.loading && !state.loggedIn) {
+      prepareCaptcha(signup).catch(e=>{
+        if(!existingCompletionMode&&!verifiedMember()&&!signup.hidden)err(signup,e.message);
+      });
+    }
+  }
 }
 function updateButton(form,text){
   const b=form.querySelector('button[type="submit"]');
@@ -71,6 +79,8 @@ async function ensureRole(role){
   return stored;
 }
 function finishExistingMode(){
+  existingCompletionMode=true;
+  err(signup,'');
   changeMode('signup');
   for(const name of ['firstName','lastName','email','password']){
     const field=signup.elements.namedItem(name);
@@ -218,7 +228,17 @@ function init(){
    finally{working=false;btn.disabled=false;}
  });
  changeMode(requestedMode);
- const off=subscribeMember(s=>{if(!initialCheckComplete && !s.loading){initialCheckComplete=true;void checkSession();}});
+ const off=subscribeMember(s=>{
+    if(!initialCheckComplete && !s.loading){
+      initialCheckComplete=true;
+      if(!s.loggedIn && requestedMode==='signup' && !existingCompletionMode){
+        prepareCaptcha(signup).catch(e=>{
+          if(!existingCompletionMode&&!signup.hidden)err(signup,e.message);
+        });
+      }
+      void checkSession();
+    }
+  });
  const state=getMemberState();
  if(!state.loading&&!initialCheckComplete){initialCheckComplete=true;void checkSession();}
  window.addEventListener('pagehide',()=>{off();},{once:true});
