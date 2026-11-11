@@ -66,15 +66,23 @@ export function subscribeMember(fn) {
 /** Re-read the session — call after anything that may have changed it. */
 export async function refreshMember() {
     setState({ loading: true, error: null });
+    // A persisted token is only a hint, never proof of an authenticated identity.
+    // A stale member token must NOT send visitors back to the account page.
     const hint = loggedInHint();
-    if (hint === false) {
+    if (!hint) {
         setState({ member: null, loggedIn: false, loading: false });
         return;
     }
-    // hint true → read the profile (null = profile data missing, still logged in).
-    // hint null (ambient) → the member read IS the session check: null = anonymous.
-    const member = await fetchCurrentMember();
-    setState({ member, loggedIn: hint ?? member !== null, loading: false });
+    try {
+        const member = await fetchCurrentMember();
+        const verified = Boolean(member?.id);
+        setState({ member: verified ? member : null, loggedIn: verified, loading: false,
+            error: verified ? null : "Votre session doit être renouvelée." });
+    }
+    catch (e) {
+        setState({ member: null, loggedIn: false, loading: false,
+            error: "Vérification de session indisponible. Réessayez." });
+    }
 }
 async function runLogin(action) {
     try {

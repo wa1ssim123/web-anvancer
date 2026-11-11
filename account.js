@@ -1,7 +1,7 @@
 import {requireRole} from '/mihna-global.js';
 import {queryItems} from '/js/wix/items.js';
 const auth=await requireRole(['candidate','recruiter','admin'],false);
-if(!auth){location.replace('/enter.html?mode=signin&returnTo=%2Faccount.html');throw Error('Connexion nécessaire');}
+if(!auth){const {getMemberState}=await import('/js/wix/member-store.js');const member=getMemberState().member;location.replace(member?.id?'/enter.html?mode=signup&finish=1':'/enter.html?mode=signin&returnTo=%2Faccount.html');throw Error('Authentification ou rôle à finaliser');}
 const dash=document.getElementById('accountDashboard'),identity=document.getElementById('accountIdentity');
 const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const name=document.createElement('b'),email=document.createElement('span'),badge=document.createElement('em');

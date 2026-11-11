@@ -1,15 +1,30 @@
-const DEMO_KEY='mihna-demo-session-v1';
-const HINT_KEY='horenova-session-hint-v1';
-function demo(){return false}
-function target(){const here=location.pathname+location.search+location.hash;return '/enter.html?returnTo='+encodeURIComponent(here)}
-function show(){document.documentElement.classList.remove('auth-pending');document.documentElement.classList.add('auth-ok')}
-function backToEnter(){localStorage.removeItem(HINT_KEY);location.replace(target())}
-if(demo()){show()}else if(localStorage.getItem(HINT_KEY)!=='1'){location.replace(target())}else{
-  // Reveal protected page only after confirming a real Wix member session.
-  import('/js/wix/member-store.js').then(({subscribeMember,getMemberState})=>{
-    let settled=false;
-    const decide=s=>{if(settled||s.loading)return;settled=true;if(s.loggedIn)show();else backToEnter()};
-    subscribeMember(decide);decide(getMemberState());
-    setTimeout(()=>{if(!settled)backToEnter()},6500);
-  }).catch(backToEnter);
-}
+/* HORENOVA auth gate v2 — verify Wix identity, never a localStorage hint. */
+(() => {
+  'use strict';
+  let done = false;
+  const current = location.pathname + location.search + location.hash;
+  const toLogin = '/enter.html?mode=signin&returnTo=' + encodeURIComponent(current);
+  const allow = () => {
+    if (done) return;
+    done = true;
+    document.documentElement.classList.remove('auth-pending');
+    document.documentElement.classList.add('auth-ok');
+  };
+  const deny = () => {
+    if (done) return;
+    done = true;
+    // Exactly one transition to a stable sign-in screen; no reload loop.
+    location.replace(toLogin);
+  };
+  const watchdog = setTimeout(deny, 14000);
+  import('/js/wix/member-store.js').then(({getMemberState,subscribeMember}) => {
+    const decide = state => {
+      if (done || state.loading) return;
+      clearTimeout(watchdog);
+      if (state.loggedIn && state.member?.id) allow();
+      else deny();
+    };
+    subscribeMember(decide);
+    decide(getMemberState());
+  }).catch(() => { clearTimeout(watchdog); deny(); });
+})();
