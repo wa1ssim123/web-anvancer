@@ -17,41 +17,54 @@ function status(form, message) {
 }
 function loadEnterprise() {
   const existing = window.grecaptcha?.enterprise;
-  if (existing?.render) return Promise.resolve(existing);
+  if (existing?.render && existing?.ready) return Promise.resolve(existing);
   if (loading) return loading;
   loading = new Promise((resolve, reject) => {
+    const sources = [
+      'https://www.google.com/recaptcha/enterprise.js?render=explicit&hl=fr',
+      'https://www.recaptcha.net/recaptcha/enterprise.js?render=explicit&hl=fr'
+    ];
     let settled = false;
-    const finish = (error, api) => {
+    const timeout = setTimeout(() => finish(new Error('Vérification anti-robot inaccessible. Désactivez le bloqueur de contenu, puis actualisez la page.')), 20000);
+    function finish(error, api) {
       if (settled) return;
       settled = true;
       clearTimeout(timeout);
       if (error) { loading = null; reject(error); }
       else resolve(api);
-    };
-    const timeout = setTimeout(() => finish(new Error('La vérification de sécurité ne répond pas. Actualisez la page et réessayez.')), 20000);
-    let script = document.querySelector('script[data-hn-google-captcha]');
-    if (!script) {
-      script = document.createElement('script');
-      script.src = 'https://www.google.com/recaptcha/enterprise.js?render=explicit&hl=fr';
+    }
+    function attempt(index) {
+      if (settled) return;
+      if (index >= sources.length) {
+        finish(new Error('La vérification de sécurité est indisponible sur ce navigateur. Vérifiez le réseau et les bloqueurs de contenu.'));
+        return;
+      }
+      const api = window.grecaptcha?.enterprise;
+      if (api?.render && api?.ready) {
+        api.ready(() => finish(null, api));
+        return;
+      }
+      const script = document.createElement('script');
+      script.src = sources[index];
       script.async = true;
       script.defer = true;
       script.dataset.hnGoogleCaptcha = '1';
+      script.addEventListener('load', () => {
+        const loaded = window.grecaptcha?.enterprise;
+        if (loaded?.render && loaded?.ready) loaded.ready(() => finish(null, loaded));
+        else { script.remove(); attempt(index + 1); }
+      }, { once: true });
+      script.addEventListener('error', () => {
+        script.remove();
+        attempt(index + 1);
+      }, { once: true });
       document.head.appendChild(script);
     }
-    const onReady = () => {
-      const api = window.grecaptcha?.enterprise;
-      if (!api?.ready || !api?.render) {
-        finish(new Error('La vérification de sécurité est indisponible. Rechargez la page.'));
-        return;
-      }
-      api.ready(() => finish(null, api));
-    };
-    script.addEventListener('load', onReady, {once:true});
-    script.addEventListener('error', () => finish(new Error('Impossible de charger la vérification Google. Vérifiez votre connexion ou bloqueur de contenus.')), {once:true});
-    if (window.grecaptcha?.enterprise?.render) onReady();
+    attempt(0);
   });
   return loading;
 }
+
 export async function prepareCaptcha(form) {
   const area = form.querySelector('[data-captcha-area]');
   const host = form.querySelector('[data-captcha-widget]');
