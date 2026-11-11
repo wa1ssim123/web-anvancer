@@ -1,6 +1,6 @@
 const DEMO_KEY='mihna-demo-session-v1';
 const HINT_KEY='horenova-session-hint-v1';
-function demo(){try{return !!JSON.parse(localStorage.getItem(DEMO_KEY)||'null')}catch{return false}}
+function demo(){return false}
 function target(){const here=location.pathname+location.search+location.hash;return '/enter.html?returnTo='+encodeURIComponent(here)}
 function show(){document.documentElement.classList.remove('auth-pending');document.documentElement.classList.add('auth-ok')}
 function backToEnter(){localStorage.removeItem(HINT_KEY);location.replace(target())}
