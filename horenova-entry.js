@@ -24,6 +24,11 @@
       if(!el.paused)el.setAttribute('data-hn-entry-paused','true');
       el.pause();
     });
+    // Use native 4K portrait on phones, cinematic 4K landscape on larger screens.
+    if(video.dataset.mobileSrc && video.dataset.desktopSrc){
+      const media=window.matchMedia('(max-width: 700px)').matches ? video.dataset.mobileSrc : video.dataset.desktopSrc;
+      if(video.getAttribute('src')!==media){video.src=media;video.load();}
+    }
     video.muted=true;
     video.defaultMuted=true;
     video.playsInline=true;
