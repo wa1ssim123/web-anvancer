@@ -197,7 +197,7 @@ async function api(req,res,path,method) {
     if(action==='status' && method==='PATCH') {
       requireRole(user,['admin']);
       const d=await read(req);
-      const allowed=['EN_ETUDE','PRESELECTION','ENTRETIEN','RETENUE','REFUSEE','CLOTURE'];
+      const allowed=['EN_ETUDE','PRESELECTION','ENTRETIEN','MISE_EN_RELATION','RETENUE','REFUSEE','CLOTURE'];
       if(!allowed.includes(d.status)) throw error(422,'Statut invalide.');
       await pool.query('UPDATE hr_applications SET status=$1,updated_at=now() WHERE id=$2',[d.status,id]);
       await pool.query('INSERT INTO hr_audit(actor_wix_id,event_type,application_id,detail) VALUES($1,$2,$3,$4)',[user.id,'STATUS',id,JSON.stringify({status:d.status})]);
