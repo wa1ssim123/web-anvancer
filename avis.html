@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Avis des membres HORENOVA — Partagez votre expérience</title>
+<meta name="description" content="Consultez les avis authentiques des membres HORENOVA et partagez votre expérience de l’emploi, du recrutement, de la formation et du tourisme.">
+<link rel="canonical" href="https://horenova.com/avis.html">
+<meta name="robots" content="index,follow">
+<meta name="theme-color" content="#10161d">
+<link rel="icon" type="image/png" sizes="192x192" href="/favicon.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="apple-touch-icon" href="/assets/horenova-icon-180.png">
+<link rel="stylesheet" href="/avis.css">
+</head>
+<body>
+<a class="skip" href="#main">Aller au contenu</a>
+<header class="rv-header">
+  <a class="rv-brand" href="/"><img src="/favicon.png" alt="" width="46" height="46"><span>HORENOVA<small>HOSPITALITY UNIVERSE</small></span></a>
+  <nav aria-label="Navigation principale"><a href="/jobs.html">Offres</a><a href="/recruit.html">Je recrute</a><a href="/academy.html">Academy</a><a href="/explore.html">Explore</a><a class="rv-login" href="/enter.html?mode=signin&returnTo=%2Favis.html">Mon espace ↗</a></nav>
+</header>
+<main id="main">
+<section class="rv-hero">
+  <div class="rv-sun"></div><div class="rv-hero-ornament" aria-hidden="true">✦</div>
+  <div class="rv-wrap"><div class="rv-kicker"><span class="rv-glow"></span> HORENOVA · PAROLE AUX MEMBRES</div>
+  <h1>Votre expérience.<br><em>Notre meilleure référence.</em></h1>
+  <p>Vos retours nous aident à améliorer le recrutement, les missions, la formation et la découverte du Maroc. Des avis réels, publiés après modération.</p>
+  <div class="rv-hero-actions"><a href="#donner-avis" class="rv-primary">Partager mon expérience <span>↗</span></a><a href="#avis-publies" class="rv-secondary">Lire les avis ↓</a></div>
+  <div class="rv-stats" id="reviewSummary"><span class="rv-stat-label">Avis de nos membres</span><strong>—</strong><span>Chargement des avis publiés…</span></div>
+  </div>
+</section>
+<section class="rv-section rv-reviews rv-wrap" id="avis-publies">
+  <div class="rv-sectionhead"><div><span class="rv-eyebrow">RETours D’EXPÉRIENCE</span><h2>Ils partagent<br><em>leur parcours.</em></h2></div><p>Seuls les commentaires rédigés par des membres connectés et validés par l’équipe HORENOVA sont publiés. Aucune note n’est inventée.</p></div>
+  <div id="reviewsError" class="rv-error" role="alert" hidden></div>
+  <div id="reviewsList" class="rv-grid" aria-live="polite"><div class="rv-empty">Chargement des avis…</div></div>
+</section>
+<section class="rv-section rv-write" id="donner-avis"><div class="rv-wrap rv-write-grid">
+<div class="rv-intro"><span class="rv-eyebrow">LE VÔTRE COMPTE AUSSI</span><h2>Une note.<br><em>Un vrai retour.</em></h2><p>Tu as utilisé HORENOVA ? Partage ce qui fonctionne et ce que nous pouvons améliorer. Une expérience positive ou critique a la même place, si elle est authentique et respectueuse.</p><div class="rv-trust"> <span>01</span> Connexion à un compte HORENOVA <span>02</span> Avis modéré avant publication <span>03</span> Modification possible par son auteur </div></div>
+<div class="rv-form-card">
+  <form id="reviewForm" novalidate>
+  <div class="rv-form-kicker">LAISSER UN AVIS</div><h3>Racontez votre expérience</h3>
+  <label for="reviewName">Nom affiché publiquement <small>(pseudonyme accepté)</small></label><input id="reviewName" name="publicName" maxlength="45" minlength="2" placeholder="Ex. Sara B." required autocomplete="nickname">
+  <label for="reviewExperience">À propos de</label><select id="reviewExperience" name="experience" required><option value="Plateforme">HORENOVA en général</option><option value="Candidat">Recherche d’emploi</option><option value="Recruteur">Recrutement</option><option value="Académie">Academy</option><option value="Tourisme">Explore / Tourisme</option></select>
+  <fieldset class="rv-stars" aria-label="Note de 1 à 5 étoiles"><legend>Votre note</legend><div class="rv-stars-buttons" id="reviewStars">
+  <label><input type="radio" name="rating" value="1" required><span aria-hidden="true">★</span><small>1</small></label>
+  <label><input type="radio" name="rating" value="2"><span aria-hidden="true">★</span><small>2</small></label>
+  <label><input type="radio" name="rating" value="3"><span aria-hidden="true">★</span><small>3</small></label>
+  <label><input type="radio" name="rating" value="4"><span aria-hidden="true">★</span><small>4</small></label>
+  <label><input type="radio" name="rating" value="5"><span aria-hidden="true">★</span><small>5</small></label>
+  </div><p id="reviewStarLabel" aria-live="polite">Sélectionnez une note de 1 à 5.</p></fieldset>
+  <label for="reviewTitle">Titre de votre avis</label><input id="reviewTitle" name="title" required minlength="5" maxlength="100" placeholder="Ex. Une plateforme qui facilite les démarches">
+  <label for="reviewComment">Votre commentaire</label><textarea id="reviewComment" name="comment" required minlength="30" maxlength="1600" rows="5" placeholder="Décrivez votre expérience réelle (30 caractères minimum)…"></textarea>
+  <p class="rv-note">Un seul avis par compte. Si vous le modifiez, il repassera en modération. Ne partagez pas de données personnelles dans votre commentaire.</p>
+  <div id="reviewFormMessage" class="rv-message" role="status" aria-live="polite"></div>
+  <button class="rv-submit" id="reviewSubmit" type="submit">Envoyer mon avis <span>↗</span></button>
+  <a class="rv-loginhint" href="/enter.html?mode=signin&returnTo=%2Favis.html">Déjà membre ? Connectez-vous ↗</a>
+  </form>
+</div></div></section>
+<section class="rv-wrap rv-moderation" id="moderation" hidden><div class="rv-sectionhead"><div><span class="rv-eyebrow">ADMINISTRATION HORENOVA</span><h2>Modérer les avis</h2></div><p>Les avis, favorables comme défavorables, doivent être évalués selon les mêmes règles d’authenticité, de respect et de confidentialité.</p></div><div id="reviewModerationError" class="rv-error" role="alert" hidden></div><div id="reviewModerationList"></div></section>
+</main>
+<footer class="rv-footer"><div class="rv-wrap rv-footer-row"><span>HORENOVA<span class="rv-green">.</span></span><p>Hospitality, reimagined in Morocco.</p><a href="/">Retour à l’accueil ↑</a></div></footer>
+<script type="module" src="/avis.js?v=20261111"></script>
+</body></html>

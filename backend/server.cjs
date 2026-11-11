@@ -108,8 +108,53 @@ async function api(req,res,path,method) {
     const q=await pool.query('SELECT 1 AS ok');
     return json(res,200,{ok:q.rows[0].ok===1,service:'horenova-production-api'});
   }
+  if(path==='/api/reviews/public' && method==='GET'){
+    const [summary,listed]=await Promise.all([
+      pool.query("SELECT count(*)::integer AS count,round(avg(rating)::numeric,1)::float AS average FROM hr_reviews WHERE status='APPROVED'"),
+      pool.query("SELECT id,public_name,experience,rating,title,comment,created_at FROM hr_reviews WHERE status='APPROVED' ORDER BY created_at DESC LIMIT 30")
+    ]);
+    return json(res,200,{count:summary.rows[0].count,average:summary.rows[0].average,items:listed.rows},{'Cache-Control':'public, max-age=120'});
+  }
   const user=await auth(req);
   if(path==='/api/me' && method==='GET') return json(res,200,{id:user.id,email:user.email,role:user.role,displayName:user.displayName});
+  if(path==='/api/reviews' && method==='POST'){
+    rate(user.id+':reviews',4,3600);
+    const d=await read(req,12000),score=Number(d.rating);
+    const title=limit(d.title,100),comment=limit(d.comment,1600);
+    const experience=limit(d.experience,40);
+    const publicName=limit(d.publicName,45)||'Membre HORENOVA';
+    const accepted=['Candidat','Recruteur','Académie','Tourisme','Plateforme'];
+    if(!Number.isInteger(score)||score<1||score>5)throw error(422,'Choisissez une note de 1 à 5 étoiles.');
+    if(title.length<5||comment.length<30)throw error(422,'Un titre (5 caractères) et un avis détaillé (30 caractères minimum) sont nécessaires.');
+    if(!accepted.includes(experience))throw error(422,'Catégorie d’expérience invalide.');
+    if(publicName.length<2)throw error(422,'Nom public trop court.');
+    const check=await pool.query("SELECT id FROM hr_reviews WHERE member_wix_id=$1",[user.id]);
+    const q=await pool.query(`INSERT INTO hr_reviews(member_wix_id,public_name,experience,rating,title,comment,status)
+      VALUES($1,$2,$3,$4,$5,$6,'PENDING')
+      ON CONFLICT (member_wix_id) DO UPDATE SET public_name=EXCLUDED.public_name,experience=EXCLUDED.experience,rating=EXCLUDED.rating,title=EXCLUDED.title,comment=EXCLUDED.comment,status='PENDING',updated_at=now(),moderated_at=NULL
+      RETURNING id,status`,[user.id,publicName,experience,score,title,comment]);
+    return json(res,check.rowCount?200:201,{ok:true,status:q.rows[0].status,message:'Avis reçu. Publication après vérification par HORENOVA.'});
+  }
+  if(path==='/api/reviews/mine' && method==='GET'){
+    const q=await pool.query('SELECT id,public_name,experience,rating,title,comment,status,updated_at FROM hr_reviews WHERE member_wix_id=$1',[user.id]);
+    return json(res,200,{item:q.rows[0]||null});
+  }
+  if(path==='/api/reviews/moderation' && method==='GET'){
+    requireRole(user,['admin']);
+    const q=await pool.query('SELECT id,public_name,experience,rating,title,comment,status,created_at,updated_at FROM hr_reviews ORDER BY CASE status WHEN \'PENDING\' THEN 0 ELSE 1 END,updated_at DESC LIMIT 250');
+    return json(res,200,{items:q.rows});
+  }
+  const reviewModeration=path.match(/^\/api\/reviews\/([0-9a-f-]+)\/moderate$/i);
+  if(reviewModeration && method==='PATCH'){
+    requireRole(user,['admin']);
+    if(!uuid(reviewModeration[1]))throw error(422,'Avis invalide.');
+    const d=await read(req,1000);
+    if(!['APPROVED','REJECTED'].includes(d.status))throw error(422,'Statut de modération invalide.');
+    const q=await pool.query("UPDATE hr_reviews SET status=$1,moderated_at=now(),updated_at=now() WHERE id=$2 RETURNING id",[d.status,reviewModeration[1]]);
+    if(!q.rowCount)throw error(404,'Avis introuvable.');
+    await pool.query("INSERT INTO hr_audit(actor_wix_id,event_type,detail) VALUES($1,'REVIEW_MODERATION',$2)",[user.id,JSON.stringify({reviewId:reviewModeration[1],status:d.status})]);
+    return json(res,200,{ok:true});
+  }
   if(path==='/api/recruiter-requests' && method==='POST'){
     requireRole(user,['recruiter']);rate(user.id+':requests',10,3600);
     const d=await read(req);
