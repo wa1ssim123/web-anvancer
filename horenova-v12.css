@@ -50,3 +50,226 @@ html.auth-pending body{visibility:visible!important;opacity:1!important;backgrou
  .hn12-dock a b{font-size:15px!important}
 }
 @media(max-width:390px){.hn12-panel.hn15-open{inset:74px 6px 78px!important}.hn12-panel.hn15-open .hn15-tourist-grid{grid-template-columns:1fr}.hn12-dock a{font-size:7px!important}}
+
+/* HORENOVA Quality Pass 2026-11-11 — high contrast, premium onboarding, mobile touch. */
+body[data-hn12="onboarding"] .onboarding-shell{
+  position:relative; isolation:isolate;
+  grid-template-columns:minmax(0,46%) minmax(0,54%);
+  min-height:660px;
+  margin-top:16px;
+  border:1px solid rgba(255,207,139,.22);
+  border-radius:32px;
+  color:#f8f5ec;
+  background:radial-gradient(ellipse at 88% 7%,rgba(30,113,88,.35),transparent 38%),
+             radial-gradient(ellipse at 5% 100%,rgba(230,90,48,.16),transparent 43%),
+             linear-gradient(135deg,#092620 0%,#08201c 58%,#061510 100%);
+  box-shadow:0 25px 85px rgba(0,0,0,.34);
+  overflow:hidden;
+}
+body[data-hn12="onboarding"] .onboarding-shell::before{
+  opacity:.11;filter:brightness(1.6);
+  pointer-events:none;
+}
+body[data-hn12="onboarding"] .onboarding-copy{
+  position:relative;
+  z-index:2;
+  min-width:0;
+  padding:clamp(34px,5vw,76px);
+  display:flex;flex-direction:column;justify-content:center;
+}
+body[data-hn12="onboarding"] .onboarding-copy .small-title{
+  color:#ffd19c!important;
+  font-size:11px;
+  font-weight:850;
+  letter-spacing:.18em;
+  line-height:1.5;
+}
+body[data-hn12="onboarding"] .onboarding-copy h1{
+  font-family:Georgia,"Times New Roman",serif;
+  font-weight:500;
+  font-size:clamp(47px,5.7vw,81px);
+  line-height:1.01;
+  letter-spacing:-.056em;
+  color:#f8f5ec!important;
+  text-wrap:balance;
+  margin:23px 0 26px;
+  text-shadow:0 3px 24px rgba(0,0,0,.16);
+}
+body[data-hn12="onboarding"] .onboarding-copy h1 em{
+  font-weight:400;
+  color:#ffd19c!important;
+}
+body[data-hn12="onboarding"] .onboarding-copy>p{
+  max-width:560px;
+  color:#d5e4dc!important;
+  font-size:clamp(15px,1.4vw,18px);
+  line-height:1.8;
+  margin:0 0 22px;
+}
+body[data-hn12="onboarding"] .onboarding-steps{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:10px;
+  border-top:1px solid rgba(255,255,255,.17);
+  padding:24px 0 0;
+  margin:16px 0 30px;
+}
+body[data-hn12="onboarding"] .onboarding-steps>div{
+  min-width:0;
+  padding:17px 13px;
+  border:1px solid rgba(249,226,196,.14);
+  border-radius:16px;
+  background:rgba(255,255,255,.045);
+  box-shadow:0 8px 28px rgba(0,0,0,.06);
+}
+body[data-hn12="onboarding"] .onboarding-steps b{
+  display:block;
+  color:#ffd19c!important;
+  font-weight:850;
+  font-size:22px;
+  line-height:1.2;
+}
+body[data-hn12="onboarding"] .onboarding-steps span{
+  display:block;
+  color:#e0e7de!important;
+  font-size:12px;
+  line-height:1.45;
+  font-weight:650;
+  margin-top:9px;
+}
+body[data-hn12="onboarding"] #onboardingNext{
+  position:relative;
+  z-index:3;
+  display:flex!important;align-items:center;justify-content:center;
+  width:100%;max-width:540px;min-height:64px;
+  padding:18px 22px;
+  background:linear-gradient(135deg,#d94515,#bf3d12)!important;
+  border:1px solid rgba(255,205,161,.28)!important;
+  border-radius:17px!important;
+  box-shadow:0 16px 36px rgba(0,0,0,.23),inset 0 1px 0 rgba(255,255,255,.25);
+  color:#fff!important;
+  font-size:18px;
+  font-weight:850;
+  letter-spacing:.01em;
+  text-align:center;
+  text-decoration:none;
+  touch-action:manipulation;
+  pointer-events:auto;
+  transition:transform .18s ease,box-shadow .18s ease;
+}
+body[data-hn12="onboarding"] #onboardingNext:hover{
+  transform:translateY(-2px);
+  box-shadow:0 19px 39px rgba(0,0,0,.29);
+}
+body[data-hn12="onboarding"] #onboardingNext:active{transform:translateY(1px)}
+body[data-hn12="onboarding"] .onboarding-player{
+  z-index:2;
+  border-radius:0 30px 30px 0!important;
+  box-shadow:none!important;
+  border:0!important;
+  border-left:1px solid rgba(255,255,255,.13)!important;
+}
+body[data-hn12="onboarding"] .onboarding-player button{
+  min-height:44px;
+  touch-action:manipulation;
+}
+body[data-hn12="onboarding"] .hn12-hero-art,
+body[data-hn12="onboarding"] .hn12-hero .bg,
+body[data-hn12="onboarding"] .hn12-hero .bg::after{
+  pointer-events:none;
+}
+/* Clear focus states and robust touch hit targets on the inner pages. */
+body[data-hn12] a:focus-visible,
+body[data-hn12] button:focus-visible,
+body[data-hn12] input:focus-visible,
+body[data-hn12] select:focus-visible,
+body[data-hn12] textarea:focus-visible{
+  outline:3px solid #ffbe69!important;
+  outline-offset:3px;
+}
+@media (hover:none){
+  body[data-hn12] .hn12-card:hover{transform:none}
+  body[data-hn12] [data-hn12-reveal]{transform:none}
+}
+@media(max-width:960px){
+  body[data-hn12="onboarding"] .onboarding-shell{
+    display:grid;
+    grid-template-columns:minmax(0,1fr);
+    min-height:0;
+    border-radius:26px;
+    margin-top:10px;
+  }
+  body[data-hn12="onboarding"] .onboarding-copy{
+    padding:clamp(26px,6vw,40px) clamp(20px,5vw,32px) 30px;
+  }
+  body[data-hn12="onboarding"] .onboarding-copy h1{
+    font-size:clamp(43px,11.2vw,69px);
+    line-height:1.01;
+    letter-spacing:-.053em;
+    margin:16px 0 24px;
+  }
+  body[data-hn12="onboarding"] .onboarding-copy>p{
+    font-size:16px;
+    line-height:1.75;
+    margin-bottom:12px;
+  }
+  body[data-hn12="onboarding"] .onboarding-steps{
+    padding-top:17px;
+    margin:18px 0 24px;
+    gap:8px;
+  }
+  body[data-hn12="onboarding"] .onboarding-steps>div{
+    padding:14px 9px;
+    border-radius:14px;
+  }
+  body[data-hn12="onboarding"] .onboarding-steps b{font-size:19px}
+  body[data-hn12="onboarding"] .onboarding-steps span{font-size:11px}
+  body[data-hn12="onboarding"] #onboardingNext{
+    min-height:62px;
+    font-size:17px;
+  }
+  body[data-hn12="onboarding"] .onboarding-player{
+    min-height:440px;
+    border:0!important;
+    border-top:1px solid rgba(255,255,255,.13)!important;
+    border-radius:0 0 24px 24px!important;
+    padding:54px 14px 74px!important;
+  }
+  body[data-hn12="onboarding"] .onboarding-player video{
+    height:350px;
+    width:100%;
+  }
+  body[data-hn12] .hn12-dock{
+    bottom:max(8px,env(safe-area-inset-bottom));
+    min-height:64px;
+    padding:6px 4px;
+  }
+  body[data-hn12] .hn12-dock a{
+    min-height:50px;
+    padding:4px 1px!important;
+    font-size:10px!important;
+    touch-action:manipulation;
+  }
+  body[data-hn12] .hn12-dock a b{font-size:17px!important}
+  body[data-hn12] .hn12-panel[hidden]{display:none!important}
+  body[data-hn12] .hn12-panel.hn15-open{
+    z-index:1201!important;
+    overscroll-behavior:contain;
+    -webkit-overflow-scrolling:touch;
+  }
+  body[data-hn12] .hn12-menu,
+  body[data-hn12] .hn12-actions .profile{
+    min-width:44px;
+    min-height:44px;
+    touch-action:manipulation;
+  }
+}
+@media(max-width:390px){
+  body[data-hn12="onboarding"] .onboarding-copy{padding:26px 19px 28px}
+  body[data-hn12="onboarding"] .onboarding-copy h1{font-size:43px}
+  body[data-hn12="onboarding"] .onboarding-steps>div{padding:13px 8px}
+  body[data-hn12] .hn12-dock a{font-size:9px!important}
+}
+@media(prefers-reduced-motion:reduce){
+  body[data-hn12="onboarding"] #onboardingNext{transition:none}
+}
