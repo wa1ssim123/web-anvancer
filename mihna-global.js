@@ -1,12 +1,13 @@
 import { subscribeMember, getMemberState, logout } from "/js/wix/member-store.js";
 import { queryItems, insertItem, patchItemFields } from "/js/wix/items.js";
 
-export const DEMO_ACCOUNTS={"admin": {"email": "admin-demo@mihna.app", "password": "MiH!Admin_6Qp9#27", "role": "admin", "name": "Admin Horenova"}, "recruiter": {"email": "recruteur-demo@mihna.app", "password": "MiH!Rec_4Vk8#52", "role": "recruiter", "name": "Riad Démo"}, "candidate": {"email": "candidat-demo@mihna.app", "password": "MiH!Tal_8Ns3#64", "role": "candidate", "name": "Yasmine Demo"}};
+export const DEMO_ACCOUNTS={};
 export const MEDIA={"onboarding_ar": "https://video.wixstatic.com/video/d0158d_5a5f4cbb3bad49eda3d898bbe664cf4d/file", "onboarding_fr": "https://video.wixstatic.com/video/d0158d_ae24988eac5b496ca7db05ad8c4d5c5c/file", "onboarding_en": "https://video.wixstatic.com/video/d0158d_423e146e2ef94cb2a0ebbc04fec23d18/file", "academy_service": "https://video.wixstatic.com/video/d0158d_4badab44e7fe4504b1f1c1312807ffe4/file", "academy_barista": "https://video.wixstatic.com/video/d0158d_40eb2f2b43314bfc8474ad5f101993d8/file", "academy_cuisine": "https://video.wixstatic.com/video/d0158d_ea11b4114cf442648369e16afbd4f1e5/file", "academy_hygiene": "https://video.wixstatic.com/video/d0158d_b48bc288bf1e4458b8ccd3a6d39ea457/file"};
 const DEMO_KEY='mihna-demo-session-v1';
-export const getDemoSession=()=>{try{return JSON.parse(localStorage.getItem(DEMO_KEY)||'null')}catch{return null}};
-export function clearDemoSession(){localStorage.removeItem(DEMO_KEY)}
-export function demoLogin(email,password){for(const [key,a] of Object.entries(DEMO_ACCOUNTS)){if(a.email===email&&a.password===password){const s={...a,key,demo:true};localStorage.setItem(DEMO_KEY,JSON.stringify(s));return s}}return null}
+export const getDemoSession=()=>null;
+export function clearDemoSession(){try{localStorage.removeItem(DEMO_KEY)}catch{}}
+export function demoLogin(){return null;}
+
 export async function getRole(){const d=getDemoSession();if(d)return d.role;const st=getMemberState();if(st.loading) await new Promise(r=>{const u=subscribeMember(s=>{if(!s.loading){u();r()}})});if(!getMemberState().loggedIn)return null;try{const p=await queryItems('AccountRoles',{limit:1});return p.items[0]?.role||null}catch{return null}}
 export async function ensureRole(role,locale='fr'){const d=getDemoSession();if(d)return d;const q=await queryItems('AccountRoles',{limit:1});if(q.items[0]){if(q.items[0].role!==role) await patchItemFields('AccountRoles',q.items[0]._id,{role,locale});return q.items[0]}return insertItem('AccountRoles',{role,onboardingDone:false,locale})}
 export async function roleRecord(){if(getDemoSession())return null;try{return (await queryItems('AccountRoles',{limit:1})).items[0]||null}catch{return null}}
