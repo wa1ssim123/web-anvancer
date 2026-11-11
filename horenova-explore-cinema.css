@@ -1,0 +1,59 @@
+/* HORENOVA Explore — cinematic arrival. Scoped to tourist/explore hero sections. */
+html{scroll-behavior:smooth}
+.hn12-page.v14-explore>.hn-cinema,.hn12-page.v14-tourist-page>.hn-cinema{
+  position:relative;isolation:isolate;overflow:hidden;display:block;margin:0;
+  border-radius:clamp(18px,2.1vw,34px);background:#111b17;color:#fff;
+  border:1px solid rgba(255,255,255,.16);
+  box-shadow:0 28px 65px rgba(0,0,0,.24);
+}
+.hn12-page.v14-explore>.hn-cinema{height:calc(100svh - 108px);min-height:610px;max-height:1150px}
+.hn12-page.v14-tourist-page>.hn-cinema{height:calc(90svh - 95px);min-height:550px;max-height:1000px}
+.hn-cinema__video,.hn-cinema__poster{
+  position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
+}
+.hn-cinema__poster{z-index:-3}
+.hn-cinema__video{z-index:-2;filter:saturate(.82) contrast(1.06) brightness(.82);transform:scale(1.018)}
+.hn-cinema>.shade{
+  position:absolute;z-index:-1;inset:0;
+  background:linear-gradient(180deg,rgba(4,9,12,.37) 0%,rgba(4,8,10,.08) 38%,rgba(5,9,12,.25) 65%,rgba(4,8,12,.78) 100%),
+             linear-gradient(90deg,rgba(4,8,12,.15),transparent 45%,rgba(4,8,12,.16));
+}
+.hn-cinema__top{position:absolute;z-index:4;left:clamp(24px,4.5vw,72px);right:clamp(24px,4.5vw,72px);top:clamp(24px,5vh,50px);display:flex;align-items:center;justify-content:space-between;gap:20px}
+.hn-cinema__eyebrow{font:700 11px/1.2 system-ui,sans-serif;letter-spacing:.26em;text-transform:uppercase;color:rgba(255,255,255,.88)}
+.hn-cinema__motion{appearance:none;display:flex;align-items:center;justify-content:center;min-width:92px;min-height:38px;padding:8px 16px;background:rgba(8,13,17,.22);border:1px solid rgba(255,255,255,.42);border-radius:99px;color:#fff;font:600 11px system-ui,sans-serif;letter-spacing:.08em;cursor:pointer;backdrop-filter:blur(15px);transition:background .2s}
+.hn-cinema__motion:hover,.hn-cinema__motion:focus-visible{background:rgba(8,13,17,.67);outline:2px solid #fff;outline-offset:3px}
+.hn-cinema__center{position:absolute;z-index:2;inset:0;display:flex;align-items:center;justify-content:center;padding:0 20px;pointer-events:none}
+.hn-cinema__word,.hn-cinema h1.hn-cinema__word{
+  display:block;width:auto;max-width:100%;margin:0!important;white-space:nowrap;text-align:center;
+  font-family:Arial,Helvetica,sans-serif!important;font-size:clamp(48px,13.5vw,215px)!important;
+  font-weight:800!important;line-height:.95!important;letter-spacing:-.077em!important;
+  color:rgba(255,255,255,.065)!important;-webkit-text-fill-color:rgba(255,255,255,.065);
+  -webkit-text-stroke:1.45px rgba(255,255,255,.86);text-shadow:0 2px 26px rgba(0,0,0,.13);
+  text-transform:uppercase;
+}
+@supports not (-webkit-text-stroke: 1px white){.hn-cinema__word,.hn-cinema h1.hn-cinema__word{color:rgba(255,255,255,.43)!important}}
+.hn-cinema__bottom{position:absolute;z-index:3;bottom:clamp(32px,6vh,85px);left:clamp(24px,4.5vw,72px);right:clamp(24px,4.5vw,72px);max-width:850px}
+.hn-cinema__index{font:700 11px/1.4 system-ui,sans-serif;letter-spacing:.24em;color:rgba(255,255,255,.7);text-transform:uppercase}
+.hn-cinema__bottom h2,.hn-cinema__bottom h1.hn-cinema__detail{
+  color:#fff;font:400 clamp(30px,4.5vw,66px)/1.09 Georgia,'Times New Roman',serif!important;
+  letter-spacing:-.035em!important;margin:14px 0 13px!important;text-wrap:balance;
+}
+.hn-cinema__bottom p{color:rgba(255,255,255,.79)!important;max-width:590px;margin:0 0 18px!important;line-height:1.6;font-size:clamp(13px,1.25vw,16px)}
+.hn-cinema__cta{display:inline-flex;align-items:center;gap:18px;padding:13px 20px;margin-top:4px;
+ border:1px solid rgba(255,255,255,.58);border-radius:99px;color:#fff!important;background:rgba(13,21,25,.12);
+ backdrop-filter:blur(12px);font:700 12px/1 system-ui,sans-serif;letter-spacing:.045em;text-decoration:none;
+ transition:background .2s,transform .2s}
+.hn-cinema__cta:hover,.hn-cinema__cta:focus-visible{background:rgba(255,255,255,.24);transform:translateY(-2px)}
+.hn-cinema__scroll{position:absolute;z-index:3;right:clamp(24px,4.5vw,72px);bottom:clamp(32px,6vh,85px);color:rgba(255,255,255,.76);writing-mode:vertical-rl;font:600 10px/1 system-ui,sans-serif;letter-spacing:.2em;text-transform:uppercase}
+#destinations,#explore-content{scroll-margin-top:90px}
+@media(max-width:700px){
+ .hn12-page.v14-explore>.hn-cinema{height:calc(100svh - 92px);min-height:560px;max-height:850px}
+ .hn12-page.v14-tourist-page>.hn-cinema{height:calc(89svh - 85px);min-height:540px;max-height:790px}
+ .hn-cinema__word,.hn-cinema h1.hn-cinema__word{font-size:clamp(46px,12.6vw,92px)!important;-webkit-text-stroke:1.1px rgba(255,255,255,.86)}
+ .hn-cinema__top{top:30px}.hn-cinema__motion{min-width:64px;padding:8px 10px}
+ .hn-cinema__bottom{bottom:54px;right:24px}
+ .hn-cinema__bottom h2,.hn-cinema__bottom h1.hn-cinema__detail{font-size:clamp(30px,8vw,43px)!important}
+ .hn-cinema__bottom p{max-width:330px;font-size:13px}
+ .hn-cinema__scroll{display:none}
+}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.hn-cinema__video{transform:none}.hn-cinema__cta{transition:none}}
