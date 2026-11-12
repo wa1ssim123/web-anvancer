@@ -143,6 +143,43 @@ async function run(){
    }catch(e){failures.push('Cinematic loop: '+e.message.slice(0,600));console.error('FAIL cinematic loop: '+e.message.slice(0,350));}
    finally{await context.close();}
   }
+  // Reproduce iOS Low Power Mode: browser refuses every programmatic video play.
+  // Animated backdrops must remain available, without native autoplay overlays.
+  for(const url of ['/','/academy.html','/shop.html','/explore.html','/shifts.html']){
+   const context=await browser.newContext({serviceWorkers:'block',viewport:{width:390,height:844},isMobile:true,hasTouch:true});
+   await context.addInitScript(()=>{
+    HTMLMediaElement.prototype.play=function(){
+     return Promise.reject(new DOMException('Simulated energy saving restriction','NotAllowedError'));
+    };
+   });
+   const page=await context.newPage();
+   const problems=[];page.on('pageerror',e=>problems.push(e.message));
+   try{
+    await page.goto(base+url,{waitUntil:'domcontentloaded',timeout:20000});
+    const decorative=await page.locator('video[muted][loop]').evaluateAll(vs=>vs.map(v=>({
+     autoplay:v.autoplay,controls:v.controls
+    })));
+    assert.ok(decorative.length>0,'No decorative video on '+url);
+    assert.ok(decorative.every(v=>!v.autoplay&&!v.controls),'Safari low-power native overlay may appear: '+JSON.stringify(decorative));
+    if(url==='/'){
+     await page.locator('.hn-intro-film').waitFor({state:'attached'});
+     const fallback=await page.locator('.hn-intro-film').evaluate(el=>getComputedStyle(el,'::before').animationName);
+     assert.notEqual(fallback,'none','Homepage must show animated poster');
+    }else if(url==='/shifts.html'){
+     await page.locator('video.hn-ambient-managed').waitFor({state:'attached',timeout:6000});
+     await page.locator('.hn-ambient-cover').first().waitFor({state:'attached',timeout:6000});
+    }else{
+     await page.locator('.hn-entry__video').waitFor({state:'attached'});
+     const fallback=await page.locator('.hn-entry').evaluate(el=>getComputedStyle(el,'::before').animationName);
+     assert.notEqual(fallback,'none','Intro poster should move even when video playback is denied');
+    }
+    assert.equal(problems.length,0,'Uncaught errors: '+problems.join(' / '));
+    console.log('PASS simulated Safari Low Power Mode: no native player, animated fallback '+url);
+   }catch(e){
+    failures.push('Low Power Mode '+url+': '+e.message.slice(0,550));
+    console.error('FAIL simulated Low Power Mode '+url+': '+e.message.slice(0,350));
+   }finally{await context.close();}
+  }
   // Real Chromium navigation for the two account screens. No test accounts are created.
   for(const startingMode of ['signin','signup']){
    const context=await browser.newContext({serviceWorkers:'block'});
