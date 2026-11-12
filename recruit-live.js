@@ -38,25 +38,41 @@ async function render(){
   grid.innerHTML=mine.length?mine.map(j=>`<article class='job-card-page'><div class='job-card-content'><small>${esc(j.kind||'Emploi')} · ${esc(j.role||'')}</small><h3>${esc(j.title||'Demande')}</h3><p>${esc(j.city||'')} · ${esc(j.requestStatus||'À examiner')}</p><strong>En cours de traitement Horenova</strong></div></article>`).join(''):`<div class='empty-state'><h3>Aucune demande envoyée.</h3><p>Votre première demande apparaîtra ici.</p></div>`;
  }catch(err){grid.innerHTML=`<div class='empty-state'><h3>Suivi indisponible</h3><p>Les demandes sont traitées par l’administration Horenova.</p></div>`;}
 }
+let pendingSync=null;
 form.addEventListener('submit',async event=>{
  event.preventDefault();
  if(!form.reportValidity())return;
  const btn=form.querySelector('button[type=submit]');
  const err=form.querySelector('[data-error]');
- btn.disabled=true;err.textContent='';status.textContent='Envoi de la demande…';
+ btn.disabled=true;err.textContent='';status.className='';
  try{
-  const d=Object.fromEntries(new FormData(form).entries());
-  d.requestStatus='À examiner';
-  const wixRequest=await insertItem('JobRequests',d);
-  try {
-    await hub('/api/recruiter-requests',{method:'POST',body:{...d,wixRequestId:wixRequest._id}});
-    status.textContent='✓ Demande reçue par HORENOVA. Le suivi et le chat seront ouverts après mise en relation.';
-  } catch(apiError) {
-    status.textContent='✓ Demande enregistrée dans Wix. Suivi central temporairement indisponible : '+apiError.message;
+  if(!pendingSync){
+   const data=Object.fromEntries(new FormData(form).entries());
+   data.title=String(data.title||'').trim();
+   data.businessName=String(data.businessName||'').trim();
+   if(data.title.length<4||data.businessName.length<2)throw Error('Le titre doit contenir 4 caractères et l’établissement 2 caractères minimum.');
+   data.requestStatus='À examiner';
+   status.textContent='Enregistrement de votre demande…';
+   const record=await insertItem('JobRequests',data);
+   pendingSync={data,id:record._id};
   }
-  form.elements.title.value='';form.elements.description.value='';
+  status.textContent='Transmission au suivi central HORENOVA…';
+  await hub('/api/recruiter-requests',{method:'POST',body:{
+   ...pendingSync.data,jobTitle:pendingSync.data.title,wixRequestId:pendingSync.id
+  }});
+  pendingSync=null;
+  status.className='recruit-status-ok';
+  status.textContent='✓ Demande enregistrée et reçue par HORENOVA. Notre équipe peut désormais la traiter.';
+  form.elements.title.value='';
+  form.elements.description.value='';
   await render();
- }catch(errObj){err.textContent=errObj?.message||String(errObj);status.textContent='';}
- finally{btn.disabled=false;}
+ }catch(error){
+  status.className='recruit-status-error';
+  const message=error?.message||String(error);
+  err.textContent=message;
+  status.textContent=pendingSync
+    ?'Demande enregistrée dans Wix, mais transmission centrale NON confirmée. Appuyez à nouveau sur Envoyer pour réessayer sans enregistrer de doublon.'
+    :'La demande n’a pas été enregistrée. Corrigez le formulaire puis réessayez.';
+ }finally{btn.disabled=false;}
 });
 await render();
