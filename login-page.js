@@ -42,7 +42,7 @@ function info(form,message){
 function changeMode(mode){
   activeMode=mode==='signup'?'signup':'signin';
   signin.hidden=activeMode!=='signin';signup.hidden=activeMode!=='signup';verify.hidden=true;
-  $('[data-auth-tab]').forEach(el=>{
+  $$('[data-auth-tab]').forEach(el=>{
     const on=el.dataset.authTab===activeMode;
     el.classList.toggle('active',on);
     el.setAttribute('aria-selected',String(on));
@@ -197,7 +197,7 @@ function failureMessage(r,fallback){
 }
 function init(){
  if(!signin||!signup||!verify)return;
- $('[data-auth-tab]').forEach(b=>b.addEventListener('click',()=>{
+ $$('[data-auth-tab]').forEach(b=>b.addEventListener('click',()=>{
    if(working)return;
    changeMode(b.dataset.authTab);
    // Preserve the selected screen through refresh/back navigation, including on iPhone.
