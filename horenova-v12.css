@@ -273,3 +273,192 @@ body[data-hn12] textarea:focus-visible{
 @media(prefers-reduced-motion:reduce){
   body[data-hn12="onboarding"] #onboardingNext{transition:none}
 }
+
+/* HORENOVA PRODUCTION UX AUDIT 2026-11-12 */
+
+/* HORENOVA PRODUCTION UX AUDIT 2026-11-12 */
+/* On a business workflow, the form is the landing content. Never bury it below a huge dark hero. */
+body[data-hn12="candidate"] .hn12-page>.hn12-hero,
+body[data-hn12="recruiter"] .hn12-page>.hn12-hero,
+body[data-hn12="recruit"] .hn12-page>.hn12-hero,
+body[data-hn12="admin"] .hn12-page>.hn12-hero,
+body[data-hn12="account"] .hn12-page>.hn12-hero,
+body[data-hn12="quiz"] .hn12-page>.hn12-hero,
+body[data-hn12="apply"] .hn12-page>.hn12-hero,
+body[data-hn12="profile"] .hn12-page>.hn12-hero{
+  display:none!important;
+}
+body[data-hn12] .hn12-page>[data-hn12-reveal],
+body[data-hn12] .hn12-page>[data-art-reveal]{
+  opacity:1!important;
+  transform:none!important;
+  visibility:visible!important;
+}
+body[data-hn12] .hn12-hero .bg,
+body[data-hn12] .hn12-hero .bg::after,
+body[data-hn12] .hn12-hero-art,
+body[data-hn12] .hn12-aside-art,
+body[data-hn12] .hn12-page::before,
+body[data-hn12] .hn12-page::after{
+  pointer-events:none!important;
+}
+body[data-hn12] [hidden]{display:none!important}
+body[data-hn12] .hn12-page>.hn12-section:first-of-type{
+  margin-top:0;
+}
+body[data-hn12] .hn12-paper,
+body[data-hn12] .wizard-form,
+body[data-hn12] .recruit-form,
+body[data-hn12] .recruit-aside,
+body[data-hn12] .profile-card-main,
+body[data-hn12] .account-dashboard-live{
+  color:#172521!important;
+}
+body[data-hn12] .wizard-form :is(h1,h2,h3,h4),
+body[data-hn12] .recruit-form :is(h1,h2,h3,h4),
+body[data-hn12] .recruit-aside :is(h1,h2,h3,h4),
+body[data-hn12] .hn12-paper .hn12-section-head :is(h1,h2,h3),
+body[data-hn12] .wizard-form .form-section>span{
+  color:#10261f!important;
+}
+body[data-hn12] .wizard-form :is(p,label,small,.microcopy),
+body[data-hn12] .recruit-form :is(p,label,small),
+body[data-hn12] .recruit-aside p{
+  color:#46554f!important;
+}
+body[data-hn12] .wizard-form :is(input,textarea,select),
+body[data-hn12] .recruit-form :is(input,textarea,select){
+  color:#182822!important;
+  background:#fff!important;
+  border-color:#c6cfc7!important;
+  font-size:max(16px,1rem)!important;
+  opacity:1!important;
+}
+body[data-hn12] .wizard-form :is(input,textarea,select)::placeholder,
+body[data-hn12] .recruit-form :is(input,textarea,select)::placeholder{
+  color:#65736c!important;
+  opacity:1;
+}
+body[data-hn12] .wizard-form :is(input,textarea,select):focus,
+body[data-hn12] .recruit-form :is(input,textarea,select):focus{
+  border-color:#d65b31!important;
+  outline:3px solid rgba(225,101,49,.2)!important;
+  outline-offset:2px;
+}
+body[data-hn12] .wizard-form input[type="file"]{
+  display:block;
+  width:100%;
+  padding:14px!important;
+  min-height:62px;
+  background:#fff!important;
+  color:#162922!important;
+  border:1px solid #bec9bd!important;
+  border-radius:14px;
+  cursor:pointer;
+  touch-action:manipulation;
+}
+body[data-hn12] .wizard-form input[type="file"]::file-selector-button{
+  display:inline-block;
+  margin-right:14px;
+  padding:11px 16px;
+  min-height:44px;
+  color:#fff;
+  background:#173e31;
+  border:0;
+  border-radius:10px;
+  font-weight:750;
+  cursor:pointer;
+}
+body[data-hn12] .wizard-form #uploadStatus,
+body[data-hn12] .wizard-form .form-section.video-upload-section h3,
+body[data-hn12] .wizard-form .video-upload-section>p,
+body[data-hn12] .wizard-form .consent-line,
+body[data-hn12] .wizard-form .consent-line span{
+  color:#1c3028!important;
+  opacity:1!important;
+}
+body[data-hn12] .wizard-form .form-section.video-upload-section{
+  background:rgba(255,255,255,.50);
+  border:1px solid #deddd4;
+  border-radius:19px;
+  padding:clamp(15px,3vw,28px);
+}
+body[data-hn12] :is(.wizard-form,.recruit-form) .form-error,
+body[data-hn12] :is(.wizard-form,.recruit-form) .recruit-status-error{
+  color:#a42317!important;
+  font-weight:700;
+  line-height:1.55;
+}
+body[data-hn12] .recruit-form .recruit-status-ok{
+  color:#15593f!important;
+  font-weight:750;
+  line-height:1.55;
+}
+body[data-hn12] .recruit-form .recruit-status-error{
+  color:#b12921!important;
+  font-weight:750;
+}
+body[data-hn12] .wizard-form button[type="submit"],
+body[data-hn12] .recruit-form button[type="submit"]{
+  min-height:56px;
+  font-size:15px!important;
+  touch-action:manipulation;
+  position:relative;
+  z-index:2;
+}
+body[data-hn12] :is(.wizard-form,.recruit-form) button[type="submit"]:disabled{
+  opacity:.65!important;
+  cursor:wait;
+}
+body[data-hn12="admin"] #adminGate{
+  display:block!important;
+  width:100%;
+  max-width:100%;
+  padding:12px clamp(12px,2vw,30px) 34px!important;
+  grid-template-columns:none!important;
+}
+body[data-hn12="admin"] #adminGate .hub-root{
+  width:100%;
+  max-width:1400px;
+}
+body[data-hn12="recruit"] #recruitGate{
+  width:100%;
+  max-width:100%;
+}
+@media(max-width:960px){
+  body[data-hn12] .hn12-page{padding-top:82px!important}
+  body[data-hn12] .hn12-page>.hn12-hero{
+    min-height:270px!important;
+    max-height:none;
+    border-radius:22px;
+  }
+  body[data-hn12] .hn12-hero-copy{
+    padding:45px 20px 25px!important;
+  }
+  body[data-hn12] .hn12-hero h1{
+    font-size:clamp(39px,10vw,56px)!important;
+    line-height:1.05;
+  }
+  body[data-hn12] .hn12-hero p{
+    font-size:15px!important;
+    color:#f1e9db!important;
+    line-height:1.55;
+  }
+  body[data-hn12] .hn12-hero-art{display:none!important}
+  body[data-hn12="talents"] .hn12-hero,
+  body[data-hn12="academy"] .hn12-hero,
+  body[data-hn12="explore"] .hn12-hero{
+    min-height:285px!important;
+  }
+  body[data-hn12] .profile-wizard,
+  body[data-hn12] .recruiter-wizard{
+    display:grid;
+    grid-template-columns:1fr!important;
+    gap:14px;
+  }
+  body[data-hn12] .wizard-form{
+    padding:clamp(16px,4vw,27px)!important;
+    border-radius:19px!important;
+  }
+  body[data-hn12="admin"] #adminGate{padding:8px!important}
+}
