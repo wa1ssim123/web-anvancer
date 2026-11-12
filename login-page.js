@@ -1,4 +1,4 @@
-import { login, register, verifyEmail, subscribeMember, getMemberState, refreshMember } from "/js/wix/member-store.js";
+import { login, register, verifyEmail, logout, subscribeMember, getMemberState, refreshMember } from "/js/wix/member-store.js";
 import { queryItems, insertItem } from "/js/wix/items.js";
 import { prepareCaptcha, captchaTokensFor, resetCaptcha, invisibleCaptchaTokens } from "/wix-captcha.js";
 
@@ -17,7 +17,8 @@ function validReturn(value){
 const safeReturn=validReturn(requestedReturn);
 const HINT_KEY='horenova-session-hint-v1';
 let selectedRole='candidate',pendingRole=null,working=false,navigating=false,initialCheckComplete=false;
-let existingCompletionMode=false;
+let existingCompletionMode=false,registeredSession=false;
+let activeMode=requestedMode;
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const signin=$('#signinForm'),signup=$('#signupForm'),verify=$('#verifyForm');
 const supportedRoles=['candidate','recruiter'];
@@ -38,9 +39,14 @@ function info(form,message){
   node.textContent=message||'';
 }
 function changeMode(mode){
-  signin.hidden=mode!=='signin';signup.hidden=mode!=='signup';verify.hidden=true;
-  $$('[data-auth-tab]').forEach(el=>el.classList.toggle('active',el.dataset.authTab===mode));
-  if(mode==='signup'&&!existingCompletionMode){
+  activeMode=mode==='signup'?'signup':'signin';
+  signin.hidden=activeMode!=='signin';signup.hidden=activeMode!=='signup';verify.hidden=true;
+  $('[data-auth-tab]').forEach(el=>{
+    const on=el.dataset.authTab===activeMode;
+    el.classList.toggle('active',on);
+    el.setAttribute('aria-selected',String(on));
+  });
+  if(activeMode==='signup'&&!existingCompletionMode){
     const state=getMemberState();
     if(!state.loading && !state.loggedIn) {
       prepareCaptcha(signup).catch(e=>{
@@ -48,6 +54,48 @@ function changeMode(mode){
       });
     }
   }
+}
+function showRegisteredAccount(){
+  if(!verifiedMember()||existingCompletionMode)return;
+  registeredSession=true;
+  // A second account cannot be registered while Wix has authenticated a first one.
+  // Never silently switch roles or redirect the Create account tab back to Sign in.
+  changeMode('signup');
+  signup.querySelector('.role-choice').hidden=true;
+  for(const field of signup.querySelectorAll('input')){
+    field.required=false;
+    field.disabled=true;
+    const label=field.closest('label');if(label)label.hidden=true;
+  }
+  signup.querySelector('[data-captcha-area]').hidden=true;
+  signup.querySelector('button[type="submit"]').hidden=true;
+  let block=signup.querySelector('[data-switch-account]');
+  if(!block){
+    block=document.createElement('div');
+    block.dataset.switchAccount='1';
+    const message=document.createElement('p');
+    message.textContent='Vous êtes déjà connecté à un compte HORENOVA. Pour créer un autre compte avec une autre adresse e-mail, déconnectez-vous d’abord.';
+    message.style.cssText='font-size:14px;line-height:1.7;color:#293329';
+    const link=document.createElement('a');link.href='/account.html';link.textContent='Ouvrir mon espace ↗';
+    link.style.cssText='display:block;color:#173c34;font-weight:700;margin:12px 0';
+    const button=document.createElement('button');button.type='button';button.className='cta-main';
+    button.textContent='Me déconnecter et créer un autre compte';
+    button.addEventListener('click',async()=>{
+      if(working)return;
+      working=true;button.disabled=true;err(signup,'');
+      try{await logout('/enter.html?mode=signup');}
+      catch(e){err(signup,e.message||'Déconnexion impossible.');working=false;button.disabled=false;}
+    });
+    block.append(message,link,button);
+    signup.append(block);
+  }
+}
+function restoreSignupForVisitor(){
+  registeredSession=false;existingCompletionMode=false;
+  signup.querySelector('.role-choice').hidden=false;
+  signup.querySelector('button[type="submit"]').hidden=false;
+  signup.querySelector('[data-switch-account]')?.remove();
+  restoreSignupFields();
 }
 function updateButton(form,text){
   const b=form.querySelector('button[type="submit"]');
@@ -81,7 +129,10 @@ async function ensureRole(role){
   return stored;
 }
 function finishExistingMode(){
-  existingCompletionMode=true;
+  existingCompletionMode=true;registeredSession=false;
+  signup.querySelector('[data-switch-account]')?.remove();
+  signup.querySelector('.role-choice').hidden=false;
+  signup.querySelector('button[type="submit"]').hidden=false;
   err(signup,'');
   changeMode('signup');
   for(const name of ['firstName','lastName','email','password']){
@@ -114,13 +165,8 @@ async function checkSession(){
     const role=await existingRole();
     if(working||navigating)return;
     if(role){
-      // Explicit registration page remains usable; do not redirect while selecting a role.
-      if(requestedMode==='signup'){
-        changeMode('signin');
-        info(signin,'Vous êtes déjà connecté. Votre compte est prêt. Vous pouvez ouvrir votre espace.');
-        const link=document.createElement('a');link.href='/account.html';link.textContent='Ouvrir mon espace ↗';
-        link.style.cssText='display:inline-block;color:#243a30;font-weight:700;margin-top:8px;';
-        if(!signin.querySelector('[data-account-link]')){link.dataset.accountLink='1';signin.append(link)}
+      if(activeMode==='signup'){
+        showRegisteredAccount();
       } else {
         go(roleDestination(role));
       }
@@ -147,10 +193,19 @@ function failureMessage(r,fallback){
 }
 function init(){
  if(!signin||!signup||!verify)return;
- $$('[data-auth-tab]').forEach(b=>b.addEventListener('click',()=>{
+ $('[data-auth-tab]').forEach(b=>b.addEventListener('click',()=>{
    if(working)return;
    changeMode(b.dataset.authTab);
-   if(verifiedMember())checkSession();
+   if(verifiedMember()){
+     if(activeMode==='signup'){
+       if(existingCompletionMode)finishExistingMode();
+       else if(registeredSession)showRegisteredAccount();
+       else void checkSession();
+     }
+     // A tab click is never a navigation to another page. Sign-in remains visible.
+   }else if(activeMode==='signup'&&registeredSession){
+     restoreSignupForVisitor();
+   }
  }));
  $$('[data-role]').forEach(b=>b.addEventListener('click',()=>{
    if(working)return;
@@ -181,7 +236,7 @@ function init(){
    finally{working=false;btn.disabled=false;btn.textContent=old;}
  });
  signup.addEventListener('submit',async event=>{
-   event.preventDefault();if(working||navigating||!signup.reportValidity())return;
+   event.preventDefault();if(working||navigating||registeredSession||!signup.reportValidity())return;
    working=true;err(signup,'');const btn=signup.querySelector('button[type="submit"]');const old=btn.textContent;
    updateButton(signup,verifiedMember()?'Enregistrement…':'Création…');pendingRole=selectedRole;
    try{
