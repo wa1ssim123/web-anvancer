@@ -10,9 +10,9 @@ document.getElementById('applyJob').innerHTML='<span>'+esc(role)+'</span><h2>'+e
 const box=document.getElementById('applyChecks');
 let profile,passed=false,score=0,publicProfile=null;
 try{
- profile=(await queryItems('CandidateProfiles',{limit:1})).items[0]||null;
- publicProfile=(await queryItems('CandidatePublicProfiles',{limit:1})).items[0]||null;
- const attempts=(await queryItems('QuizAttempts',{filters:[{field:'jobFamily',op:'eq',value:role}],limit:50})).items;
+ profile=(await queryItems('CandidateProfiles',{filters:[{field:'_owner',op:'eq',value:auth.member.id}],limit:1})).items[0]||null;
+ publicProfile=(await queryItems('CandidatePublicProfiles',{filters:[{field:'_owner',op:'eq',value:auth.member.id}],limit:1})).items[0]||null;
+ const attempts=(await queryItems('QuizAttempts',{filters:[{field:'jobFamily',op:'eq',value:role},{field:'_owner',op:'eq',value:auth.member.id}],limit:50})).items;
  const best=attempts.filter(a=>a.passed).sort((a,b)=>(b.score||0)-(a.score||0))[0];
  passed=!!best;score=best?.score||0;
 }catch(e){box.textContent='Impossible de vérifier le profil. '+e.message;throw e;}
@@ -47,7 +47,7 @@ else if(ready){
     const centralCase=result?.item;
     if(!centralCase?.id)throw Error('Le serveur n’a pas confirmé l’identifiant de la candidature.');
     try{
-      const existing=(await queryItems('Applications',{filters:[{field:'jobId',op:'eq',value:jobId}],limit:1})).items;
+      const existing=(await queryItems('Applications',{filters:[{field:'jobId',op:'eq',value:jobId},{field:'_owner',op:'eq',value:auth.member.id}],limit:1})).items;
       if(!existing.length)await insertItem('Applications',{
         jobId,jobTitle:title,businessName:'Employeur partenaire HORENOVA',
         candidatePublicProfileId:publicProfile?._id||'',quizScore:score,
