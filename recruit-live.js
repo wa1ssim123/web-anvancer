@@ -32,11 +32,38 @@ const status=document.getElementById('recruitStatus');
 async function render(){
  const grid=document.getElementById('liveRecruitJobs');
  if(!grid)return;
- try{
-  const result=await queryItems('JobRequests',{limit:50,sort:[{field:'_createdDate',direction:'desc'}]});
-  const mine=(result.items||[]).filter(j=>!auth.member?.id||j._owner===auth.member.id);
-  grid.innerHTML=mine.length?mine.map(j=>`<article class='job-card-page'><div class='job-card-content'><small>${esc(j.kind||'Emploi')} · ${esc(j.role||'')}</small><h3>${esc(j.title||'Demande')}</h3><p>${esc(j.city||'')} · ${esc(j.requestStatus||'À examiner')}</p><strong>En cours de traitement Horenova</strong></div></article>`).join(''):`<div class='empty-state'><h3>Aucune demande envoyée.</h3><p>Votre première demande apparaîtra ici.</p></div>`;
- }catch(err){grid.innerHTML=`<div class='empty-state'><h3>Suivi indisponible</h3><p>Les demandes sont traitées par l’administration Horenova.</p></div>`;}
+ const results=await Promise.allSettled([
+  hub('/api/recruiter-requests'),
+  queryItems('JobRequests',{limit:50,sort:[{field:'_createdDate',direction:'desc'}]})
+ ]);
+ const central=results[0].status==='fulfilled'?(results[0].value.items||[]):null;
+ const saved=results[1].status==='fulfilled'?(results[1].value.items||[]):[];
+ const mine=saved.filter(j=>!auth.member?.id||!j._owner||j._owner===auth.member.id);
+ const delivered=new Set((central||[]).map(j=>j.wix_request_id).filter(Boolean));
+ const centralCards=(central||[]).map(j=>'<article class="job-card-page"><div class="job-card-content"><small>'+esc(j.kind||'Emploi')+' · '+esc(j.job_role||'')+'</small><h3>'+esc(j.job_title||'Demande')+'</h3><p>'+esc(j.city||'')+' · '+esc(j.business_name||'')+'</p><strong>✓ Reçue par HORENOVA · à examiner</strong></div></article>').join('');
+ const legacy=mine.filter(j=>!central||!delivered.has(j._id));
+ const legacyCards=legacy.map(j=>'<article class="job-card-page"><div class="job-card-content"><small>'+esc(j.kind||'Emploi')+' · '+esc(j.role||'')+'</small><h3>'+esc(j.title||'Demande')+'</h3><p>'+esc(j.city||'')+' · '+esc(j.businessName||'')+'</p><strong>'+(central?'Enregistrée dans Wix · suivi à synchroniser':'Enregistrée dans Wix · vérification du suivi indisponible')+'</strong>'+(central&&auth.role==='recruiter'?'<p><button type="button" class="soft-btn" data-sync="'+esc(j._id)+'">Synchroniser cette demande</button></p>':'')+'</div></article>').join('');
+ const warning=central===null?'<div class="empty-state">La connexion au suivi central est momentanément indisponible. Aucune synchronisation ne peut être confirmée.</div>':'';
+ grid.innerHTML=warning+centralCards+legacyCards || '<div class="empty-state"><h3>Aucune demande envoyée.</h3><p>Votre première demande apparaîtra ici.</p></div>';
+ grid.querySelectorAll('[data-sync]').forEach(button=>button.addEventListener('click',async()=>{
+  const request=legacy.find(j=>j._id===button.dataset.sync);
+  if(!request)return;
+  button.disabled=true;
+  status.className='';
+  status.textContent='Synchronisation de votre ancienne demande…';
+  try{
+   await hub('/api/recruiter-requests',{method:'POST',body:{
+    ...request,jobTitle:request.title,wixRequestId:request._id
+   }});
+   status.className='recruit-status-ok';
+   status.textContent='✓ Ancienne demande synchronisée avec HORENOVA.';
+   await render();
+  }catch(error){
+   status.className='recruit-status-error';
+   status.textContent='Synchronisation impossible : '+(error?.message||String(error));
+   button.disabled=false;
+  }
+ }));
 }
 let pendingSync=null;
 form.addEventListener('submit',async event=>{
