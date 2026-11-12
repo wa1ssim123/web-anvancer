@@ -1,5 +1,5 @@
 // HORENOVA PWA: cache public static assets only, never personalized pages or account data.
-const CACHE = 'horenova-public-v6-ux-quality';
+const CACHE = 'horenova-public-v7-qa-20261112';
 const OFFLINE = '/offline.html';
 const CORE = [OFFLINE, '/styles.css', '/horenova-v12.css', '/horenova-interior-v14.css', '/favicon.svg'];
 self.addEventListener('install', event => {
