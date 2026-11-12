@@ -21,6 +21,7 @@ function harness(){
   async query(sql,args=[]){
    log.db.push({sql,args});
    if(sql.startsWith('SELECT 1'))return {rows:[{ok:1}],rowCount:1};
+   if(sql.startsWith('SELECT * FROM hr_applications WHERE id=$1'))return {rows:[{id:requestId,candidate_wix_id:'candidate-1',recruiter_wix_id:'recruiter-1',consent_to_intro:true}],rowCount:1};
    if(sql.startsWith('UPDATE hr_recruiter_requests'))return {rows:[{id:requestId,status:args[0]}],rowCount:1};
    if(sql.startsWith('INSERT INTO hr_applications'))return {rows:[{
      id:requestId,job_id:'job-1',job_title:'Service',job_role:'Serveur',
