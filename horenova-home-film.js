@@ -36,54 +36,116 @@
  const ios=/iPad|iPhone|iPod/.test(navigator.userAgent)||
    (navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
  if(ios){
-  // iOS Low Power Mode can reject autoplay. Never expose its native play icon:
-  // keep the high-quality opaque 24fps WebP visible until a silent MP4 is
-  // actually playing, then atomically promote the H.264 hardware-decoded movie.
+  // Keep the original desktop cinematic code below untouched. Safari can
+  // prohibit muted autoplay (notably in Low Power Mode), so never run the
+  // costly full-frame animated WebP fallback on mobile devices.
   clips.forEach(video=>{video.pause();video.remove();});
   film.classList.add('hn-ios-loop-active');
-  const native=document.createElement('video');
-  native.className='hn-ios-native-hq';
-  native.muted=true;native.defaultMuted=true;native.autoplay=true;
-  native.loop=true;native.playsInline=true;native.controls=false;
-  native.disablePictureInPicture=true;native.disableRemotePlayback=true;
-  native.preload='metadata';
-  native.setAttribute('muted','');
-  native.setAttribute('playsinline','');
-  native.setAttribute('webkit-playsinline','');
-  native.setAttribute('aria-hidden','true');
-  native.removeAttribute('controls');
-  native.src='/assets/horenova-cinema-mobile-hq.mp4';
-  let removed=false;
-  const hideNative=()=>{
-   native.classList.remove('is-playing-hq');
-   film.classList.remove('hn-ios-native-playing');
+  const cover=film.querySelector('.hn-ios-motion');
+  if(cover){
+   cover.src='/assets/horenova-mobile-tourism-poster.jpg';
+   cover.removeAttribute('srcset');
+   cover.hidden=false;
+  }
+  const movie=document.createElement('video');
+  movie.className='hn-ios-native-hq hn-ios-native-premium';
+  movie.setAttribute('muted','');
+  movie.setAttribute('playsinline','');
+  movie.setAttribute('webkit-playsinline','');
+  movie.setAttribute('aria-hidden','true');
+  movie.setAttribute('disableremoteplayback','');
+  movie.muted=true;
+  movie.defaultMuted=true;
+  movie.autoplay=true;
+  movie.loop=true;
+  movie.playsInline=true;
+  movie.controls=false;
+  movie.disablePictureInPicture=true;
+  movie.disableRemotePlayback=true;
+  movie.preload='auto';
+  movie.poster='/assets/horenova-mobile-tourism-poster.jpg';
+  movie.src='/assets/horenova-mobile-cinema-1080p30.mp4';
+  movie.removeAttribute('controls');
+  film.append(movie);
+  let closed=false,requesting=false,started=false,gate=null;
+  const ensureGate=()=>{
+   if(closed||started||gate)return;
+   gate=document.createElement('button');
+   gate.type='button';
+   gate.className='hn-ios-enable-hd';
+   gate.textContent='Activer la vidéo HD';
+   gate.setAttribute('aria-label','Activer la vidéo HD à vitesse normale');
+   gate.addEventListener('click',event=>{
+    event.stopPropagation();
+    // Direct user gesture is essential for Safari's media permission.
+    requestPlay();
+   });
+   intro.querySelector('.hn-intro-inner')?.append(gate);
   };
-  const removeNative=()=>{
-   if(removed)return;
-   removed=true;hideNative();
-   native.pause();native.removeAttribute('src');native.remove();
-  };
-  const revealNative=()=>{
-   if(removed||native.paused||native.readyState<2)return;
-   native.classList.add('is-playing-hq');
+  const hideGate=()=>{gate?.remove();gate=null;};
+  const reveal=()=>{
+   if(closed||movie.paused||movie.readyState<2)return;
+   started=true;
    film.classList.add('hn-ios-native-playing');
+   movie.classList.add('is-playing-hq');
+   hideGate();
   };
-  native.addEventListener('playing',revealNative);
-  native.addEventListener('canplay',revealNative);
-  native.addEventListener('pause',hideNative);
-  native.addEventListener('error',removeNative);
-  film.appendChild(native);
-  try{
-   const result=native.play();
-   Promise.resolve(result).then(revealNative).catch(removeNative);
-  }catch(e){removeNative();}
-  intro.querySelector('button')?.addEventListener('click',()=>{
-   setTimeout(removeNative,800);
+  const requestPlay=()=>{
+   if(closed)return;
+   // Do not await fetch, load or any timer before invoking play().
+   try{
+    const promise=movie.play();
+    requesting=true;
+    Promise.resolve(promise).then(()=>{
+     requesting=false;
+     if(movie.paused){ensureGate();return;}
+     reveal();
+    }).catch(()=>{
+     requesting=false;
+     film.classList.remove('hn-ios-native-playing');
+     movie.classList.remove('is-playing-hq');
+     ensureGate();
+    });
+   }catch(error){requesting=false;ensureGate();}
+  };
+  movie.addEventListener('playing',reveal);
+  movie.addEventListener('canplay',()=>{if(!movie.paused)reveal();});
+  movie.addEventListener('pause',()=>{
+   if(closed)return;
+   started=false;
+   film.classList.remove('hn-ios-native-playing');
+   movie.classList.remove('is-playing-hq');
+  });
+  movie.addEventListener('error',()=>{
+   if(closed)return;
+   film.classList.remove('hn-ios-native-playing');
+   movie.classList.remove('is-playing-hq');
+   ensureGate();
+  });
+  // A tap anywhere on the cinematic screen may also unlock playback.
+  intro.addEventListener('touchend',event=>{
+   if(!started&&!closed&&!event.target.closest('button'))requestPlay();
+  },{passive:true});
+  intro.addEventListener('pointerdown',event=>{
+   if(!started&&!closed&&!event.target.closest('button'))requestPlay();
+  },{passive:true});
+  // One automatic attempt; if blocked, show an explicit user-gesture control.
+  requestPlay();
+  intro.querySelector('.hn-intro-inner>button')?.addEventListener('click',()=>{
+   closed=true;
+   hideGate();
+   setTimeout(()=>{
+    movie.pause();
+    movie.removeAttribute('src');
+    movie.remove();
+   },1000);
   },{once:true});
   document.addEventListener('visibilitychange',()=>{
-   if(document.hidden)hideNative();
-   else if(!removed){
-    Promise.resolve(native.play()).then(revealNative).catch(removeNative);
+   if(closed)return;
+   if(document.hidden){
+    movie.pause();
+   }else if(!requesting){
+    requestPlay();
    }
   });
   return;
