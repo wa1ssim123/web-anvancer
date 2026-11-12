@@ -18,26 +18,29 @@ jobs:
           # CDN may need a moment to expose a just-published static build.
           for i in $(seq 1 10); do
             curl -fsSL --connect-timeout 8 --max-time 18 "https://horenova.com/?deploycheck=${GITHUB_RUN_ID}-${i}" -o /tmp/home
-            if grep -q 'hn-ios-motion' /tmp/home && grep -q 'fullframe-20261112-2' /tmp/home; then break; fi
+            if grep -q 'hn-ios-motion' /tmp/home && grep -q 'hd24-20261112-1' /tmp/home; then break; fi
             sleep 6
           done
           grep -q 'hn-ios-motion' /tmp/home
-          grep -q 'fullframe-20261112-2' /tmp/home
-          grep -q 'horenova-home-film-iphone-final.css' /tmp/home
+          grep -q 'hd24-20261112-1' /tmp/home
+          grep -q 'horenova-home-film-hq.css' /tmp/home
           curl -fsSL --connect-timeout 8 --max-time 22 "https://horenova.com/horenova-home-film.js?deploycheck=${GITHUB_RUN_ID}" -o /tmp/film.js
           grep -q 'fitIntroHeading' /tmp/film.js
           grep -q 'hn-ios-loop-active' /tmp/film.js
-          curl -fsSL --connect-timeout 8 --max-time 25 "https://horenova.com/horenova-home-film-iphone-final.css?deploycheck=${GITHUB_RUN_ID}" -o /tmp/film.css
+          curl -fsSL --connect-timeout 8 --max-time 25 "https://horenova.com/horenova-home-film-hq.css?deploycheck=${GITHUB_RUN_ID}" -o /tmp/film.css
           wc -c /tmp/home /tmp/film.js /tmp/film.css
-          grep -q 'Fixed-frame GIF renderer' /tmp/film.css
-          grep -q 'horenova-cinema-mobile.gif' /tmp/home
-          curl -fsSL --connect-timeout 8 --max-time 45 "https://horenova.com/assets/horenova-cinema-mobile.gif?deploycheck=${GITHUB_RUN_ID}" -o /tmp/loop.gif
+          grep -q 'High-quality iOS playback' /tmp/film.css
+          grep -q 'horenova-cinema-mobile-hq.webp' /tmp/home
+          curl -fsSL --connect-timeout 8 --max-time 45 "https://horenova.com/assets/horenova-cinema-mobile-hq.webp?deploycheck=${GITHUB_RUN_ID}" -o /tmp/loop.webp
+          curl -fsSL --connect-timeout 8 --max-time 45 "https://horenova.com/assets/horenova-cinema-mobile-hq.mp4?deploycheck=${GITHUB_RUN_ID}" -o /tmp/movie.mp4
           python - <<'PY'
           from pathlib import Path
-          p=Path('/tmp/loop.gif')
-          data=p.read_bytes()
-          assert data[:6] in (b'GIF87a',b'GIF89a'), 'Not a GIF'
-          assert len(data)>500000, 'Animation too small'
-          print('PASS complete-frame GIF on the official domain',p.stat().st_size,'bytes')
+          webp=Path('/tmp/loop.webp').read_bytes()
+          mp4=Path('/tmp/movie.mp4').read_bytes()
+          assert webp[:4]==b'RIFF' and webp[8:12]==b'WEBP'
+          assert webp.count(b'ANMF')>=140,'24fps animation frames missing'
+          assert 5_000_000<len(webp)<30_000_000,'Unexpected HD WebP file size'
+          assert b'ftyp' in mp4[:32] and len(mp4)>700_000,'Not HD MP4'
+          print('PASS official HORENOVA: opaque 24fps WebP',len(webp),'bytes and H264 MP4',len(mp4),'bytes')
           PY
           echo 'PASS: HORENOVA official domain serves new mobile layout, film controller and moving Safari fallback'
