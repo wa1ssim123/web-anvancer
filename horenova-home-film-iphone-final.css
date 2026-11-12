@@ -1,0 +1,173 @@
+/* Cinematic 4K Morocco + cuisine intro, preserving all existing intro text and the ENTRER button. */
+.hn-intro{background:#101316!important;isolation:isolate}
+.hn-intro-film{position:absolute;inset:0;overflow:hidden;z-index:0;background:#101316 url("https://static.wixstatic.com/media/d0158d_93b5716ed6c849d28888a69876201330f002.jpg") center center/cover no-repeat;pointer-events:none}
+.hn-film-clip{position:absolute;inset:0;width:100%;height:100%;display:block;object-fit:cover;object-position:center center;opacity:0;transition:opacity 1.45s ease;filter:saturate(.97) contrast(1.03);pointer-events:none;transform:translateZ(0)}
+.hn-film-clip.is-active{opacity:1}
+.hn-intro::after{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;
+background:radial-gradient(ellipse 48% 47% at 50% 50%,rgba(5,9,12,.60),rgba(5,9,12,.12) 75%,rgba(5,9,12,.23)),linear-gradient(180deg,rgba(4,6,9,.30),rgba(4,6,9,.04) 32%,rgba(4,6,9,.22))}
+.hn-intro-inner{position:relative;z-index:2;padding:24px 30px;text-align:center;max-width:96vw;text-shadow:0 3px 26px rgba(0,0,0,.85)}
+.hn-intro h1{color:#fff!important;text-shadow:0 3px 38px rgba(0,0,0,.78),0 0 20px rgba(255,255,255,.09)}
+.hn-intro p,.hn-intro small{color:rgba(255,255,255,.92)!important;text-shadow:0 2px 17px #000}
+.hn-intro button{border-color:rgba(255,255,255,.72)!important;background:rgba(6,12,16,.23)!important;backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px);min-width:102px;min-height:42px;font-size:10px!important;cursor:pointer;transition:background .25s ease,transform .25s ease}
+.hn-intro button:hover{background:rgba(7,12,16,.57)!important;transform:translateY(-2px)}
+.hn-intro button:focus-visible{outline:3px solid white;outline-offset:4px}
+@media(max-width:650px){.hn-intro h1{font-size:clamp(47px,13vw,76px)!important;letter-spacing:-.06em!important}.hn-intro-inner{padding:20px}.hn-intro p{font-size:13px}}
+@media(prefers-reduced-motion:reduce){.hn-film-clip{transition:none}}
+
+
+/* HORENOVA mobile navigation: the brand has its own unobstructed row.
+ * Language stays at the top right; account CTA spans the entire second row. */
+.hn-home-head,.hn-home-head *{box-sizing:border-box}
+.hn-home-brand{min-width:0;max-width:none!important;text-decoration:none}
+.hn-home-brand strong{white-space:nowrap;text-decoration:none}
+.hn-home-brand small{white-space:nowrap;line-height:1.4}
+.hn-home-actions{min-width:0;align-items:center}
+.hn-home-actions a{text-decoration:none}
+@media(max-width:700px){
+ .hn-home-head{
+  display:grid!important;grid-template-columns:minmax(0,1fr) 68px;
+  grid-template-rows:auto auto;grid-template-areas:"brand lang" "signup signup";
+  gap:11px!important;align-items:center!important;
+  left:10px;right:10px;top:10px;padding:13px!important;
+  max-width:calc(100vw - 20px);border-radius:24px;
+ }
+ .hn-home-head .hn-home-brand{
+  grid-area:brand;min-width:0;max-width:none!important;width:auto!important;
+  display:flex;align-items:center;gap:10px;overflow:visible;
+ }
+ .hn-home-brand img{flex:0 0 36px;width:36px;height:auto}
+ .hn-home-brand strong{font-size:clamp(20px,6vw,27px);line-height:1.1;letter-spacing:-.035em}
+ .hn-home-brand small{font-size:clamp(6px,1.9vw,8px);letter-spacing:.13em;white-space:normal}
+ .hn-home-actions{display:contents!important}
+ .hn-home-actions a[href*="signin"]{display:none!important}
+ .hn-home-actions a.primary{
+  grid-area:signup;display:flex!important;align-items:center;justify-content:center;
+  min-width:0;width:100%;min-height:44px;padding:12px 14px!important;
+  margin:0;white-space:nowrap;line-height:1.25;
+  text-decoration:none;position:static!important;font-size:13px!important;
+  background:#f6f0e5;color:#090b12;border-radius:14px;
+ }
+ .hn-home-actions #hn-language-control{
+  grid-area:lang;justify-self:end;min-width:57px;max-width:68px;height:43px;margin:0;
+ }
+ .hn-home-hero{padding-top:195px!important}
+}
+@media(min-width:701px) and (max-width:950px){
+ .hn-home-head{gap:12px}
+ .hn-home-brand{flex:1 1 auto;min-width:0}
+ .hn-home-actions{flex:0 0 auto}
+}
+@media(max-width:355px){
+ .hn-home-brand img{flex-basis:30px;width:30px}
+ .hn-home-brand strong{font-size:19px}
+ .hn-home-head{grid-template-columns:minmax(0,1fr) 57px;padding:10px!important}
+ .hn-home-hero{padding-top:185px!important}
+}
+
+/* Decorative full-bleed videos must not present player UI or a big play button. */
+.hn-intro-film video,.hn-cinema-strip video,.hn-academy-film video{
+ pointer-events:none!important;
+ -webkit-user-select:none;user-select:none;
+}
+.hn-intro-film video::-webkit-media-controls,
+.hn-cinema-strip video::-webkit-media-controls,
+.hn-academy-film video::-webkit-media-controls,
+.hn-intro-film video::-webkit-media-controls-start-playback-button,
+.hn-cinema-strip video::-webkit-media-controls-start-playback-button,
+.hn-academy-film video::-webkit-media-controls-start-playback-button{display:none!important}
+
+/* If mobile Safari refuses autoplay (e.g. Low Power Mode), retain subtle
+ * continuous cinematic motion on the poster instead of a frozen play icon. */
+.hn-intro-film::before{
+ content:"";position:absolute;inset:-7%;z-index:0;pointer-events:none;
+ background:url("https://static.wixstatic.com/media/d0158d_93b5716ed6c849d28888a69876201330f002.jpg") center/cover no-repeat;
+ animation:hn-poster-drift 18s ease-in-out infinite alternate;
+ opacity:1;transition:opacity .6s ease;
+}
+.hn-intro-film.is-media-playing::before{opacity:0}
+.hn-film-clip{z-index:1}
+.hn-film-clip:not(.is-playing){opacity:0!important}
+@keyframes hn-poster-drift{
+ from{transform:scale(1) translate3d(-1%,0,0)}
+ to{transform:scale(1.09) translate3d(1%,1%,0)}
+}
+@media(prefers-reduced-motion:reduce){.hn-intro-film::before{animation:none}}
+
+
+/* Animated illustration while ambient videos are unavailable or blocked. */
+.hn-cinema-strip::before,.hn-academy-film::before{
+ content:"";position:absolute;inset:-6%;z-index:0;pointer-events:none;
+ background-position:center;background-size:cover;background-repeat:no-repeat;
+ animation:hn-poster-drift 19s ease-in-out infinite alternate;
+}
+.hn-cinema-strip::before{
+ background-image:url("https://headless-tfcfvgrbhgw-xwassim04-1409.wix-site-host.com/assets/video-poster.jpg");
+}
+.hn-academy-film::before{
+ background-image:url("https://headless-tfcfvgrbhgw-xwassim04-1409.wix-site-host.com/assets/training.jpg");
+}
+.hn-cinema-strip>video,.hn-academy-film>video{
+ position:absolute;inset:0;z-index:1;width:100%;height:100%;
+ opacity:0;transition:opacity .65s ease;
+}
+.hn-cinema-strip>video.hn-background-playing,
+.hn-academy-film>video.hn-background-playing{opacity:1}
+.hn-cinema-strip>.shade{z-index:2}
+.hn-cinema-strip>.copy{z-index:3}
+.hn-academy-film>.hn-v13-shade{z-index:2}
+@media(prefers-reduced-motion:reduce){
+ .hn-cinema-strip::before,.hn-academy-film::before{animation:none}
+ .hn-cinema-strip>video,.hn-academy-film>video{transition:none}
+}
+
+
+/* iPhone Safari low-power-safe cinematic intro.
+   An animated WebP contains moving frames from the two genuine HORENOVA clips.
+   Native video elements are completely absent from compositing on iOS, because
+   hiding media controls with ::-webkit-media-controls alone is not reliable. */
+.hn-ios-motion{display:none;position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;pointer-events:none}
+.hn-ios-motion[hidden]{display:none!important}
+@supports (-webkit-touch-callout:none){
+ .hn-intro-film video.hn-film-clip{display:none!important}
+ .hn-ios-motion:not([hidden]){display:block!important;z-index:1}
+ .hn-intro-film.is-media-playing::before{opacity:1}
+}
+/* Prevent iOS text autosizing and any intro wordmark/description clipping. */
+.hn-intro{-webkit-text-size-adjust:100%;text-size-adjust:100%;max-width:100%;overflow:hidden}
+.hn-intro .hn-intro-inner{
+ box-sizing:border-box;width:100%;max-width:min(740px,100vw);
+ min-width:0;overflow:visible;padding-inline:clamp(16px,4.5vw,32px)!important;
+ margin-inline:auto;
+}
+.hn-intro .hn-intro-inner h1{
+ display:block;max-width:100%;white-space:nowrap;
+ line-height:1.13!important;letter-spacing:-.055em!important;
+ font-size:clamp(34px,11vw,76px)!important;
+ margin:0 auto;overflow:visible;
+}
+.hn-intro .hn-intro-inner p{
+ max-width:100%;overflow-wrap:break-word;line-height:1.5;
+ margin-inline:auto;
+}
+@media(max-width:650px){
+ .hn-intro .hn-intro-inner h1{font-size:clamp(34px,11vw,66px)!important}
+ .hn-intro .hn-intro-inner p{font-size:clamp(12px,3.3vw,16px)!important}
+ .hn-intro .hn-intro-inner small{font-size:clamp(8px,2.3vw,12px)!important;letter-spacing:.16em}
+ .hn-intro .hn-intro-inner button{min-width:152px;min-height:48px;font-size:12px!important}
+}
+
+
+/* Fixed-frame GIF renderer: Safari low-power and all iPhone emulations.
+ * The image ALWAYS fills one layer; no delta WebP animation patches.
+ * JS adds hn-ios-loop-active after removing the native video players. */
+.hn-intro-film.hn-ios-loop-active{
+ position:absolute!important;inset:0!important;overflow:hidden!important;
+}
+.hn-intro-film.hn-ios-loop-active .hn-film-clip{display:none!important}
+.hn-intro-film.hn-ios-loop-active>.hn-ios-motion:not([hidden]){
+ display:block!important;position:absolute!important;inset:0!important;
+ width:100%!important;height:100%!important;min-width:100%;min-height:100%;
+ max-width:none;object-fit:cover!important;object-position:center center!important;
+ z-index:1;opacity:1;
+}
+.hn-ios-motion{background-color:transparent;image-rendering:auto}
