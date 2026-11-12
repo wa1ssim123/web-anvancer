@@ -30,7 +30,7 @@ for(const file of files.filter(x=>x.endsWith('.html'))){
   for(const match of html.matchAll(/(?:src|href)\s*=\s*["'](\/[^"'\s]+)["']/gi)){
     let url=match[1];if(url.startsWith('//'))continue;
     const local=url.split(/[?#]/,1)[0].slice(1);
-    if(!local||!\.(?:html|js|css|png|svg|ico|jpg|jpeg|webp|json|txt|woff2?)$/i.test(local))continue;
+    if(!local||!/\.(?:html|js|css|png|svg|ico|jpg|jpeg|webp|json|txt|woff2?)$/i.test(local))continue;
     links++;
     try{if(!fs.existsSync(path.join(root,decodeURIComponent(local))))fail(file,'missing local asset '+url)}
     catch{fail(file,'invalid asset path '+url)}
