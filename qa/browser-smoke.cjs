@@ -114,9 +114,9 @@ async function run(){
     assert.ok(layout.brand.width>=110,'Brand squeezed at '+width+': '+JSON.stringify(layout));
     if(width<=700)assert.ok(layout.cta.y>=layout.brand.bottom-1,'CTA must have separate mobile row at '+width);
     assert.ok(layout.scrollWidth<=layout.innerWidth+2,'Page overflow at '+width+': '+JSON.stringify(layout));
-    const media=await page.locator('.hn-intro-film video, .hn-cinema-strip video, .hn-academy-film video').evaluateAll(vs=>vs.map(v=>({controls:v.controls,muted:v.muted,loop:v.loop,inline:v.playsInline})));
+    const media=await page.locator('.hn-intro-film video, .hn-cinema-strip video, .hn-academy-film video').evaluateAll(vs=>vs.map(v=>({controls:v.controls,muted:v.muted,loop:v.loop,inline:v.playsInline,autoplay:v.autoplay})));
     assert.ok(media.length>=4,'Expected cinematic video surfaces');
-    assert.ok(media.every(v=>!v.controls && v.muted && v.loop && v.inline),'Decorative media must not use native player UI: '+JSON.stringify(media));
+    assert.ok(media.every(v=>!v.controls && !v.autoplay && v.muted && v.loop && v.inline),'Decorative media must not use native player UI: '+JSON.stringify(media));
     console.log('PASS HORENOVA phone header/CTA separation and background video attributes: '+width);
    }catch(e){failures.push('Home mobile '+width+': '+e.message.slice(0,650));console.error('FAIL HORENOVA mobile '+width+': '+e.message.slice(0,420));}
    finally{await context.close();}
