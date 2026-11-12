@@ -57,6 +57,44 @@ async function run(){
     console.error('FAIL browser locale: '+url+' — '+error.message.slice(0,180)+' URL='+where+' BODY='+pageText.slice(0,260)+' ERRORS='+issues.slice(0,5).join(' | '));
    }finally{await context.close();}
   }
+  // Illustrative service cards must stay separate from authentic review statistics.
+  {
+   const context=await browser.newContext({viewport:{width:1280,height:900},serviceWorkers:'block'});
+   const page=await context.newPage();
+   const problems=[];
+   page.on('pageerror',e=>problems.push(e.message));
+   try{
+    await page.route('https://horenova-hub-api.onrender.com/api/reviews/public',r=>r.fulfill({
+     status:200,contentType:'application/json',headers:{'access-control-allow-origin':'*'},
+     body:JSON.stringify({count:0,average:null,items:[]})
+    }));
+    await page.goto(base+'/avis.html',{waitUntil:'domcontentloaded',timeout:20000});
+    await page.locator('.rv-x-card').first().waitFor({timeout:6000});
+    assert.equal(await page.locator('.rv-x-card').count(),12,'Initial sample card count');
+    assert.equal(await page.locator('.rv-x-demo').count(),12,'Every sample needs disclosure');
+    const publicCount=await page.locator('#reviewSummary').innerText();
+    assert.match(publicCount,/0 avis publié/,'Sample cards must not affect authentic review count');
+    await page.locator('#experienceMore').click();
+    assert.equal(await page.locator('.rv-x-card').count(),32,'Must reveal all 32 sample scenarios');
+    await page.locator('[data-example-filter="recruiter"]').click();
+    assert.equal(await page.locator('.rv-x-card').count(),8,'Recruiter filter');
+    await page.locator('[data-example-filter="academy"]').click();
+    assert.equal(await page.locator('.rv-x-card').count(),6,'Academy filter');
+    await page.locator('[data-example-filter="all"]').click();
+    await page.locator('#hn-language-control').selectOption('ar',{force:true});
+    await page.waitForFunction(()=>document.documentElement.lang==='ar',null,{timeout:5000});
+    assert.match(await page.locator('#experienceEyebrow').innerText(),/أمثلة/);
+    assert.match(await page.locator('.rv-x-demo').first().innerText(),/توضيحي/);
+    await page.locator('#hn-language-control').selectOption('en',{force:true});
+    await page.waitForFunction(()=>document.documentElement.lang==='en',null,{timeout:5000});
+    assert.match(await page.locator('.rv-x-demo').first().innerText(),/Illustrative/);
+    assert.equal(problems.length,0,'Unexpected JS errors: '+problems.join(' | '));
+    console.log('PASS gallery: 32 illustrative examples, filters, FR/AR/EN, zero effect on authentic reviews');
+   }catch(e){
+    failures.push('Illustrative gallery: '+e.message.slice(0,550)+' JS='+problems.join(' | '));
+    console.error('FAIL gallery: '+e.message.slice(0,380)+' JS='+problems.join(' | '));
+   }finally{await context.close();}
+  }
   // Real Chromium navigation for the two account screens. No test accounts are created.
   for(const startingMode of ['signin','signup']){
    const context=await browser.newContext({serviceWorkers:'block'});
