@@ -155,3 +155,19 @@ background:radial-gradient(ellipse 48% 47% at 50% 50%,rgba(5,9,12,.60),rgba(5,9,
  .hn-intro .hn-intro-inner small{font-size:clamp(8px,2.3vw,12px)!important;letter-spacing:.16em}
  .hn-intro .hn-intro-inner button{min-width:152px;min-height:48px;font-size:12px!important}
 }
+
+
+/* Fixed-frame GIF renderer: Safari low-power and all iPhone emulations.
+ * The image ALWAYS fills one layer; no delta WebP animation patches.
+ * JS adds hn-ios-loop-active after removing the native video players. */
+.hn-intro-film.hn-ios-loop-active{
+ position:absolute!important;inset:0!important;overflow:hidden!important;
+}
+.hn-intro-film.hn-ios-loop-active .hn-film-clip{display:none!important}
+.hn-intro-film.hn-ios-loop-active>.hn-ios-motion:not([hidden]){
+ display:block!important;position:absolute!important;inset:0!important;
+ width:100%!important;height:100%!important;min-width:100%;min-height:100%;
+ max-width:none;object-fit:cover!important;object-position:center center!important;
+ z-index:1;opacity:1;
+}
+.hn-ios-motion{background-color:transparent;image-rendering:auto}
