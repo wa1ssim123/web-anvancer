@@ -23,7 +23,7 @@ async function run(){
  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
  const base='http://127.0.0.1:'+server.address().port;
  const browser=await chromium.launch({headless:true});
- const pages=['/','/jobs.html','/shifts.html','/talents.html','/shop.html','/explore.html','/explore-guide.html','/avis.html','/enter.html'];
+ const pages=['/','/jobs.html','/shifts.html','/talents.html','/shop.html','/explore.html','/explore-guide.html','/explore-safety.html','/explore-prices.html','/explore-itinerary.html','/explore-experiences.html','/explore-help.html','/academy.html','/job.html','/trip.html','/favorites.html','/avis.html','/enter.html'];
  const failures=[];
  try{
   for(const url of pages){
