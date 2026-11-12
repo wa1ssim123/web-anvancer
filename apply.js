@@ -34,23 +34,36 @@ else if(ready){
  const button=document.createElement('button');button.className='cta-main';button.type='button';button.textContent='Envoyer ma candidature à HORENOVA ↗';box.appendChild(button);
  button.onclick=async()=>{
   message.textContent='';
-  if(!document.getElementById('applyConsent').checked){message.textContent='Votre consentement est nécessaire pour une mise en relation.';return;}
+  if(!document.getElementById('applyConsent').checked){
+    message.textContent='Votre consentement est nécessaire pour une mise en relation.';
+    return;
+  }
   button.disabled=true;
-  let centralCase=null,wixSaved=false,notes=[];
+  button.textContent='Transmission sécurisée…';
   try{
-   try{
+    // The production recruiting database is the source of truth for applications,
+    // statuses and the private conversations. Do not claim success for a CMS-only copy.
     const result=await hub('/api/applications',{method:'POST',body:{jobId,consentToIntro:true}});
-    centralCase=result.item;
-   }catch(e){notes.push('Messagerie en attente : '+e.message);}
-   try{
-    const existing=(await queryItems('Applications',{filters:[{field:'jobId',op:'eq',value:jobId}],limit:1})).items;
-    if(!existing.length){
-      await insertItem('Applications',{jobId,jobTitle:title,businessName:'Employeur partenaire HORENOVA',candidatePublicProfileId:publicProfile?._id||'',quizScore:score,status:'En étude par HORENOVA',recruiterHint:'Mise en relation organisée par HORENOVA'});
+    const centralCase=result?.item;
+    if(!centralCase?.id)throw Error('Le serveur n’a pas confirmé l’identifiant de la candidature.');
+    try{
+      const existing=(await queryItems('Applications',{filters:[{field:'jobId',op:'eq',value:jobId}],limit:1})).items;
+      if(!existing.length)await insertItem('Applications',{
+        jobId,jobTitle:title,businessName:'Employeur partenaire HORENOVA',
+        candidatePublicProfileId:publicProfile?._id||'',quizScore:score,
+        status:'En étude par HORENOVA',
+        recruiterHint:'Mise en relation organisée par HORENOVA'
+      });
+    }catch(error){
+      // The primary case is already saved. A legacy Wix mirror outage must not
+      // create a second application or conceal a successful central submission.
+      console.warn('HORENOVA: copie CMS indisponible, dossier central conservé.');
     }
-    wixSaved=true;
-   }catch(e){notes.push('Archivage Wix : '+e.message);}
-   if(!centralCase&&!wixSaved)throw Error(notes.join(' · ')||'La candidature n’a pas été enregistrée.');
-   box.innerHTML='<div class="success-state"><b>✓</b><h2>Candidature reçue par HORENOVA</h2><p>'+(centralCase?'Votre dossier privé est enregistré dans le centre de recrutement.':'Votre candidature est enregistrée dans Wix. Le chat sécurisé n’est pas encore disponible pour ce dossier.')+'</p>'+(centralCase?'<a href="/conversations.html?id='+encodeURIComponent(centralCase.id)+'">Ouvrir ma conversation ↗</a>':'<a href="/account.html">Retour à mon espace →</a>')+'</div>';
-  }catch(e){message.textContent=e.message;button.disabled=false;}
+    box.innerHTML='<div class="success-state"><b>✓</b><h2>Candidature reçue par HORENOVA</h2><p>Votre dossier est enregistré dans le suivi central sécurisé. Vous pourrez le consulter depuis votre espace.</p><a href="/conversations.html?id='+encodeURIComponent(centralCase.id)+'">Ouvrir mon suivi ↗</a></div>';
+  }catch(error){
+    message.textContent=error?.message||'La candidature n’a pas été confirmée par HORENOVA. Réessayez sans créer de deuxième dossier.';
+    button.disabled=false;
+    button.textContent='Envoyer ma candidature à HORENOVA ↗';
+  }
  };
 }
