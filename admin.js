@@ -5,13 +5,19 @@ const root=document.getElementById('adminGate');
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 if(!auth){root.innerHTML='<div class="hub-error">Accès réservé à l’administration HORENOVA. <a href="/enter.html?mode=signin">Se connecter</a></div>';}
 else{
-root.innerHTML='<div class="hub-root"><div class="hub-head"><div><span class="hub-small">HORENOVA · CENTRE PRIVÉ</span><h2>Candidatures & recrutement</h2><p class="hub-muted">Dossiers détaillés, photos privées, contrôle des mises en relation et conversations.</p></div><a class="hub-action secondary" href="/conversations.html">Chat HORENOVA ↗</a></div><div class="hub-error" id="hubError"></div><div class="hub-head"><input id="hubSearch" class="hub-input" placeholder="Rechercher un candidat ou une offre…" aria-label="Rechercher"><button class="hub-action secondary" id="hubRefresh">Actualiser</button></div><div class="hub-layout"><section class="hub-panel"><div class="hub-panel-head"><h3 id="hubCount">Candidatures</h3><p class="hub-muted">Nouveaux dossiers transmis à HORENOVA</p></div><div id="hubCases" class="hub-stack"></div></section><section class="hub-panel" id="hubDetail"><div class="hub-detail hub-muted">Choisissez un dossier à examiner.</div></section></div><p class="hub-muted" style="margin-top:22px">Dossiers historiques : <a target="_blank" rel="noopener" href="https://manage.wix.com/dashboard/7d0d5cbc-d6b5-483c-adcf-eda65565ae2e/wix-cms">ouvrir le CMS Wix administrateur</a>.</p></div>';
+root.innerHTML='<div class="hub-root"><div class="hub-head"><div><span class="hub-small">HORENOVA · CENTRE PRIVÉ</span><h2>Candidatures & recrutement</h2><p class="hub-muted">Dossiers détaillés, photos privées, contrôle des mises en relation et conversations.</p></div><a class="hub-action secondary" href="/conversations.html">Chat HORENOVA ↗</a></div><div class="hub-error" id="hubError"></div><div class="hub-head"><input id="hubSearch" class="hub-input" placeholder="Rechercher un candidat ou une offre…" aria-label="Rechercher"><button class="hub-action secondary" id="hubRefresh">Actualiser</button></div><div class="hub-layout"><section class="hub-panel"><div class="hub-panel-head"><h3 id="hubCount">Candidatures</h3><p class="hub-muted">Nouveaux dossiers transmis à HORENOVA</p></div><div id="hubCases" class="hub-stack"></div></section><section class="hub-panel" id="hubDetail"><div class="hub-detail hub-muted">Choisissez un dossier à examiner.</div></section></div><section class="hub-panel" style="margin-top:22px"><div class="hub-panel-head"><h3>Demandes de recrutement <span id="hubRequestsCount"></span></h3><p class="hub-muted">Demandes privées reçues des établissements, disponibles pour vérification et association aux candidatures.</p></div><div id="hubRecruiterRequests" class="hub-stack"></div></section><p class="hub-muted" style="margin-top:22px">Dossiers historiques : <a target="_blank" rel="noopener" href="https://manage.wix.com/dashboard/7d0d5cbc-d6b5-483c-adcf-eda65565ae2e/wix-cms">ouvrir le CMS Wix administrateur</a>.</p></div>';
 const $=id=>document.getElementById(id);
 const names={EN_ETUDE:'En étude',PRESELECTION:'Présélection',ENTRETIEN:'Entretien',MISE_EN_RELATION:'Mise en relation',RETENUE:'Retenue',REFUSEE:'Refusée',CLOTURE:'Clôturée'};
 const statuses=['EN_ETUDE','PRESELECTION','ENTRETIEN','MISE_EN_RELATION','RETENUE','REFUSEE','CLOTURE'];
 let applications=[],requests=[],selected='',objectUrl=null;
 const field=(n,v,w=false)=>'<div class="hub-field '+(w?'wide':'')+'"><small>'+esc(n)+'</small><strong>'+esc(v??'Non renseigné')+'</strong></div>';
 const showError=msg=>{$('hubError').textContent=msg||'';};
+function listRequests(){
+  const count=$('hubRequestsCount'), target=$('hubRecruiterRequests');
+  if(!count||!target)return;
+  count.textContent='('+requests.length+')';
+  target.innerHTML=requests.length?requests.map(r=>'<div class="hub-case"><small class="hub-muted">'+esc(r.kind==='shift'?'Shift':'Emploi')+' · '+esc(r.city||'')+'</small><strong>'+esc(r.job_title||'Demande sans titre')+'</strong><span>'+esc(r.business_name||'Établissement')+' · '+esc(r.job_role||'')+'</span><p class="hub-tag">À examiner · dossier privé</p></div>').join(''):'<div class="hub-detail hub-muted">Aucune demande de recrutement dans le suivi central.</div>';
+}
 function list(){
 const term=$('hubSearch').value.toLowerCase().trim();
 const shown=applications.filter(a=>[a.jobTitle,a.candidateEmail,a.profile?.firstName,a.profile?.lastName,a.profile?.city].join(' ').toLowerCase().includes(term));
@@ -32,7 +38,7 @@ if(objectUrl){URL.revokeObjectURL(objectUrl);objectUrl=null;}
 try{objectUrl=await hubPhoto('/api/applications/'+id+'/photo');if(objectUrl&&id===selected){const img=document.createElement('img');img.className='hub-photo';img.src=objectUrl;img.alt='Photo du candidat';$('hubPortrait')?.replaceWith(img);}}catch{}
 }
 async function refresh(){
-try{showError('');const [a,r]=await Promise.all([hub('/api/applications'),hub('/api/recruiter-requests')]);applications=a.items||[];requests=r.items||[];list();if(selected&&applications.some(a=>a.id===selected))await detail(selected);}
+try{showError('');const [a,r]=await Promise.all([hub('/api/applications'),hub('/api/recruiter-requests')]);applications=a.items||[];requests=r.items||[];list();listRequests();if(selected&&applications.some(a=>a.id===selected))await detail(selected);}
 catch(e){showError(e.message+' Les dossiers privés restent accessibles dans le CMS administrateur Wix.');$('hubCases').innerHTML='<div class="hub-detail hub-muted">Service des dossiers non disponible.</div>';}
 }
 $('hubSearch').oninput=list;$('hubRefresh').onclick=refresh;await refresh();
