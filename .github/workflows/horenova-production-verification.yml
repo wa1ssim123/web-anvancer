@@ -13,7 +13,8 @@ jobs:
       - name: Verify deployed HORENOVA mobile fix on public domain
         shell: bash
         run: |
-          set -euo pipefail
+          set -euxo pipefail
+          echo 'Production verification: request live files and print exact failing step'
           # CDN may need a moment to expose a just-published static build.
           for i in $(seq 1 10); do
             curl -fsSL --connect-timeout 8 --max-time 18 "https://horenova.com/?deploycheck=${GITHUB_RUN_ID}-${i}" -o /tmp/home
@@ -26,6 +27,7 @@ jobs:
           grep -q 'fitIntroHeading' /tmp/film.js
           grep -q 'hn-ios-loop-active' /tmp/film.js
           curl -fsSL --connect-timeout 8 --max-time 25 "https://horenova.com/horenova-home-film.css?deploycheck=${GITHUB_RUN_ID}" -o /tmp/film.css
+          wc -c /tmp/home /tmp/film.js /tmp/film.css
           grep -q 'Fixed-frame GIF renderer' /tmp/film.css
           grep -q 'horenova-cinema-mobile.gif' /tmp/home
           curl -fsSL --connect-timeout 8 --max-time 45 "https://horenova.com/assets/horenova-cinema-mobile.gif?deploycheck=${GITHUB_RUN_ID}" -o /tmp/loop.gif
