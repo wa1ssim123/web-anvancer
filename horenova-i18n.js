@@ -6,7 +6,21 @@ const catalog=new Map();
 for(const line of ROWS.split('\n')){const parts=line.split('|').map(x=>x.trim());if(parts.length===3&&parts[0])for(const p of parts)catalog.set(p,parts);}
 const available=new Set(['fr','ar','en']);
 const getLang=()=>{try{const v=localStorage.getItem('mihna-lang');return available.has(v)?v:'fr'}catch{return 'fr'}};
-const setLang=code=>{if(!available.has(code))return;try{localStorage.setItem('mihna-lang',code)}catch{}location.reload()};
+const setLang=code=>{if(!available.has(code))return;try{localStorage.setItem('mihna-lang',code)}catch{}if(location.pathname==='/onboarding.html'){location.reload();return}translate()};
+const initialTitle=document.title;
+const pageTitles={
+ '/': ['HORENOVA — Jobs, hiring and tourism in Morocco','هورينوفا — الوظائف والتوظيف والسياحة بالمغرب'],
+ '/index.html': ['HORENOVA — Jobs, hiring and tourism in Morocco','هورينوفا — الوظائف والتوظيف والسياحة بالمغرب'],
+ '/enter.html': ['HORENOVA — Sign in or register','هورينوفا — الدخول أو التسجيل'],
+ '/admin.html': ['HORENOVA — Administration','هورينوفا — الإدارة'],
+ '/account.html': ['HORENOVA — My account','هورينوفا — حسابي'],
+ '/candidate-setup.html': ['HORENOVA — Candidate profile','هورينوفا — ملف المرشح'],
+ '/recruiter-setup.html': ['HORENOVA — Business profile','هورينوفا — ملف المؤسسة'],
+ '/recruit.html': ['HORENOVA — Recruit','هورينوفا — التوظيف'],
+ '/quiz.html': ['HORENOVA — Career quiz','هورينوفا — الاختبار المهني'],
+ '/apply.html': ['HORENOVA — Apply','هورينوفا — الترشح'],
+ '/conversations.html': ['HORENOVA — Recruiting conversations','هورينوفا — محادثات التوظيف']
+};
 const originalNodes=new WeakMap(),originalAttrs=new WeakMap();
 const exclude='script,style,noscript,textarea,pre,code,[contenteditable="true"],[data-no-translate]';
 const normalized=s=>String(s||'').replace(/\u00a0/g,' ').replace(/\s+/g,' ').trim();
@@ -39,6 +53,8 @@ function translate(){
   const lang=getLang();
   document.documentElement.lang=lang;
   document.documentElement.dir=lang==='ar'?'rtl':'ltr';
+  const titleTranslations=pageTitles[location.pathname];
+  document.title=lang==='fr'?initialTitle:(titleTranslations?titleTranslations[lang==='ar'?1:0]:initialTitle);
   document.body.classList.toggle('hn-rtl',lang==='ar');
   const walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);
   let n;const nodes=[];while((n=walker.nextNode()))nodes.push(n);
