@@ -1,0 +1,33 @@
+name: Build HORENOVA Safari full-frame GIF
+on:
+  push:
+    branches: [horenova-free-deploy-2026]
+    paths:
+      - scripts/build_horenova_mobile_gif.sh
+      - .github/workflows/horenova-cinema-gif.yml
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Install media tools
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq --no-install-recommends ffmpeg
+          python -m pip install pillow
+      - name: Generate and validate 100% full-frame animated GIF
+        run: bash scripts/build_horenova_mobile_gif.sh
+      - name: Publish mobile cinema animation
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/horenova-cinema-mobile.gif
+          if ! git diff --cached --quiet; then
+            git commit -m "Fix iPhone cinematic split with full-frame GIF frames"
+            git push origin HEAD:horenova-free-deploy-2026
+          fi
