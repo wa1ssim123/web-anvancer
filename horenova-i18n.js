@@ -99,7 +99,7 @@ function mountControl(){
  const holder=document.querySelector('.hn12-actions,.hn-home-actions,.enter-top,.rv-header nav,header');
  if(holder){
   const menu=holder.querySelector('#menuBtn');
-  if(menu)holder.insertBefore(control,menu);else holder.appendChild(control);
+  if(menu && menu.parentNode)menu.parentNode.insertBefore(control,menu);else holder.appendChild(control);
  }else{control.classList.add('hn-lang-floating');document.body.appendChild(control);}
 }
 function boot(){
