@@ -33,3 +33,16 @@ jobs:
               file -b /tmp/hn-body
             fi
           done
+
+          echo "===== CINEMATIC SOURCES (partial requests, no full download) ====="
+          for url in \
+            'https://video.wixstatic.com/video/d0158d_93b5716ed6c849d28888a69876201330/1080p/mp4/file.mp4' \
+            'https://video.wixstatic.com/video/d0158d_93b5716ed6c849d28888a69876201330/file' \
+            'https://video.wixstatic.com/video/d0158d_bb7977abc0eb4a0dad0971e78f4a7ecbf002/1080p/mp4/file.mp4' \
+            'https://video.wixstatic.com/video/d0158d_bb7977abc0eb4a0dad0971e78f4a7ecbf002/file' \
+            'https://headless-tfcfvgrbhgw-xwassim04-1409.wix-site-host.com/assets/kitchen.mp4'; do
+            echo "VIDEO_ORIGIN=$url"
+            curl -sSIL --connect-timeout 8 --max-time 16 \
+              -w 'VIDEO_HTTP=%{http_code} MEDIA_TYPE=%{content_type} FINAL=%{url_effective}\n' "$url" \
+              | grep -iE '^(HTTP/|content-type:|location:|VIDEO_HTTP=)' | tail -n 7
+          done
