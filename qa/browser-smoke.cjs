@@ -61,6 +61,9 @@ async function run(){
   for(const startingMode of ['signin','signup']){
    const context=await browser.newContext({serviceWorkers:'block'});
    const page=await context.newPage();
+   const authErrors=[];
+   page.on('pageerror',e=>authErrors.push('JS '+e.message));
+   page.on('console',m=>{if(m.type()==='error')authErrors.push('Console '+m.text().slice(0,200));});
    try{
     await page.goto(base+'/enter.html?mode='+startingMode,{waitUntil:'domcontentloaded',timeout:20000});
     await page.locator('html[data-auth-ui-ready="1"]').waitFor({timeout:8000});
@@ -76,8 +79,9 @@ async function run(){
     assert.equal(await page.locator('#signupForm').isVisible(),true,'Signup tab lost after reload');
     console.log('PASS browser registration/sign-in switching and refresh: '+startingMode);
    }catch(e){
-    failures.push('Account navigation '+startingMode+': '+e.message.slice(0,500));
-    console.error('FAIL browser account navigation '+startingMode+': '+e.message.slice(0,350));
+    const details=' URL='+page.url()+' ERRORS='+authErrors.slice(0,5).join(' / ');
+    failures.push('Account navigation '+startingMode+': '+e.message.slice(0,250)+details);
+    console.error('FAIL browser account navigation '+startingMode+': '+e.message.slice(0,220)+details);
    }finally{await context.close();}
   }
   for(const url of ['/jobs.html','/shifts.html','/explore-guide.html']){
