@@ -21,7 +21,7 @@
  }
  function prepare(video){
   video.muted=true;video.defaultMuted=true;
-  video.autoplay=true;video.loop=true;video.playsInline=true;video.controls=false;
+  video.autoplay=false;video.removeAttribute('autoplay');video.loop=true;video.playsInline=true;video.controls=false;
   video.disablePictureInPicture=true;video.disableRemotePlayback=true;
   video.setAttribute('muted','');video.setAttribute('playsinline','');
   video.setAttribute('webkit-playsinline','');
