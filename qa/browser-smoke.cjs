@@ -278,6 +278,38 @@ async function run(){
     console.error('FAIL Safari HD native playback: '+e.message.slice(0,450));
    }finally{await context.close();}
   }
+  // Safari Low Power Mode recovery: one user tap unlocks native HD playback.
+  {
+   const context=await browser.newContext({
+    viewport:{width:390,height:844},isMobile:true,hasTouch:true,serviceWorkers:'block',
+    userAgent:'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1'
+   });
+   await context.addInitScript(()=>{
+    const proto=HTMLMediaElement.prototype;
+    Object.defineProperty(proto,'paused',{configurable:true,get(){return this.__qaPaused!==false}});
+    Object.defineProperty(proto,'readyState',{configurable:true,get(){return 4}});
+    proto.play=function(){
+      if(!this.__qaAllowed)return Promise.reject(new DOMException('Battery saver autoplay denied','NotAllowedError'));
+      this.__qaPaused=false;
+      this.dispatchEvent(new Event('playing'));
+      return Promise.resolve();
+    };
+    proto.pause=function(){this.__qaPaused=true;this.dispatchEvent(new Event('pause'))};
+   });
+   const page=await context.newPage();
+   try{
+    await page.goto(base+'/',{waitUntil:'domcontentloaded',timeout:20000});
+    await page.locator('.hn-ios-enable-hd').waitFor({state:'visible',timeout:7000});
+    await page.evaluate(()=>{document.querySelector('.hn-ios-native-premium').__qaAllowed=true;});
+    await page.locator('.hn-ios-enable-hd').click();
+    await page.locator('.hn-ios-native-premium.is-playing-hq').waitFor({timeout:5000});
+    assert.equal(await page.locator('.hn-ios-enable-hd').count(),0,'HD unlock button must disappear when movie plays');
+    console.log('PASS Safari battery saver: user tap unlocks HD H264 and removes activation control');
+   }catch(e){
+    failures.push('Safari HD unlock: '+e.message.slice(0,520));
+    console.error('FAIL Safari HD unlock: '+e.message.slice(0,430));
+   }finally{await context.close();}
+  }
   // Real Chromium navigation for the two account screens. No test accounts are created.
   for(const startingMode of ['signin','signup']){
    const context=await browser.newContext({serviceWorkers:'block'});
