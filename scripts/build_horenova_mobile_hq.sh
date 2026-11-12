@@ -41,10 +41,12 @@ for i,frame in enumerate(frames):
 for quality in (82,78,75):
  # The upstream img2webp encoder is more dependable than Pillow 13's
  # animation encoder. -kmax 0 = independently decodable keyframe every frame.
- command=['img2webp','-loop','0','-kmax','0','-o',str(out)]
+ command=['img2webp','-loop','0','-kmax','0']
  for path in paths:
   command.extend(['-d','42','-lossy','-q',str(quality),'-m','4',str(path)])
+ command.extend(['-o',str(out)])
  subprocess.run(command,check=True,stdout=subprocess.DEVNULL,stderr=subprocess.PIPE)
+ assert b'ANIM' in out.read_bytes() and out.read_bytes().count(b'ANMF')>=140, 'Encoder produced static or empty animation'
  if out.stat().st_size<26_000_000:break
 assert out.stat().st_size<30_000_000,'HD animation exceeds mobile budget'
 with Image.open(out) as check:
