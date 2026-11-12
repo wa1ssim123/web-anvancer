@@ -9,6 +9,38 @@
  const clips=[...(film?.querySelectorAll('.hn-film-clip')||[])];
  if(!intro||!film||clips.length!==2)return;
 
+ // Safari's automatic text sizing or "Request Desktop Website" can leave the
+ // intro wordmark wider than the visible viewport. Fit the actual glyph bounds.
+ const introHeading=intro.querySelector('.hn-intro-inner h1');
+ function fitIntroHeading(){
+  if(!introHeading)return;
+  const visualWidth=window.visualViewport?.width||window.innerWidth;
+  const available=Math.max(180,Math.min(visualWidth,intro.clientWidth||visualWidth)-32);
+  let size=Math.min(76,Math.max(30,available*.152));
+  const range=document.createRange();
+  range.selectNodeContents(introHeading);
+  for(let i=0;i<25;i++){
+   introHeading.style.setProperty('font-size',size+'px','important');
+   if(range.getBoundingClientRect().width <= available)break;
+   size-=2;
+   if(size<=26)break;
+  }
+ }
+ fitIntroHeading();
+ window.addEventListener('resize',fitIntroHeading,{passive:true});
+ window.visualViewport?.addEventListener('resize',fitIntroHeading,{passive:true});
+
+ // iOS Low Power Mode can draw an unavoidable native play triangle over an
+ // unplayed video, even with controls=false. On iPhone/iPad use the genuine
+ // moving-frame WebP (from both source videos) instead of video DOM elements.
+ const ios=/iPad|iPhone|iPod/.test(navigator.userAgent)||
+   (navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+ if(ios){
+  clips.forEach(video=>{video.pause();video.remove();});
+  film.classList.add('hn-ios-loop-active');
+  return;
+ }
+
  const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
  const connection=navigator.connection||navigator.mozConnection||navigator.webkitConnection;
  const desktop=window.matchMedia('(min-width: 1180px)').matches;
