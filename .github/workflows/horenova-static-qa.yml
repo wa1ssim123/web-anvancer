@@ -1,0 +1,18 @@
+name: HORENOVA release checks
+on:
+  push:
+    branches:
+      - horenova-free-deploy-2026
+  workflow_dispatch:
+jobs:
+  source-audit:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check scripts, resources, translations and role gates
+        run: node qa/site-audit.cjs
