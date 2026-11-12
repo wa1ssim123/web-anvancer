@@ -64,7 +64,9 @@ function roleDestination(role,firstTime=false){
   return '/account.html';
 }
 async function existingRole(){
-  const result=await queryItems('AccountRoles',{limit:1});
+  const member=verifiedMember();
+  if(!member)return null;
+  const result=await queryItems('AccountRoles',{filters:[{field:'_owner',op:'eq',value:member.id}],limit:1});
   const record=result.items?.[0];
   return supportedRoles.includes(record?.role)||record?.role==='admin' ? record.role : null;
 }
