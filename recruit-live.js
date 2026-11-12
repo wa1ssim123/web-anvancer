@@ -6,7 +6,7 @@ if(!auth){location.replace('/account.html');throw new Error('Espace réservé au
 const root=document.getElementById('recruitGate');
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let prof=null;
-if(!auth.demo&&auth.role==='recruiter')prof=(await queryItems('RecruiterProfiles',{limit:1})).items[0]||null;
+if(!auth.demo&&auth.role==='recruiter')prof=(await queryItems('RecruiterProfiles',{filters:[{field:'_owner',op:'eq',value:auth.member.id}],limit:1})).items[0]||null;
 if(auth.role==='recruiter'&&!prof){location.replace('/recruiter-setup.html');throw new Error('Profil à compléter');}
 root.innerHTML=`<div class='recruit-page'><form class='recruit-form' id='liveRecruitForm'>
 <span class='small-title'>DEMANDE DE RECRUTEMENT CONFIDENTIELLE</span>
@@ -34,7 +34,7 @@ async function render(){
  if(!grid)return;
  const results=await Promise.allSettled([
   hub('/api/recruiter-requests'),
-  queryItems('JobRequests',{limit:50,sort:[{field:'_createdDate',direction:'desc'}]})
+  queryItems('JobRequests',{filters:[{field:'_owner',op:'eq',value:auth.member.id}],limit:50,sort:[{field:'_createdDate',direction:'desc'}]})
  ]);
  const central=results[0].status==='fulfilled'?(results[0].value.items||[]):null;
  const saved=results[1].status==='fulfilled'?(results[1].value.items||[]):[];
