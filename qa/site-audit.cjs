@@ -47,10 +47,10 @@ for(let i=0;i<rows.length;i++){
 // Low Power Mode on Safari may add a giant native play overlay to <video autoplay>.
 for(const page of ['index.html','academy.html','business.html','explore.html','shop.html','shifts.html']){
  const html=own(page);
- const videos=[...html.matchAll(/<video\\b[^>]*>/gi)].map(m=>m[0]);
+ const videos=[...html.matchAll(/<video\b[^>]*>/gi)].map(m=>m[0]);
  if(!videos.length)fail(page,'expected at least one decorative video');
  for(const video of videos){
-  if(/\\sautoplay(?:\\s|>)/i.test(video))fail(page,'native autoplay attribute on a decorative video (Safari overlay risk)');
+  if(/\sautoplay(?:\s|>)/i.test(video))fail(page,'native autoplay attribute on a decorative video (Safari overlay risk)');
  }
 }
 for(const page of ['index.html','academy.html','business.html','explore.html','shifts.html']){
