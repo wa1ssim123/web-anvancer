@@ -188,10 +188,17 @@ async function run(){
     serviceWorkers:'block',
     userAgent:'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1'
    });
+   // Emulate Safari Low Power Mode blocking native video autoplay.
+   await context.addInitScript(()=>{
+    HTMLMediaElement.prototype.play=function(){
+     return Promise.reject(new DOMException('Autoplay blocked by power saving','NotAllowedError'));
+    };
+   });
    const page=await context.newPage();
    try{
     await page.goto(base+'/',{waitUntil:'domcontentloaded',timeout:20000});
     await page.waitForFunction(()=>document.querySelector('.hn-intro')?.classList.contains('open'),null,{timeout:6000});
+    await page.waitForFunction(()=>document.querySelector('.hn-intro-film.hn-ios-loop-active')&&document.querySelectorAll('.hn-intro-film video').length===0,null,{timeout:6000});
     const image=page.locator('.hn-ios-motion');
     await image.waitFor({state:'attached',timeout:5000});
     await page.waitForFunction(()=>document.querySelector('.hn-ios-motion')?.complete,null,{timeout:9000});
@@ -212,16 +219,16 @@ async function run(){
       };
     });
     assert.equal(state.videoCount,0,'Native video must be removed on iPhone to prevent play icon');
-    assert.ok(state.imageLoaded&&state.imageWidth>=400,'Full-frame cinematic GIF missing: '+JSON.stringify(state));
-    assert.ok(state.imageSrc.includes('/assets/horenova-cinema-mobile.gif'),'Still using split-frame WebP: '+JSON.stringify(state));
-    assert.ok(state.imageVisible&&state.imageFit==='cover','GIF not visible or not cover: '+JSON.stringify(state));
-    assert.ok(state.imageBox.width>=state.viewport-2,'GIF not filling phone viewport: '+JSON.stringify(state));
+    assert.ok(state.imageLoaded&&state.imageWidth>=720,'HD Safari WebP missing: '+JSON.stringify(state));
+    assert.ok(state.imageSrc.includes('/assets/horenova-cinema-mobile-hq.webp'),'Still using low-quality GIF: '+JSON.stringify(state));
+    assert.ok(state.imageVisible&&state.imageFit==='cover','HD image not visible or not cover: '+JSON.stringify(state));
+    assert.ok(state.imageBox.width>=state.viewport-2,'HD image not filling phone viewport: '+JSON.stringify(state));
     assert.ok(state.textLeft>=-2&&state.textRight<=state.viewport+2,'Intro wordmark cropped: '+JSON.stringify(state));
     assert.ok(state.pLeft>=-2&&state.pRight<=state.viewport+2,'Subtitle cropped: '+JSON.stringify(state));
     assert.equal(state.horizontalOverflow,false,'Horizontal scrolling on iPhone intro: '+JSON.stringify(state));
     await page.locator('.hn-intro-inner button').click();
     await page.waitForFunction(()=>document.querySelector('.hn-intro')?.classList.contains('gone'),null,{timeout:3000});
-    console.log('PASS simulated iPhone: full-screen moving GIF, no native video, readable title, Enter action');
+    console.log('PASS simulated iPhone Low Power: full-screen 720p 24fps image, no native player, readable title, Enter action');
    }catch(e){
     failures.push('Safari low power and title: '+e.message.slice(0,550));
     console.error('FAIL Safari low-power fallback '+e.message.slice(0,550));
