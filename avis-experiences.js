@@ -62,7 +62,15 @@
   more.setAttribute('aria-expanded',String(expanded));
  }
  $('experienceMore').addEventListener('click',()=>{expanded=!expanded;render();});
- const mo=new MutationObserver(()=>render());
+ // The global translator may assign the same lang repeatedly on DOM updates.
+ // Only rerender when the actual language changes to avoid a mutation loop.
+ let lastLanguage=locale();
+ const mo=new MutationObserver(()=>{
+  const nextLanguage=locale();
+  if(nextLanguage===lastLanguage)return;
+  lastLanguage=nextLanguage;
+  render();
+ });
  mo.observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
  render();
 })();
