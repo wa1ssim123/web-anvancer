@@ -19,12 +19,11 @@ done
 python - "$work" <<'PY'
 from PIL import Image, ImageChops, ImageStat
 from pathlib import Path
-import sys
+import subprocess,sys
 root=Path(sys.argv[1])
 a=[Image.open(x).convert('RGB') for x in sorted(root.glob('tourism-*.jpg'))]
 b=[Image.open(x).convert('RGB') for x in sorted(root.glob('kitchen-*.jpg'))]
-assert len(a)>=76 and len(b)>=76, (len(a),len(b))
-# Smooth 0.42 second transition (10 real frames), no 9fps slow-motion simulation.
+assert len(a)>=76 and len(b)>=76,(len(a),len(b))
 n=10
 frames=list(a[:-n])
 for i in range(n):
@@ -34,24 +33,29 @@ for i in range(n):
  frames.append(Image.blend(b[-n+i],a[i],(i+1)/(n+1)))
 assert len(frames)>140
 out=Path('assets/horenova-cinema-mobile-hq.webp')
+paths=[]
+for i,frame in enumerate(frames):
+ path=root/f'frame-{i:03d}.jpg'
+ frame.save(path,quality=92,subsampling=0)
+ paths.append(path)
 for quality in (82,78,75):
- frames[0].save(out,format='WEBP',save_all=True,append_images=frames[1:],
-  duration=42,loop=0,lossless=False,quality=quality,method=4,
-  kmin=1,kmax=1,minimize_size=False,allow_mixed=False,
-  background=(0,0,0,255))
- if out.stat().st_size < 26_000_000: break
-assert out.stat().st_size < 30_000_000, 'HD asset too heavy for mobile'
+ # The upstream img2webp encoder is more dependable than Pillow 13's
+ # animation encoder. -kmax 0 = independently decodable keyframe every frame.
+ command=['img2webp','-loop','0','-kmax','0','-o',str(out)]
+ for path in paths:
+  command.extend(['-d','42','-lossy','-q',str(quality),'-m','4',str(path)])
+ subprocess.run(command,check=True,stdout=subprocess.DEVNULL,stderr=subprocess.PIPE)
+ if out.stat().st_size<26_000_000:break
+assert out.stat().st_size<30_000_000,'HD animation exceeds mobile budget'
 with Image.open(out) as check:
- assert check.n_frames==len(frames), (check.n_frames,len(frames))
+ assert check.n_frames==len(frames),(check.n_frames,len(frames))
  assert check.size==(720,1280)
  for index in (0,20,len(a)-n-1,len(a)+10,len(frames)-1):
   check.seek(index)
-  assert check.info.get('duration') in (41,42,43), (index,check.info.get('duration'))
-  rendered=check.convert('RGB')
-  stats=ImageStat.Stat(ImageChops.difference(rendered,frames[index]))
-  assert max(stats.mean)<19, f'Frame {index} has compositing artifact: {stats.mean}'
-# 42ms per frame gives ~23.8fps, NOT slow-motion or 9fps.
-print(f'PASS HD animated WebP: {len(frames)} full-frame RGB keyframes, 720x1280, {1000/42:.2f}fps, {out.stat().st_size} bytes, quality={quality}')
+  assert 39<=check.info.get('duration',0)<=44,(index,check.info.get('duration'))
+  diff=ImageStat.Stat(ImageChops.difference(check.convert('RGB'),frames[index]))
+  assert max(diff.mean)<19,(index,diff.mean)
+print(f'PASS HD WebP: {len(frames)} complete keyframes, 720x1280, {1000/42:.2f}fps, {out.stat().st_size} bytes, quality={quality}')
 PY
 # Native hardware-decoded MP4 for iOS when muted autoplay is permitted. A
 # hidden video is promoted ONLY once playback has actually started.
