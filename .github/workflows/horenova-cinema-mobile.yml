@@ -1,0 +1,41 @@
+name: HORENOVA cinematic mobile animation
+on:
+  push:
+    branches: [horenova-free-deploy-2026]
+    paths:
+      - scripts/build_horenova_mobile_loop.sh
+      - .github/workflows/horenova-cinema-mobile.yml
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  animated-webp:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Build always-animated tourism and cuisine loop
+        run: |
+          ffmpeg -version | head -n 1
+          bash scripts/build_horenova_mobile_loop.sh
+      - name: Verify animated WebP frames
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('assets/horenova-cinema-mobile.webp')
+          data=p.read_bytes()
+          assert data[:4]==b'RIFF' and data[8:12]==b'WEBP', 'Invalid WebP'
+          assert b'ANIM' in data and data.count(b'ANMF')>=30, 'Not animated WebP'
+          assert p.stat().st_size < 12_000_000, 'Mobile animation exceeds 12 MB'
+          print('PASS: animated WebP',p.stat().st_size,'bytes and',data.count(b'ANMF'),'frames')
+          PY
+      - name: Publish optimized mobile animation
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/horenova-cinema-mobile.webp
+          if ! git diff --cached --quiet; then
+            git commit -m "Generate always-moving Safari mobile cinema fallback"
+            git push origin HEAD:horenova-free-deploy-2026
+          fi
