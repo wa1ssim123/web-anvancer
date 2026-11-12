@@ -59,7 +59,10 @@ export function subscribeMember(fn) {
     // First subscriber triggers the initial session read (browser only — SSR renders `loading`).
     if (!started && typeof window !== "undefined") {
         started = true;
-        void refreshMember();
+        // Defer the first refresh until subscribeMember has returned its
+        // unsubscribe callback. Without this, a logged-out visitor can receive
+        // a synchronous notification while callers still initialize `unsub`.
+        void Promise.resolve().then(refreshMember);
     }
     return () => listeners.delete(listener);
 }
