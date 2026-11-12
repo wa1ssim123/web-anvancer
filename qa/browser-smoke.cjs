@@ -227,7 +227,7 @@ async function run(){
     assert.ok(state.textLeft>=-2&&state.textRight<=state.viewport+2,'Intro wordmark cropped: '+JSON.stringify(state));
     assert.ok(state.pLeft>=-2&&state.pRight<=state.viewport+2,'Subtitle cropped: '+JSON.stringify(state));
     assert.equal(state.horizontalOverflow,false,'Horizontal scrolling on iPhone intro: '+JSON.stringify(state));
-    await page.locator('.hn-intro-inner button').click();
+    await page.locator('.hn-intro-inner>button').first().click();
     await page.waitForFunction(()=>document.querySelector('.hn-intro')?.classList.contains('gone'),null,{timeout:3000});
     console.log('PASS simulated iPhone Low Power: crisp 1080p poster, no heavy animated image, discreet HD activation, readable title and Enter action');
    }catch(e){
