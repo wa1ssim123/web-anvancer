@@ -156,13 +156,21 @@ async function api(req,res,path,method) {
     return json(res,200,{ok:true});
   }
   if(path==='/api/recruiter-requests' && method==='POST'){
-    requireRole(user,['recruiter']);rate(user.id+':requests',10,3600);
+    requireRole(user,['recruiter']);
     const d=await read(req);
-    const title=limit(d.jobTitle,120), business=limit(d.businessName,120);
+    // Accept the legacy public form's "title" and the central API's "jobTitle".
+    const title=limit(d.jobTitle || d.title,120), business=limit(d.businessName,120);
     if(title.length<4 || business.length<2) throw error(422,'Titre et établissement obligatoires.');
+    const wixRequestId=limit(d.wixRequestId,100);
+    // Retry after a partial Wix success must not create a duplicate central request.
+    if(wixRequestId){
+      const existing=await pool.query('SELECT id FROM hr_recruiter_requests WHERE recruiter_wix_id=$1 AND wix_request_id=$2 ORDER BY created_at DESC LIMIT 1',[user.id,wixRequestId]);
+      if(existing.rows[0])return json(res,200,{id:existing.rows[0].id,ok:true,alreadyRecorded:true});
+    }
+    rate(user.id+':requests',10,3600);
     const values=[user.id,business,limit(d.contactName,120),limit(d.phone,40),
       title,limit(d.role,90),limit(d.city,80),limit(d.kind,12),limit(d.salaryText,100),
-      limit(d.scheduleText,120),limit(d.description,1500),limit(d.wixRequestId,100)];
+      limit(d.scheduleText,120),limit(d.description,1500),wixRequestId];
     const q=await pool.query('INSERT INTO hr_recruiter_requests(recruiter_wix_id,business_name,contact_name,contact_phone,job_title,job_role,city,kind,salary_text,schedule_text,description,wix_request_id) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) RETURNING id',values);
     return json(res,201,{id:q.rows[0].id,ok:true});
   }
