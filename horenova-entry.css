@@ -12,3 +12,24 @@ html.hn-entry-active,html.hn-entry-active body{overflow:hidden!important;overscr
 .hn-entry.hn-entry--exit .hn-entry__button{opacity:0;transform:translate(-50%,-50%) scale(1.4)}
 @media(max-width:600px){.hn-entry__button{min-width:155px;min-height:55px;padding:14px 24px;font-size:13px}}
 @media(prefers-reduced-motion:reduce){.hn-entry{transition:opacity .2s ease}.hn-entry.hn-entry--exit{clip-path:none;filter:none;opacity:0}.hn-entry__button{transition:none}}
+
+
+/* Always-moving visual when Safari refuses the muted video (Low Power Mode). */
+.hn-entry::before{
+ content:"";position:absolute;inset:-7%;z-index:0;pointer-events:none;
+ background-image:var(--hn-entry-fallback);
+ background-size:cover;background-position:center;
+ animation:hn-entry-fallback-pan 18s ease-in-out infinite alternate;
+}
+.hn-entry__video{opacity:0;transition:opacity .55s ease;pointer-events:none}
+.hn-entry.hn-entry--playing .hn-entry__video{opacity:1}
+.hn-entry__video::-webkit-media-controls-start-playback-button{display:none!important}
+.hn-entry__video::-webkit-media-controls-panel{display:none!important}
+@keyframes hn-entry-fallback-pan{
+ from{transform:scale(1.02) translate3d(-1%,0,0)}
+ to{transform:scale(1.1) translate3d(1%,1%,0)}
+}
+@media(prefers-reduced-motion:reduce){
+ .hn-entry::before{animation:none}
+ .hn-entry__video{transition:none}
+}
