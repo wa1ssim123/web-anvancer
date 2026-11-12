@@ -1,7 +1,5 @@
 import { subscribeMember, getMemberState } from "/js/wix/member-store.js";
 
-const DEMO_KEY='mihna-demo-session-v1';
-function hasDemo(){ try{return !!JSON.parse(localStorage.getItem(DEMO_KEY)||'null')}catch{return false} }
 const protectedPaths = new Set([
   '/jobs.html','/shifts.html','/talents.html','/matches.html','/academy.html','/shop.html','/business.html','/explore.html',
   '/favorites.html','/account.html','/candidate-setup.html','/recruiter-setup.html','/recruit.html','/quiz.html','/apply.html',
@@ -46,9 +44,6 @@ document.addEventListener('click',e=>{
   location.href='/login.html?returnTo='+encodeURIComponent(returnTo);
 },true);
 
-if(hasDemo()) applyState(true);
-else {
-  const decide=s=>{if(!s.loading) applyState(!!s.loggedIn)};
-  subscribeMember(decide);
-  decide(getMemberState());
-}
+const decide=s=>{if(!s.loading) applyState(!!s.loggedIn)};
+subscribeMember(decide);
+decide(getMemberState());
