@@ -16,6 +16,7 @@ function validReturn(value){
 }
 const safeReturn=validReturn(requestedReturn);
 const HINT_KEY='horenova-session-hint-v1';
+const ADMIN_MEMBER_ID='d0158d67-a1cc-4b65-b3d3-67e20c84fdb3';
 let selectedRole='candidate',pendingRole=null,working=false,navigating=false,initialCheckComplete=false;
 let existingCompletionMode=false,registeredSession=false;
 let activeMode=requestedMode;
@@ -114,6 +115,9 @@ function roleDestination(role,firstTime=false){
 async function existingRole(){
   const member=verifiedMember();
   if(!member)return null;
+  // Admin identity is verified against the same Wix member id as mihna-global.js.
+  // Never ask the administrator to create a public candidate/recruiter role.
+  if(member.id===ADMIN_MEMBER_ID)return 'admin';
   const result=await queryItems('AccountRoles',{filters:[{field:'_owner',op:'eq',value:member.id}],limit:1});
   const record=result.items?.[0];
   return supportedRoles.includes(record?.role)||record?.role==='admin' ? record.role : null;
