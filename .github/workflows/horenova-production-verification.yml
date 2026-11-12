@@ -23,10 +23,11 @@ jobs:
           done
           grep -q 'hn-ios-motion' /tmp/home
           grep -q 'fullframe-20261112-2' /tmp/home
+          grep -q 'horenova-home-film-iphone-final.css' /tmp/home
           curl -fsSL --connect-timeout 8 --max-time 22 "https://horenova.com/horenova-home-film.js?deploycheck=${GITHUB_RUN_ID}" -o /tmp/film.js
           grep -q 'fitIntroHeading' /tmp/film.js
           grep -q 'hn-ios-loop-active' /tmp/film.js
-          curl -fsSL --connect-timeout 8 --max-time 25 "https://horenova.com/horenova-home-film.css?deploycheck=${GITHUB_RUN_ID}" -o /tmp/film.css
+          curl -fsSL --connect-timeout 8 --max-time 25 "https://horenova.com/horenova-home-film-iphone-final.css?deploycheck=${GITHUB_RUN_ID}" -o /tmp/film.css
           wc -c /tmp/home /tmp/film.js /tmp/film.css
           grep -q 'Fixed-frame GIF renderer' /tmp/film.css
           grep -q 'horenova-cinema-mobile.gif' /tmp/home
