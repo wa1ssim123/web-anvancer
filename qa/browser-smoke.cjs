@@ -205,18 +205,23 @@ async function run(){
       return {
        videoCount:document.querySelectorAll('.hn-intro-film video').length,
        imageLoaded:pic.naturalWidth>0, imageWidth:pic.naturalWidth,
+       imageVisible:getComputedStyle(pic).display!=='none',imageFit:getComputedStyle(pic).objectFit,
+       imageSrc:pic.currentSrc, imageBox:pic.getBoundingClientRect().toJSON(),
        viewport,textLeft:text.left,textRight:text.right,pLeft:p.left,pRight:p.right,
        horizontalOverflow:document.documentElement.scrollWidth>innerWidth+2
       };
     });
     assert.equal(state.videoCount,0,'Native video must be removed on iPhone to prevent play icon');
-    assert.ok(state.imageLoaded&&state.imageWidth>=500,'Animated cinematic WebP missing: '+JSON.stringify(state));
+    assert.ok(state.imageLoaded&&state.imageWidth>=400,'Full-frame cinematic GIF missing: '+JSON.stringify(state));
+    assert.ok(state.imageSrc.includes('/assets/horenova-cinema-mobile.gif'),'Still using split-frame WebP: '+JSON.stringify(state));
+    assert.ok(state.imageVisible&&state.imageFit==='cover','GIF not visible or not cover: '+JSON.stringify(state));
+    assert.ok(state.imageBox.width>=state.viewport-2,'GIF not filling phone viewport: '+JSON.stringify(state));
     assert.ok(state.textLeft>=-2&&state.textRight<=state.viewport+2,'Intro wordmark cropped: '+JSON.stringify(state));
     assert.ok(state.pLeft>=-2&&state.pRight<=state.viewport+2,'Subtitle cropped: '+JSON.stringify(state));
     assert.equal(state.horizontalOverflow,false,'Horizontal scrolling on iPhone intro: '+JSON.stringify(state));
     await page.locator('.hn-intro-inner button').click();
     await page.waitForFunction(()=>document.querySelector('.hn-intro')?.classList.contains('gone'),null,{timeout:3000});
-    console.log('PASS iPhone Safari low-power fallback, readable wordmark, Enter action');
+    console.log('PASS simulated iPhone: full-screen moving GIF, no native video, readable title, Enter action');
    }catch(e){
     failures.push('Safari low power and title: '+e.message.slice(0,550));
     console.error('FAIL Safari low-power fallback '+e.message.slice(0,550));
