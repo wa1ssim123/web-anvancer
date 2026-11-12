@@ -9,7 +9,7 @@
  const root=document.getElementById('experienceGallery');
  if(!root)return;
  const $=id=>document.getElementById(id);
- let filter='all', expanded=false;
+ let filter='all', expanded=true;
  const locale=()=>['fr','en','ar'].includes(document.documentElement.lang)?document.documentElement.lang:'fr';
  const position=lang=>lang==='en'?5:lang==='ar'?7:3;
  function newEl(tag,className,text){
