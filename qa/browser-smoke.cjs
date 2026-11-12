@@ -180,6 +180,48 @@ async function run(){
     console.error('FAIL simulated Low Power Mode '+url+': '+e.message.slice(0,350));
    }finally{await context.close();}
   }
+  // iPhone Safari branch: no VIDEO elements remain behind a blocked native
+  // play triangle. An actual multi-frame animated WebP fills the screen.
+  {
+   const context=await browser.newContext({
+    viewport:{width:390,height:844},deviceScaleFactor:3,isMobile:true,hasTouch:true,
+    serviceWorkers:'block',
+    userAgent:'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1'
+   });
+   const page=await context.newPage();
+   try{
+    await page.goto(base+'/',{waitUntil:'domcontentloaded',timeout:20000});
+    await page.waitForFunction(()=>document.querySelector('.hn-intro')?.classList.contains('open'),null,{timeout:6000});
+    const image=page.locator('.hn-ios-motion');
+    await image.waitFor({state:'attached',timeout:5000});
+    await page.waitForFunction(()=>document.querySelector('.hn-ios-motion')?.complete,null,{timeout:9000});
+    const state=await page.evaluate(()=>{
+      const title=document.querySelector('.hn-intro-inner h1');
+      const range=document.createRange();range.selectNodeContents(title);
+      const text=range.getBoundingClientRect();
+      const p=document.querySelector('.hn-intro-inner p').getBoundingClientRect();
+      const pic=document.querySelector('.hn-ios-motion');
+      const viewport=visualViewport?.width||innerWidth;
+      return {
+       videoCount:document.querySelectorAll('.hn-intro-film video').length,
+       imageLoaded:pic.naturalWidth>0, imageWidth:pic.naturalWidth,
+       viewport,textLeft:text.left,textRight:text.right,pLeft:p.left,pRight:p.right,
+       horizontalOverflow:document.documentElement.scrollWidth>innerWidth+2
+      };
+    });
+    assert.equal(state.videoCount,0,'Native video must be removed on iPhone to prevent play icon');
+    assert.ok(state.imageLoaded&&state.imageWidth>=500,'Animated cinematic WebP missing: '+JSON.stringify(state));
+    assert.ok(state.textLeft>=-2&&state.textRight<=state.viewport+2,'Intro wordmark cropped: '+JSON.stringify(state));
+    assert.ok(state.pLeft>=-2&&state.pRight<=state.viewport+2,'Subtitle cropped: '+JSON.stringify(state));
+    assert.equal(state.horizontalOverflow,false,'Horizontal scrolling on iPhone intro: '+JSON.stringify(state));
+    await page.locator('.hn-intro-inner button').click();
+    await page.waitForFunction(()=>document.querySelector('.hn-intro')?.classList.contains('gone'),null,{timeout:3000});
+    console.log('PASS iPhone Safari low-power fallback, readable wordmark, Enter action');
+   }catch(e){
+    failures.push('Safari low power and title: '+e.message.slice(0,550));
+    console.error('FAIL Safari low-power fallback '+e.message.slice(0,550));
+   }finally{await context.close();}
+  }
   // Real Chromium navigation for the two account screens. No test accounts are created.
   for(const startingMode of ['signin','signup']){
    const context=await browser.newContext({serviceWorkers:'block'});
