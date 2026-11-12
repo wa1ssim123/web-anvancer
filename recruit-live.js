@@ -1,8 +1,8 @@
 import { requireRole } from '/mihna-global.js';
 import { queryItems, insertItem } from '/js/wix/items.js';
 import { hub } from '/hn-api.js';
-const auth=await requireRole(['recruiter','admin']);
-if(!auth)throw new Error('Accès non autorisé');
+const auth=await requireRole(['recruiter'],false);
+if(!auth){location.replace('/account.html');throw new Error('Espace réservé aux recruteurs');}
 const root=document.getElementById('recruitGate');
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let prof=null;
