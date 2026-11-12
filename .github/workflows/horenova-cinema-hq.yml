@@ -1,0 +1,33 @@
+name: HORENOVA high-quality full-speed iPhone cinema
+on:
+  push:
+    branches: [horenova-free-deploy-2026]
+    paths:
+      - scripts/build_horenova_mobile_hq.sh
+      - .github/workflows/horenova-cinema-hq.yml
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Install video tools and animation encoder
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq --no-install-recommends ffmpeg
+          python -m pip install pillow
+      - name: Build and verify native-speed 24fps HD animation
+        run: bash scripts/build_horenova_mobile_hq.sh
+      - name: Commit tested animation assets
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/horenova-cinema-mobile-hq.webp assets/horenova-cinema-mobile-hq.mp4
+          if ! git diff --cached --quiet; then
+            git commit -m "Replace low-quality 9fps mobile GIF with 24fps HD animation"
+            git push origin HEAD:horenova-free-deploy-2026
+          fi
