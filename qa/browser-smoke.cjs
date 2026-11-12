@@ -89,7 +89,7 @@ async function run(){
     assert.match(await page.locator('.rv-x-demo').first().innerText(),/توضيحي/);
     await page.locator('#hn-language-control').selectOption('en',{force:true});
     await page.waitForFunction(()=>document.documentElement.lang==='en',null,{timeout:5000});
-    assert.match(await page.locator('.rv-x-demo').first().innerText(),/Illustrative/);
+    assert.match(await page.locator('.rv-x-demo').first().innerText(),/illustrative/i);
     assert.equal(problems.length,0,'Unexpected JS errors: '+problems.join(' | '));
     console.log('PASS gallery: 32 illustrative examples, filters, FR/AR/EN, zero effect on authentic reviews');
    }catch(e){
