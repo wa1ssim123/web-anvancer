@@ -1,0 +1,49 @@
+name: Build HORENOVA favicon assets
+on:
+  push:
+    branches:
+      - horenova-free-deploy-2026
+    paths:
+      - assets/horenova-brand-mark.svg
+      - scripts/build_horenova_favicons.py
+      - .github/workflows/horenova-brand-favicon.yml
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build-favicon:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install image build dependencies
+        run: python -m pip install --disable-pip-version-check pillow cairosvg
+      - name: Generate PNG and ICO in brand colors
+        run: python scripts/build_horenova_favicons.py
+      - name: Verify file signatures and visual sizes
+        run: |
+          python - <<'PY'
+          from PIL import Image
+          files=[('favicon.png',192),('assets/horenova-icon-96.png',96),('assets/horenova-icon-180.png',180),('assets/horenova-icon-192.png',192),('assets/horenova-icon-512.png',512)]
+          for path,px in files:
+              with Image.open(path) as im:
+                  assert im.format=='PNG' and im.size==(px,px),path
+          with Image.open('favicon.ico') as im:
+              assert im.format=='ICO',im.format
+          print('PASS: favicon image files are valid')
+          PY
+      - name: Commit generated browser icons
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add favicon.png favicon.ico assets/horenova-icon-96.png assets/horenova-icon-180.png assets/horenova-icon-192.png assets/horenova-icon-512.png
+          if git diff --cached --quiet; then
+            echo "Favicon files already up to date"
+          else
+            git commit -m "Update favicon images to match HORENOVA brand palette"
+            git push origin HEAD:horenova-free-deploy-2026
+          fi
