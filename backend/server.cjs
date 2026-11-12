@@ -56,9 +56,14 @@ async function wixFetch(token, endpoint, body) {
   }
   return await response.json();
 }
-async function wixItems(token, collection, pageLimit=50) {
+async function wixItems(token, collection, pageLimit=50, ownerId='') {
+  // Always scope private collections to the Wix-verified member. Paging a global
+  // collection and then searching locally can select an unrelated account.
   const r=await wixFetch(token,'/wix-data/v2/items/query',{
-    dataCollectionId: collection,query:{paging:{limit:pageLimit,offset:0}}
+    dataCollectionId: collection,query:{
+      ...(ownerId ? {filter:{_owner:{$eq:ownerId}}} : {}),
+      paging:{limit:pageLimit,offset:0}
+    }
   });
   return (r.dataItems || []).map(x=>x.data || {});
 }
@@ -72,7 +77,7 @@ async function auth(req) {
   let role='none';
   if(member.id === ADMIN_WIX_ID && ADMIN_WIX_ID) role='admin';
   else {
-    const roles=await wixItems(token,'AccountRoles',5);
+    const roles=await wixItems(token,'AccountRoles',5,member.id);
     const own=roles.find(x=>x._owner === member.id);
     role=['candidate','recruiter'].includes(own?.role) ? own.role : 'none';
   }
@@ -226,10 +231,10 @@ async function api(req,res,path,method) {
     const found=await wixFetch(user.token,'/wix-data/v2/items/'+encodeURIComponent(id)+'?dataCollectionId=Jobs');
     const job=found.dataItem?.data || {};
     if(!job.active || !job._id) throw error(422,'Cette offre n’est pas active.');
-    const profiles=await wixItems(user.token,'CandidateProfiles',10);
+    const profiles=await wixItems(user.token,'CandidateProfiles',10,user.id);
     const profile=profiles.find(x=>x._owner===user.id);
     if(!profile?.profileComplete || !profile?.videoFileId || !profile.videoConsent) throw error(422,'Complétez votre profil et votre vidéo confidentielle avant de postuler.');
-    const attempts=await wixItems(user.token,'QuizAttempts',100);
+    const attempts=await wixItems(user.token,'QuizAttempts',100,user.id);
     const best=attempts.filter(a=>a.passed && a.jobFamily===job.role).sort((a,b)=>(b.score||0)-(a.score||0))[0];
     if(!best) throw error(422,'Vous devez réussir le quiz métier correspondant avant de postuler.');
     const allowed=['firstName','lastName','age','city','jobFamily','bio','arabic','arabicLevel','french','frenchLevel','english','englishLevel','otherLanguage','otherLanguageLevel','preferredLanguage','videoFileId','videoConsent','profileComplete'];
