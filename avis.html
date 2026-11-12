@@ -10,7 +10,7 @@
 <link rel="icon" type="image/png" sizes="192x192" href="/favicon.png">
 <link rel="shortcut icon" href="/favicon.ico">
 <link rel="apple-touch-icon" href="/assets/horenova-icon-180.png">
-<link rel="stylesheet" href="/avis.css">
+<link rel="stylesheet" href="/avis.css?v=gallery-20261112">
 </head>
 <body>
 <a class="skip" href="#main">Aller au contenu</a>
@@ -24,9 +24,28 @@
   <div class="rv-wrap"><div class="rv-kicker"><span class="rv-glow"></span> HORENOVA · PAROLE AUX MEMBRES</div>
   <h1>Votre expérience.<br><em>Notre meilleure référence.</em></h1>
   <p>Vos retours nous aident à améliorer le recrutement, les missions, la formation et la découverte du Maroc. Des avis réels, publiés après modération.</p>
-  <div class="rv-hero-actions"><a href="#donner-avis" class="rv-primary">Partager mon expérience <span>↗</span></a><a href="#avis-publies" class="rv-secondary">Lire les avis ↓</a></div>
-  <div class="rv-stats" id="reviewSummary"><span class="rv-stat-label">Avis de nos membres</span><strong>—</strong><span>Chargement des avis publiés…</span></div>
+  <div class="rv-hero-actions"><a href="#donner-avis" class="rv-primary">Partager mon expérience <span>↗</span></a><a href="#experiences-illustratives" class="rv-secondary">Découvrir les parcours ↓</a></div>
+  <div class="rv-stats" id="reviewSummary"><span class="rv-stat-label">Avis authentiques</span><strong>—</strong><span>Chargement des avis publiés…</span></div>
   </div>
+</section>
+<section class="rv-section rv-experiences" id="experiences-illustratives" aria-labelledby="experienceTitle">
+ <div class="rv-wrap">
+  <div class="rv-sectionhead rv-x-intro"><div>
+   <span class="rv-eyebrow" id="experienceEyebrow">PARCOURS EN IMAGES · EXEMPLES</span>
+   <h2 id="experienceTitle">Imaginez votre expérience.</h2>
+  </div><p id="experienceSubtitle">Des mises en situation pour découvrir les services HORENOVA. Personnages et étoiles illustratifs, pas des avis de clients.</p></div>
+  <div class="rv-x-toolbar">
+   <div class="rv-x-filters" id="experienceFilters" role="group" aria-label="Catégories des parcours">
+    <button class="rv-x-filter is-active" type="button">Tous</button>
+   </div>
+   <span id="experienceCount" class="rv-x-count" aria-live="polite">32 scénarios</span>
+  </div>
+  <div id="experienceGallery" class="rv-x-grid"><p class="rv-empty">Présentation des parcours HORENOVA.</p></div>
+  <div class="rv-x-actions">
+   <button id="experienceMore" class="rv-x-more" type="button" aria-controls="experienceGallery" aria-expanded="false" hidden>Voir plus de scénarios</button>
+   <a id="experienceRealLink" class="rv-x-real" href="#avis-publies">Voir les avis authentiques ↗</a>
+  </div>
+ </div>
 </section>
 <section class="rv-section rv-reviews rv-wrap" id="avis-publies">
   <div class="rv-sectionhead"><div><span class="rv-eyebrow">RETours D’EXPÉRIENCE</span><h2>Ils partagent<br><em>leur parcours.</em></h2></div><p>Seuls les commentaires rédigés par des membres connectés et validés par l’équipe HORENOVA sont publiés. Aucune note n’est inventée.</p></div>
@@ -59,4 +78,5 @@
 </main>
 <footer class="rv-footer"><div class="rv-wrap rv-footer-row"><span>HORENOVA<span class="rv-green">.</span></span><p>Hospitality, reimagined in Morocco.</p><a href="/">Retour à l’accueil ↑</a></div></footer>
 <script type="module" src="/avis.js?v=20261111"></script>
+<script src="/avis-experiences.js?v=gallery-20261112" defer></script>
 <script defer src="/horenova-i18n.js?v=final-20261112-2"></script></body></html>
