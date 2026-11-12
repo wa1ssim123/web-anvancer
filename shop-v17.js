@@ -16,8 +16,9 @@ const PRODUCTS = [
 const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const KEY='horenova-shop-saved-v1';
-const saved=()=>{try{return JSON.parse(localStorage.getItem(KEY)||'[]')}catch{return[]}};
-const saveList=a=>localStorage.setItem(KEY,JSON.stringify(a));
+let sessionSaved=null;
+const saved=()=>{if(sessionSaved)return [...sessionSaved];try{const data=JSON.parse(localStorage.getItem(KEY)||'[]');return Array.isArray(data)?[...new Set(data.filter(id=>typeof id==='string'&&PRODUCTS.some(p=>p.id===id)))]:[]}catch{return[]}};
+const saveList=a=>{sessionSaved=[...a];try{localStorage.setItem(KEY,JSON.stringify(a))}catch{/* Keep the selection usable when storage is disabled. */}};
 function toast(msg){let t=$('.shop17-toast');if(!t){t=document.createElement('div');t.className='shop17-toast';document.body.append(t)}t.textContent=msg;t.classList.add('show');clearTimeout(window.__shop17);window.__shop17=setTimeout(()=>t.classList.remove('show'),1700)}
 function toggleSaved(id){let a=saved();a=a.includes(id)?a.filter(x=>x!==id):[...a,id];saveList(a);updateSaved();toast(a.includes(id)?'Ajouté à votre sélection':'Retiré de votre sélection')}
 function updateSaved(){const n=saved().length;$$('[data-shop-saved-count]').forEach(x=>x.textContent=n);$$('[data-save-product]').forEach(b=>b.classList.toggle('saved',saved().includes(b.dataset.saveProduct)))}
