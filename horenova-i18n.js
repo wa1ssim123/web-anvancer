@@ -30,21 +30,33 @@ function doText(node,lang){
  if(node.nodeType!==3)return;
  const parent=node.parentElement;
  if(!parent||parent.closest(exclude))return;
- const current=node.nodeValue||'',old=originalNodes.get(node)||current;
- const dest=target(old,lang)||target(current,lang);
- if(!dest)return;
- if(!originalNodes.has(node))originalNodes.set(node,old);
- const head=old.match(/^\s*/)[0],tail=old.match(/\s*$/)[0];
- const next=head+dest+tail;
- if(current!==next)node.nodeValue=next;
+ const current=node.nodeValue||'';
+ const previous=originalNodes.get(node);
+ // A live component may replace the text of an existing node. Only reuse the
+ // saved source while the node still contains the translation we rendered.
+ const source=previous&&current===previous.rendered?previous.source:current;
+ const dest=target(source,lang);
+ if(!dest){
+  if(previous&&current!==previous.rendered)originalNodes.delete(node);
+  return;
+ }
+ const head=source.match(/^\s*/)[0],tail=source.match(/\s*$/)[0];
+ const rendered=head+dest+tail;
+ originalNodes.set(node,{source,rendered});
+ if(current!==rendered)node.nodeValue=rendered;
 }
 function doAttr(el,attr,lang){
  if(!el.hasAttribute(attr))return;
- let orig=originalAttrs.get(el);
- if(!orig){orig={};originalAttrs.set(el,orig);}
- if(!(attr in orig))orig[attr]=el.getAttribute(attr);
- const dest=target(orig[attr],lang);
- if(dest&&el.getAttribute(attr)!==dest)el.setAttribute(attr,dest);
+ let saved=originalAttrs.get(el);
+ if(!saved){saved={};originalAttrs.set(el,saved);}
+ const current=el.getAttribute(attr);
+ const previous=saved[attr];
+ // Form validation and UI updates also replace placeholders and labels.
+ const source=previous&&current===previous.rendered?previous.source:current;
+ const dest=target(source,lang);
+ if(!dest){delete saved[attr];return;}
+ saved[attr]={source,rendered:dest};
+ if(current!==dest)el.setAttribute(attr,dest);
 }
 function translate(){
  if(applying||!document.body)return;
