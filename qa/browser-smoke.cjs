@@ -57,6 +57,29 @@ async function run(){
     console.error('FAIL browser locale: '+url+' — '+error.message.slice(0,180)+' URL='+where+' BODY='+pageText.slice(0,260)+' ERRORS='+issues.slice(0,5).join(' | '));
    }finally{await context.close();}
   }
+  // Real Chromium navigation for the two account screens. No test accounts are created.
+  for(const startingMode of ['signin','signup']){
+   const context=await browser.newContext({serviceWorkers:'block'});
+   const page=await context.newPage();
+   try{
+    await page.goto(base+'/enter.html?mode='+startingMode,{waitUntil:'domcontentloaded',timeout:20000});
+    await page.locator('html[data-auth-ui-ready="1"]').waitFor({timeout:8000});
+    assert.equal(await page.locator('#signupForm').isVisible(),startingMode==='signup');
+    for(const mode of ['signup','signin','signup']){
+     await page.locator('[data-auth-tab="'+mode+'"]').click();
+     assert.equal(await page.locator('#signupForm').isVisible(),mode==='signup');
+     assert.equal(await page.locator('#signinForm').isVisible(),mode==='signin');
+     assert.equal(new URL(page.url()).searchParams.get('mode'),mode);
+    }
+    await page.reload({waitUntil:'domcontentloaded'});
+    await page.locator('html[data-auth-ui-ready="1"]').waitFor({timeout:8000});
+    assert.equal(await page.locator('#signupForm').isVisible(),true,'Signup tab lost after reload');
+    console.log('PASS browser registration/sign-in switching and refresh: '+startingMode);
+   }catch(e){
+    failures.push('Account navigation '+startingMode+': '+e.message.slice(0,500));
+    console.error('FAIL browser account navigation '+startingMode+': '+e.message.slice(0,350));
+   }finally{await context.close();}
+  }
   for(const url of ['/jobs.html','/shifts.html','/explore-guide.html']){
    const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,serviceWorkers:'block'});
    const page=await context.newPage();
