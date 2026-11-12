@@ -119,3 +119,39 @@ background:radial-gradient(ellipse 48% 47% at 50% 50%,rgba(5,9,12,.60),rgba(5,9,
  .hn-cinema-strip::before,.hn-academy-film::before{animation:none}
  .hn-cinema-strip>video,.hn-academy-film>video{transition:none}
 }
+
+
+/* iPhone Safari low-power-safe cinematic intro.
+   An animated WebP contains moving frames from the two genuine HORENOVA clips.
+   Native video elements are completely absent from compositing on iOS, because
+   hiding media controls with ::-webkit-media-controls alone is not reliable. */
+.hn-ios-motion{display:none;position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;pointer-events:none}
+.hn-ios-motion[hidden]{display:none!important}
+@supports (-webkit-touch-callout:none){
+ .hn-intro-film video.hn-film-clip{display:none!important}
+ .hn-ios-motion:not([hidden]){display:block!important;z-index:1}
+ .hn-intro-film.is-media-playing::before{opacity:1}
+}
+/* Prevent iOS text autosizing and any intro wordmark/description clipping. */
+.hn-intro{-webkit-text-size-adjust:100%;text-size-adjust:100%;max-width:100%;overflow:hidden}
+.hn-intro .hn-intro-inner{
+ box-sizing:border-box;width:100%;max-width:min(740px,100vw);
+ min-width:0;overflow:visible;padding-inline:clamp(16px,4.5vw,32px)!important;
+ margin-inline:auto;
+}
+.hn-intro .hn-intro-inner h1{
+ display:block;max-width:100%;white-space:nowrap;
+ line-height:1.13!important;letter-spacing:-.055em!important;
+ font-size:clamp(34px,11vw,76px)!important;
+ margin:0 auto;overflow:visible;
+}
+.hn-intro .hn-intro-inner p{
+ max-width:100%;overflow-wrap:break-word;line-height:1.5;
+ margin-inline:auto;
+}
+@media(max-width:650px){
+ .hn-intro .hn-intro-inner h1{font-size:clamp(34px,11vw,66px)!important}
+ .hn-intro .hn-intro-inner p{font-size:clamp(12px,3.3vw,16px)!important}
+ .hn-intro .hn-intro-inner small{font-size:clamp(8px,2.3vw,12px)!important;letter-spacing:.16em}
+ .hn-intro .hn-intro-inner button{min-width:152px;min-height:48px;font-size:12px!important}
+}
