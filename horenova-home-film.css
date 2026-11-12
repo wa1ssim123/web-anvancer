@@ -13,3 +13,82 @@ background:radial-gradient(ellipse 48% 47% at 50% 50%,rgba(5,9,12,.60),rgba(5,9,
 .hn-intro button:focus-visible{outline:3px solid white;outline-offset:4px}
 @media(max-width:650px){.hn-intro h1{font-size:clamp(47px,13vw,76px)!important;letter-spacing:-.06em!important}.hn-intro-inner{padding:20px}.hn-intro p{font-size:13px}}
 @media(prefers-reduced-motion:reduce){.hn-film-clip{transition:none}}
+
+
+/* HORENOVA mobile navigation: the brand has its own unobstructed row.
+ * Language stays at the top right; account CTA spans the entire second row. */
+.hn-home-head,.hn-home-head *{box-sizing:border-box}
+.hn-home-brand{min-width:0;max-width:none!important;text-decoration:none}
+.hn-home-brand strong{white-space:nowrap;text-decoration:none}
+.hn-home-brand small{white-space:nowrap;line-height:1.4}
+.hn-home-actions{min-width:0;align-items:center}
+.hn-home-actions a{text-decoration:none}
+@media(max-width:700px){
+ .hn-home-head{
+  display:grid!important;grid-template-columns:minmax(0,1fr) 68px;
+  grid-template-rows:auto auto;grid-template-areas:"brand lang" "signup signup";
+  gap:11px!important;align-items:center!important;
+  left:10px;right:10px;top:10px;padding:13px!important;
+  max-width:calc(100vw - 20px);border-radius:24px;
+ }
+ .hn-home-head .hn-home-brand{
+  grid-area:brand;min-width:0;max-width:none!important;width:auto!important;
+  display:flex;align-items:center;gap:10px;overflow:visible;
+ }
+ .hn-home-brand img{flex:0 0 36px;width:36px;height:auto}
+ .hn-home-brand strong{font-size:clamp(20px,6vw,27px);line-height:1.1;letter-spacing:-.035em}
+ .hn-home-brand small{font-size:clamp(6px,1.9vw,8px);letter-spacing:.13em;white-space:normal}
+ .hn-home-actions{display:contents!important}
+ .hn-home-actions a[href*="signin"]{display:none!important}
+ .hn-home-actions a.primary{
+  grid-area:signup;display:flex!important;align-items:center;justify-content:center;
+  min-width:0;width:100%;min-height:44px;padding:12px 14px!important;
+  margin:0;white-space:nowrap;line-height:1.25;
+  text-decoration:none;position:static!important;font-size:13px!important;
+  background:#f6f0e5;color:#090b12;border-radius:14px;
+ }
+ .hn-home-actions #hn-language-control{
+  grid-area:lang;justify-self:end;min-width:57px;max-width:68px;height:43px;margin:0;
+ }
+ .hn-home-hero{padding-top:195px!important}
+}
+@media(min-width:701px) and (max-width:950px){
+ .hn-home-head{gap:12px}
+ .hn-home-brand{flex:1 1 auto;min-width:0}
+ .hn-home-actions{flex:0 0 auto}
+}
+@media(max-width:355px){
+ .hn-home-brand img{flex-basis:30px;width:30px}
+ .hn-home-brand strong{font-size:19px}
+ .hn-home-head{grid-template-columns:minmax(0,1fr) 57px;padding:10px!important}
+ .hn-home-hero{padding-top:185px!important}
+}
+
+/* Decorative full-bleed videos must not present player UI or a big play button. */
+.hn-intro-film video,.hn-cinema-strip video,.hn-academy-film video{
+ pointer-events:none!important;
+ -webkit-user-select:none;user-select:none;
+}
+.hn-intro-film video::-webkit-media-controls,
+.hn-cinema-strip video::-webkit-media-controls,
+.hn-academy-film video::-webkit-media-controls,
+.hn-intro-film video::-webkit-media-controls-start-playback-button,
+.hn-cinema-strip video::-webkit-media-controls-start-playback-button,
+.hn-academy-film video::-webkit-media-controls-start-playback-button{display:none!important}
+
+/* If mobile Safari refuses autoplay (e.g. Low Power Mode), retain subtle
+ * continuous cinematic motion on the poster instead of a frozen play icon. */
+.hn-intro-film::before{
+ content:"";position:absolute;inset:-7%;z-index:0;pointer-events:none;
+ background:url("https://static.wixstatic.com/media/d0158d_93b5716ed6c849d28888a69876201330f002.jpg") center/cover no-repeat;
+ animation:hn-poster-drift 18s ease-in-out infinite alternate;
+ opacity:1;transition:opacity .6s ease;
+}
+.hn-intro-film.is-media-playing::before{opacity:0}
+.hn-film-clip{z-index:1}
+.hn-film-clip:not(.is-playing){opacity:0!important}
+@keyframes hn-poster-drift{
+ from{transform:scale(1) translate3d(-1%,0,0)}
+ to{transform:scale(1.09) translate3d(1%,1%,0)}
+}
+@media(prefers-reduced-motion:reduce){.hn-intro-film::before{animation:none}}
