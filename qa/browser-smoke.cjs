@@ -180,8 +180,8 @@ async function run(){
     console.error('FAIL simulated Low Power Mode '+url+': '+e.message.slice(0,350));
    }finally{await context.close();}
   }
-  // iPhone Safari branch: no VIDEO elements remain behind a blocked native
-  // play triangle. An actual multi-frame animated WebP fills the screen.
+  // iPhone Safari branch: video under full-HD still until playback starts.
+  // No CPU-heavy animated GIF/WebP on devices in Low Power Mode.
   {
    const context=await browser.newContext({
     viewport:{width:390,height:844},deviceScaleFactor:3,isMobile:true,hasTouch:true,
@@ -198,7 +198,8 @@ async function run(){
    try{
     await page.goto(base+'/',{waitUntil:'domcontentloaded',timeout:20000});
     await page.waitForFunction(()=>document.querySelector('.hn-intro')?.classList.contains('open'),null,{timeout:6000});
-    await page.waitForFunction(()=>document.querySelector('.hn-intro-film.hn-ios-loop-active')&&document.querySelectorAll('.hn-intro-film video').length===0,null,{timeout:6000});
+    await page.waitForFunction(()=>document.querySelector('.hn-intro-film.hn-ios-loop-active')&&document.querySelectorAll('.hn-intro-film video').length===1,null,{timeout:6000});
+    await page.locator('.hn-ios-enable-hd').waitFor({state:'visible',timeout:5500});
     const image=page.locator('.hn-ios-motion');
     await image.waitFor({state:'attached',timeout:5000});
     await page.waitForFunction(()=>document.querySelector('.hn-ios-motion')?.complete,null,{timeout:9000});
@@ -218,9 +219,9 @@ async function run(){
        horizontalOverflow:document.documentElement.scrollWidth>innerWidth+2
       };
     });
-    assert.equal(state.videoCount,0,'Native video must be removed on iPhone to prevent play icon');
-    assert.ok(state.imageLoaded&&state.imageWidth>=720,'HD Safari WebP missing: '+JSON.stringify(state));
-    assert.ok(state.imageSrc.includes('/assets/horenova-cinema-mobile-hq.webp'),'Still using low-quality GIF: '+JSON.stringify(state));
+    assert.equal(state.videoCount,1,'A muted HD MP4 must remain behind the poster to allow tap-unlock');
+    assert.ok(state.imageLoaded&&state.imageWidth>=1080,'1080p JPEG fallback missing: '+JSON.stringify(state));
+    assert.ok(state.imageSrc.includes('/assets/horenova-mobile-tourism-poster.jpg'),'Still decoding a heavy animated WebP on iPhone: '+JSON.stringify(state));
     assert.ok(state.imageVisible&&state.imageFit==='cover','HD image not visible or not cover: '+JSON.stringify(state));
     assert.ok(state.imageBox.width>=state.viewport-2,'HD image not filling phone viewport: '+JSON.stringify(state));
     assert.ok(state.textLeft>=-2&&state.textRight<=state.viewport+2,'Intro wordmark cropped: '+JSON.stringify(state));
@@ -228,7 +229,7 @@ async function run(){
     assert.equal(state.horizontalOverflow,false,'Horizontal scrolling on iPhone intro: '+JSON.stringify(state));
     await page.locator('.hn-intro-inner button').click();
     await page.waitForFunction(()=>document.querySelector('.hn-intro')?.classList.contains('gone'),null,{timeout:3000});
-    console.log('PASS simulated iPhone Low Power: full-screen 720p 24fps image, no native player, readable title, Enter action');
+    console.log('PASS simulated iPhone Low Power: crisp 1080p poster, no heavy animated image, discreet HD activation, readable title and Enter action');
    }catch(e){
     failures.push('Safari low power and title: '+e.message.slice(0,550));
     console.error('FAIL Safari low-power fallback '+e.message.slice(0,550));
@@ -265,13 +266,13 @@ async function run(){
       originalClips:film.querySelectorAll('.hn-film-clip').length
      };
     });
-    assert.ok(state.src.includes('horenova-cinema-mobile-hq.mp4'),'Old or wrong source: '+JSON.stringify(state));
+    assert.ok(state.src.includes('horenova-mobile-cinema-1080p30.mp4'),'Old or wrong source: '+JSON.stringify(state));
     assert.equal(state.controls,false);
     assert.equal(state.muted,true);
     assert.equal(state.loop,true);
     assert.equal(state.originalClips,0);
     assert.equal(state.playing,true);
-    console.log('PASS iPhone Safari autoplay granted: hardware-decoded HD MP4 promoted with no native controls');
+    console.log('PASS iPhone Safari autoplay granted: real-time 1080p 30fps H264 MP4 promoted with no native controls');
    }catch(e){
     failures.push('Safari HD native playback: '+e.message.slice(0,550));
     console.error('FAIL Safari HD native playback: '+e.message.slice(0,450));
