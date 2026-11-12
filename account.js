@@ -13,7 +13,7 @@ const section=()=>'<p class="hub-muted">En cas de problème temporaire, actualis
 if(auth.role==='candidate'){
  document.getElementById('accountTitle').innerHTML='Mon espace candidat.<br><em>Votre progression.</em>';
  let p=null,apps=null;
- try{p=(await queryItems('CandidateProfiles',{limit:1})).items[0]||null;}catch{}
+ try{p=(await queryItems('CandidateProfiles',{filters:[{field:'_owner',op:'eq',value:auth.member.id}],limit:1})).items[0]||null;}catch{}
  try{apps=(await hub('/api/applications')).items||[];}catch{apps=null;}
  document.getElementById('accountSubtitle').textContent=p?'Votre profil privé est enregistré.':'Complétez votre profil pour postuler.';
  dash.innerHTML=card('PROFIL',p?'Profil enregistré':'À compléter',p?(p.jobFamily||'')+' · '+(p.city||''):'Ajoutez identité, langues, vidéo et photo privée.',[['Modifier mon profil','/candidate-setup.html']])
@@ -24,7 +24,7 @@ if(auth.role==='candidate'){
 else if(auth.role==='recruiter'){
  document.getElementById('accountTitle').innerHTML='Espace recruteur.<br><em>Votre équipe commence ici.</em>';
  let p=null,requests=null;
- try{p=(await queryItems('RecruiterProfiles',{limit:1})).items[0]||null;}catch{}
+ try{p=(await queryItems('RecruiterProfiles',{filters:[{field:'_owner',op:'eq',value:auth.member.id}],limit:1})).items[0]||null;}catch{}
  try{requests=(await hub('/api/recruiter-requests')).items||[];}catch{requests=null;}
  document.getElementById('accountSubtitle').textContent=p?(p.businessName||'Votre établissement'):'Complétez votre établissement.';
  dash.innerHTML=card('ÉTABLISSEMENT',p?.businessName||'À compléter',p?(p.businessType||'')+' · '+(p.city||''):'Ajoutez vos coordonnées professionnelles.',[['Gérer mon établissement','/recruiter-setup.html']])
