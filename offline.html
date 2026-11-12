@@ -43,6 +43,8 @@ button:disabled{opacity:.65;cursor:wait}
    const url='/index.html?recovery='+Date.now();
    const response=await fetch(url,{cache:'no-store',redirect:'follow'});
    if(!response.ok)throw new Error('Code réseau '+response.status);
+   const page=await response.text();
+   if(page.includes('Horenova — Hors ligne')||page.includes('Rétablissement de l’accès')||page.includes('Connexion indisponible.'))throw new Error('Ancienne page hors ligne encore servie.');
    location.replace('/?recovery='+Date.now());
   }catch(error){
    info.textContent='La connexion au domaine ne répond pas encore. Ouvre le site de secours ou réessaie.';
