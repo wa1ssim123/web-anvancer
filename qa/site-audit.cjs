@@ -44,6 +44,21 @@ for(let i=0;i<rows.length;i++){
   const parts=rows[i].split('|');
   if(parts.length!==3||parts.some(s=>!s.trim()))fail('horenova-i18n.js','invalid FR/EN/AR entry '+(i+1));
 }
+// Low Power Mode on Safari may add a giant native play overlay to <video autoplay>.
+for(const page of ['index.html','academy.html','business.html','explore.html','shop.html','shifts.html']){
+ const html=own(page);
+ const videos=[...html.matchAll(/<video\\b[^>]*>/gi)].map(m=>m[0]);
+ if(!videos.length)fail(page,'expected at least one decorative video');
+ for(const video of videos){
+  if(/\\sautoplay(?:\\s|>)/i.test(video))fail(page,'native autoplay attribute on a decorative video (Safari overlay risk)');
+ }
+}
+for(const page of ['index.html','academy.html','business.html','explore.html','shifts.html']){
+ if(!own(page).includes('/horenova-ambient-video.js'))fail(page,'missing continuous decorative video controller');
+}
+for(const page of ['academy.html','explore.html','shop.html']){
+ if(!own(page).includes('/horenova-entry.js'))fail(page,'missing fullscreen intro recovery script');
+}
 const protectedModules={
   'admin.js':/requireRole\(\['admin'\]/,
   'business-gate.js':/requireRole\(\['admin'\]/,
