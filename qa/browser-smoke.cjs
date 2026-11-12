@@ -29,11 +29,14 @@ async function run(){
   for(const url of pages){
    const context=await browser.newContext({serviceWorkers:'block'});
    const page=await context.newPage();
+   const issues=[];
+   page.on('pageerror',e=>issues.push('pageerror: '+e.message));
+   page.on('console',msg=>{if(msg.type()==='error')issues.push('console: '+msg.text().slice(0,200));});
    try{
     const response=await page.goto(base+url,{waitUntil:'domcontentloaded',timeout:20000});
     assert.equal(response.status(),200,'Page HTTP status');
     const control=page.locator('#hn-language-control');
-    await control.waitFor({state:'attached',timeout:10000});
+    await control.waitFor({state:'attached',timeout:4500});
     assert.equal(await page.locator('html').getAttribute('lang'),'fr');
     const french=await page.locator('body').innerText();
     await control.selectOption('ar',{force:true});
@@ -48,8 +51,10 @@ async function run(){
     await page.waitForFunction(()=>document.documentElement.lang==='fr'&&document.documentElement.dir==='ltr',{timeout:6000});
     console.log('PASS browser locale FR → AR → EN → FR: '+url);
    }catch(error){
-    failures.push(url+': '+error.message.slice(0,500));
-    console.error('FAIL browser locale: '+url+' — '+error.message.slice(0,240));
+    const where=page.url();
+    const pageText=await page.locator('body').innerText({timeout:2000}).catch(()=>'<body unavailable>');
+    failures.push(url+': '+error.message.slice(0,500)+' URL='+where+' BODY='+pageText.slice(0,260)+' ERRORS='+issues.slice(0,5).join(' | '));
+    console.error('FAIL browser locale: '+url+' — '+error.message.slice(0,180)+' URL='+where+' BODY='+pageText.slice(0,260)+' ERRORS='+issues.slice(0,5).join(' | '));
    }finally{await context.close();}
   }
  }finally{await browser.close();await new Promise(resolve=>server.close(resolve));}
