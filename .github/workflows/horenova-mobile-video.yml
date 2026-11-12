@@ -1,0 +1,31 @@
+name: Build HORENOVA mobile MP4 1080p 30fps
+on:
+  push:
+    branches: [horenova-free-deploy-2026]
+    paths: [scripts/build_horenova_mobile_video.sh, .github/workflows/horenova-mobile-video.yml]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  encode:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Install FFmpeg and Pillow
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq --no-install-recommends ffmpeg
+          python -m pip install pillow
+      - name: Encode real-time high-quality iPhone video and posters
+        run: bash scripts/build_horenova_mobile_video.sh
+      - name: Publish validated assets
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/horenova-mobile-cinema-1080p30.mp4 assets/horenova-mobile-tourism-poster.jpg assets/horenova-mobile-kitchen-poster.jpg
+          if ! git diff --cached --quiet; then
+            git commit -m "Publish native-speed 1080p 30fps iPhone video and sharp posters"
+            git push origin HEAD:horenova-free-deploy-2026
+          fi
