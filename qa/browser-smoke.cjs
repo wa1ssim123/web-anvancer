@@ -301,7 +301,9 @@ async function run(){
     await page.goto(base+'/',{waitUntil:'domcontentloaded',timeout:20000});
     await page.locator('.hn-ios-enable-hd').waitFor({state:'visible',timeout:7000});
     await page.evaluate(()=>{document.querySelector('.hn-ios-native-premium').__qaAllowed=true;});
-    await page.locator('.hn-ios-enable-hd').click();
+    // The button removes itself as soon as HD playback starts. Dispatch its
+    // click directly to avoid Playwright retrying an already-detached element.
+    await page.locator('.hn-ios-enable-hd').evaluate(el=>el.click());
     await page.locator('.hn-ios-native-premium.is-playing-hq').waitFor({timeout:5000});
     assert.equal(await page.locator('.hn-ios-enable-hd').count(),0,'HD unlock button must disappear when movie plays');
     console.log('PASS Safari battery saver: user tap unlocks HD H264 and removes activation control');
