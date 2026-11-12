@@ -1,0 +1,35 @@
+name: HORENOVA live domain diagnostic
+on:
+  push:
+    branches:
+      - horenova-free-deploy-2026
+    paths:
+      - .github/workflows/horenova-live-diagnostics.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  inspect-domain:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check public DNS, redirects, homepage and favicon
+        shell: bash
+        run: |
+          set +e
+          echo "DATE_UTC=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          for host in horenova.com www.horenova.com; do
+            echo "===== DNS $host ====="
+            getent ahosts "$host" | head -n 5
+          done
+          for url in http://horenova.com/ https://horenova.com/ https://www.horenova.com/ https://horenova.com/favicon.png https://horenova.com/favicon.ico https://horenova.com/robots.txt https://horenova.com/sitemap.xml; do
+            echo "===== URL $url ====="
+            curl -sSL -A 'Googlebot-Image' --connect-timeout 8 --max-time 20 -o /tmp/hn-body -D /tmp/hn-headers -w 'HTTP_CODE=%{http_code} FINAL_URL=%{url_effective} CONTENT_TYPE=%{content_type} REDIRECTS=%{num_redirects} BYTES=%{size_download}\n' "$url"
+            echo "curl_exit=$?"
+            grep -iE '^(HTTP/|location:|content-type:|cache-control:)' /tmp/hn-headers | tail -n 8
+            if [[ "$url" == "https://horenova.com/" ]]; then
+              echo "===== HTML HEAD favicon and canonical ====="
+              grep -oE '.{0,90}(rel="icon"|rel="shortcut icon"|rel="canonical"|horenova-icon).{0,150}' /tmp/hn-body | head -n 10
+            elif [[ "$url" == *favicon* ]]; then
+              file -b /tmp/hn-body
+            fi
+          done
