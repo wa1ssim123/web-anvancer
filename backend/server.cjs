@@ -190,6 +190,26 @@ async function api(req,res,path,method) {
       await pool.query('SELECT * FROM hr_recruiter_requests WHERE recruiter_wix_id=$1 ORDER BY created_at DESC LIMIT 150',[user.id]);
     return json(res,200,{items:q.rows});
   }
+  // Only the verified HORENOVA administrator can moderate employer requests.
+  const recruiterStatus=path.match(/^\/api\/recruiter-requests\/([0-9a-f-]+)\/status$/i);
+  if(recruiterStatus && method==='PATCH'){
+    requireRole(user,['admin']);
+    const requestId=recruiterStatus[1];
+    if(!uuid(requestId))throw error(400,'Identifiant de demande invalide.');
+    const d=await read(req,3000);
+    const statuses=['A_EXAMINER','VALIDEE','REFUSEE'];
+    if(!statuses.includes(d.status))throw error(422,'Statut de demande invalide.');
+    const updated=await pool.query(
+      'UPDATE hr_recruiter_requests SET status=$1,updated_at=now() WHERE id=$2 RETURNING id,status',
+      [d.status,requestId]
+    );
+    if(!updated.rows[0])throw error(404,'Demande introuvable.');
+    await pool.query(
+      "INSERT INTO hr_audit(actor_wix_id,event_type,detail) VALUES($1,'RECRUITER_REQUEST_MODERATION',$2)",
+      [user.id,JSON.stringify({requestId,status:d.status})]
+    );
+    return json(res,200,{ok:true,item:updated.rows[0]});
+  }
   if(path==='/api/profile/photo' && method==='POST') {
     requireRole(user,['candidate']);rate(user.id+':photo',10,3600);
     if((req.headers['content-type']||'').split(';')[0]!=='image/jpeg') throw error(415,'Photo JPEG uniquement.');
