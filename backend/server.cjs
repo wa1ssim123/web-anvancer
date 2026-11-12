@@ -171,7 +171,16 @@ async function api(req,res,path,method) {
     const values=[user.id,business,limit(d.contactName,120),limit(d.phone,40),
       title,limit(d.role,90),limit(d.city,80),limit(d.kind,12),limit(d.salaryText,100),
       limit(d.scheduleText,120),limit(d.description,1500),wixRequestId];
-    const q=await pool.query('INSERT INTO hr_recruiter_requests(recruiter_wix_id,business_name,contact_name,contact_phone,job_title,job_role,city,kind,salary_text,schedule_text,description,wix_request_id) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) RETURNING id',values);
+    let q;
+    try{
+      q=await pool.query('INSERT INTO hr_recruiter_requests(recruiter_wix_id,business_name,contact_name,contact_phone,job_title,job_role,city,kind,salary_text,schedule_text,description,wix_request_id) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) RETURNING id',values);
+    }catch(e){
+      if(e.code==='23505' && wixRequestId){
+        const previous=await pool.query('SELECT id FROM hr_recruiter_requests WHERE recruiter_wix_id=$1 AND wix_request_id=$2 LIMIT 1',[user.id,wixRequestId]);
+        if(previous.rows[0])return json(res,200,{id:previous.rows[0].id,ok:true,alreadyRecorded:true});
+      }
+      throw e;
+    }
     return json(res,201,{id:q.rows[0].id,ok:true});
   }
   if(path==='/api/recruiter-requests' && method==='GET') {
