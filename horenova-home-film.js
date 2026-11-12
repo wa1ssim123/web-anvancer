@@ -36,8 +36,56 @@
  const ios=/iPad|iPhone|iPod/.test(navigator.userAgent)||
    (navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
  if(ios){
+  // iOS Low Power Mode can reject autoplay. Never expose its native play icon:
+  // keep the high-quality opaque 24fps WebP visible until a silent MP4 is
+  // actually playing, then atomically promote the H.264 hardware-decoded movie.
   clips.forEach(video=>{video.pause();video.remove();});
   film.classList.add('hn-ios-loop-active');
+  const native=document.createElement('video');
+  native.className='hn-ios-native-hq';
+  native.muted=true;native.defaultMuted=true;native.autoplay=true;
+  native.loop=true;native.playsInline=true;native.controls=false;
+  native.disablePictureInPicture=true;native.disableRemotePlayback=true;
+  native.preload='metadata';
+  native.setAttribute('muted','');
+  native.setAttribute('playsinline','');
+  native.setAttribute('webkit-playsinline','');
+  native.setAttribute('aria-hidden','true');
+  native.removeAttribute('controls');
+  native.src='/assets/horenova-cinema-mobile-hq.mp4';
+  let removed=false;
+  const hideNative=()=>{
+   native.classList.remove('is-playing-hq');
+   film.classList.remove('hn-ios-native-playing');
+  };
+  const removeNative=()=>{
+   if(removed)return;
+   removed=true;hideNative();
+   native.pause();native.removeAttribute('src');native.remove();
+  };
+  const revealNative=()=>{
+   if(removed||native.paused||native.readyState<2)return;
+   native.classList.add('is-playing-hq');
+   film.classList.add('hn-ios-native-playing');
+  };
+  native.addEventListener('playing',revealNative);
+  native.addEventListener('canplay',revealNative);
+  native.addEventListener('pause',hideNative);
+  native.addEventListener('error',removeNative);
+  film.appendChild(native);
+  try{
+   const result=native.play();
+   Promise.resolve(result).then(revealNative).catch(removeNative);
+  }catch(e){removeNative();}
+  intro.querySelector('button')?.addEventListener('click',()=>{
+   setTimeout(removeNative,800);
+  },{once:true});
+  document.addEventListener('visibilitychange',()=>{
+   if(document.hidden)hideNative();
+   else if(!removed){
+    Promise.resolve(native.play()).then(revealNative).catch(removeNative);
+   }
+  });
   return;
  }
 
