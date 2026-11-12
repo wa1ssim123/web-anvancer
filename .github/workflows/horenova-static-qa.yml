@@ -16,3 +16,5 @@ jobs:
           node-version: '22'
       - name: Check scripts, resources, translations and role gates
         run: node qa/site-audit.cjs
+      - name: Simulate candidate, recruiter and administrator permissions
+        run: node --test qa/roles.test.cjs
