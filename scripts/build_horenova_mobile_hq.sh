@@ -38,25 +38,32 @@ for i,frame in enumerate(frames):
  path=root/f'frame-{i:03d}.jpg'
  frame.save(path,quality=92,subsampling=0)
  paths.append(path)
-for quality in (82,78,75):
- # The upstream img2webp encoder is more dependable than Pillow 13's
- # animation encoder. -kmax 0 = independently decodable keyframe every frame.
- command=['img2webp','-loop','0','-kmax','0']
- for path in paths:
-  command.extend(['-d','42','-lossy','-q',str(quality),'-m','4',str(path)])
- command.extend(['-o',str(out)])
- subprocess.run(command,check=True,stdout=subprocess.DEVNULL,stderr=subprocess.PIPE)
- assert b'ANIM' in out.read_bytes() and out.read_bytes().count(b'ANMF')>=140, 'Encoder produced static or empty animation'
+# Encode each FULLY OPAQUE JPEG as a separate still WebP first, then mux
+# independent frames using explicit NO_BLEND. This guarantees Safari never sees
+# transparent partial-frame patches (the earlier iPhone split-screen defect).
+import re
+for quality in (84,80,76):
+ static=[]
+ for i,src in enumerate(paths):
+  still=root/f'opaque-{i:03d}.webp'
+  subprocess.run(['cwebp','-quiet','-q',str(quality),'-m','4','-mt',str(src),'-o',str(still)],
+                 check=True,stdout=subprocess.DEVNULL,stderr=subprocess.PIPE)
+  static.append(still)
+ mux=['webpmux']
+ for still in static:
+  mux.extend(['-frame',str(still),'+42+0+0+0-b'])
+ mux.extend(['-loop','0','-bgcolor','255,255,255,255','-o',str(out)])
+ subprocess.run(mux,check=True,stdout=subprocess.DEVNULL,stderr=subprocess.PIPE)
  if out.stat().st_size<26_000_000:break
-assert out.stat().st_size<30_000_000,'HD animation exceeds mobile budget'
-# Validate with libwebp's own demuxer. Some Pillow 13 builds report 0 frames
-# despite an intact animated RIFF/ANMF stream, so don't misclassify that as bad.
+assert out.stat().st_size<30_000_000,'HD animation exceeds 30MB mobile budget'
 meta=subprocess.run(['webpmux','-info',str(out)],capture_output=True,text=True,check=True)
 detail=meta.stdout+'\n'+meta.stderr
-assert 'Animation' in detail or 'animation' in detail,detail[:800]
-assert '720' in detail and '1280' in detail,detail[:800]
-assert out.read_bytes().count(b'ANMF')==len(frames), (out.read_bytes().count(b'ANMF'),len(frames))
-print('WebP demux inspected:',detail[:460].replace('\n','; '))
+rows=[line for line in detail.splitlines() if re.match(r'^\s*\d+:',line)]
+assert len(rows)==len(frames),(len(rows),len(frames),detail[:600])
+for row in rows:
+ assert re.match(r'^\s*\d+:\s+720\s+1280\s+no\s+0\s+0\s+42\s+none\s+no\s+',row),row
+assert out.read_bytes().count(b'ANMF')==len(frames)
+print('PASS no alpha, no blending, full-frame keyframe demux:',len(rows),'frames')
 print(f'PASS HD WebP: {len(frames)} complete keyframes, 720x1280, {1000/42:.2f}fps, {out.stat().st_size} bytes, quality={quality}')
 PY
 # Native hardware-decoded MP4 for iOS when muted autoplay is permitted. A
