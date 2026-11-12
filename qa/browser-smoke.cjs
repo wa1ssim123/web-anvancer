@@ -97,6 +97,52 @@ async function run(){
     console.error('FAIL gallery: '+e.message.slice(0,380)+' JS='+problems.join(' | '));
    }finally{await context.close();}
   }
+  // Real phone-width layout checks: the wordmark must never be covered by signup.
+  for(const width of [320,375,390,430,700,768]){
+   const context=await browser.newContext({viewport:{width,height:844},isMobile:width<=700,hasTouch:width<=700,serviceWorkers:'block'});
+   const page=await context.newPage();
+   try{
+    await page.goto(base+'/',{waitUntil:'domcontentloaded',timeout:20000});
+    await page.locator('#hn-language-control').waitFor({state:'attached',timeout:6000});
+    const layout=await page.evaluate(()=>{
+      const box=s=>{const r=document.querySelector(s).getBoundingClientRect();return{x:r.x,y:r.y,right:r.right,bottom:r.bottom,width:r.width,height:r.height}};
+      return{brand:box('.hn-home-brand'),brandText:box('.hn-home-brand strong'),cta:box('.hn-home-actions a.primary'),language:box('#hn-language-control'),scrollWidth:document.documentElement.scrollWidth,innerWidth:innerWidth};
+    });
+    const nonOverlapping=(a,b)=>a.right<=b.x+1||b.right<=a.x+1||a.bottom<=b.y+1||b.bottom<=a.y+1;
+    assert.ok(nonOverlapping(layout.brandText,layout.cta),'Signup overlaps wordmark at '+width+': '+JSON.stringify(layout));
+    assert.ok(nonOverlapping(layout.brandText,layout.language),'Language overlaps wordmark at '+width+': '+JSON.stringify(layout));
+    assert.ok(layout.brand.width>=110,'Brand squeezed at '+width+': '+JSON.stringify(layout));
+    if(width<=700)assert.ok(layout.cta.y>=layout.brand.bottom-1,'CTA must have separate mobile row at '+width);
+    assert.ok(layout.scrollWidth<=layout.innerWidth+2,'Page overflow at '+width+': '+JSON.stringify(layout));
+    const media=await page.locator('.hn-intro-film video, .hn-cinema-strip video, .hn-academy-film video').evaluateAll(vs=>vs.map(v=>({controls:v.controls,muted:v.muted,loop:v.loop,inline:v.playsInline})));
+    assert.ok(media.length>=4,'Expected cinematic video surfaces');
+    assert.ok(media.every(v=>!v.controls && v.muted && v.loop && v.inline),'Decorative media must not use native player UI: '+JSON.stringify(media));
+    console.log('PASS HORENOVA phone header/CTA separation and background video attributes: '+width);
+   }catch(e){failures.push('Home mobile '+width+': '+e.message.slice(0,650));console.error('FAIL HORENOVA mobile '+width+': '+e.message.slice(0,420));}
+   finally{await context.close();}
+  }
+  // Simulated playable media verifies the crossfade controller waits for PLAYING.
+  {
+   const context=await browser.newContext({serviceWorkers:'block',viewport:{width:390,height:844},isMobile:true,hasTouch:true});
+   await context.addInitScript(()=>{
+    const proto=HTMLMediaElement.prototype;
+    Object.defineProperty(proto,'paused',{configurable:true,get(){return this.__mockPaused!==false}});
+    Object.defineProperty(proto,'readyState',{configurable:true,get(){return 4}});
+    proto.load=function(){};
+    proto.play=function(){this.__mockPaused=false;return Promise.resolve()};
+    proto.pause=function(){this.__mockPaused=true};
+   });
+   const page=await context.newPage();
+   try{
+    await page.goto(base+'/',{waitUntil:'domcontentloaded',timeout:20000});
+    await page.waitForFunction(()=>document.querySelector('.hn-film-clip')?.classList.contains('is-playing'),null,{timeout:6000});
+    assert.ok(await page.locator('.hn-film-clip').first().evaluate(v=>!v.paused));
+    await page.waitForFunction(()=>document.querySelectorAll('.hn-film-clip')[1]?.classList.contains('is-active'),null,{timeout:11500});
+    assert.ok(await page.locator('.hn-film-clip').nth(1).evaluate(v=>!v.paused));
+    console.log('PASS cinematic crossfade after second clip begins playing');
+   }catch(e){failures.push('Cinematic loop: '+e.message.slice(0,600));console.error('FAIL cinematic loop: '+e.message.slice(0,350));}
+   finally{await context.close();}
+  }
   // Real Chromium navigation for the two account screens. No test accounts are created.
   for(const startingMode of ['signin','signup']){
    const context=await browser.newContext({serviceWorkers:'block'});
