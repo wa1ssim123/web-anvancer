@@ -196,6 +196,10 @@ function init(){
  $('[data-auth-tab]').forEach(b=>b.addEventListener('click',()=>{
    if(working)return;
    changeMode(b.dataset.authTab);
+   // Preserve the selected screen through refresh/back navigation, including on iPhone.
+   const nextUrl=new URL(location.href);
+   nextUrl.searchParams.set('mode',activeMode);
+   history.replaceState(null,'',nextUrl.pathname+nextUrl.search+nextUrl.hash);
    if(verifiedMember()){
      if(activeMode==='signup'){
        if(existingCompletionMode)finishExistingMode();
