@@ -12,11 +12,41 @@ const statuses=['EN_ETUDE','PRESELECTION','ENTRETIEN','MISE_EN_RELATION','RETENU
 let applications=[],requests=[],selected='',objectUrl=null;
 const field=(n,v,w=false)=>'<div class="hub-field '+(w?'wide':'')+'"><small>'+esc(n)+'</small><strong>'+esc(v??'Non renseigné')+'</strong></div>';
 const showError=msg=>{$('hubError').textContent=msg||'';};
+const requestStatuses={A_EXAMINER:'À examiner',VALIDEE:'Validée administrativement',REFUSEE:'Refusée'};
 function listRequests(){
-  const count=$('hubRequestsCount'), target=$('hubRecruiterRequests');
+  const count=$('hubRequestsCount'),target=$('hubRecruiterRequests');
   if(!count||!target)return;
   count.textContent='('+requests.length+')';
-  target.innerHTML=requests.length?requests.map(r=>'<div class="hub-case"><small class="hub-muted">'+esc(r.kind==='shift'?'Shift':'Emploi')+' · '+esc(r.city||'')+'</small><strong>'+esc(r.job_title||'Demande sans titre')+'</strong><span>'+esc(r.business_name||'Établissement')+' · '+esc(r.job_role||'')+'</span><p class="hub-tag">À examiner · dossier privé</p></div>').join(''):'<div class="hub-detail hub-muted">Aucune demande de recrutement dans le suivi central.</div>';
+  target.innerHTML=requests.length?requests.map(r=>{
+    const current=requestStatuses[r.status]?r.status:'A_EXAMINER';
+    const options=Object.entries(requestStatuses).map(([key,label])=>'<option value="'+key+'"'+(key===current?' selected':'')+'>'+esc(label)+'</option>').join('');
+    return '<article class="hub-case" data-request-id="'+esc(r.id)+'">'+
+      '<small class="hub-muted">'+esc(r.kind==='shift'?'Shift':'Emploi')+' · '+esc(r.city||'')+'</small>'+
+      '<strong>'+esc(r.job_title||'Demande sans titre')+'</strong>'+
+      '<span>'+esc(r.business_name||'Établissement')+' · '+esc(r.job_role||'')+'</span>'+
+      '<p class="hub-tag">'+esc(requestStatuses[current])+'</p>'+
+      '<div class="hub-request-actions"><label>Décision administrative <select class="hub-select" data-request-status>'+options+'</select></label>'+
+      '<button type="button" class="hub-action secondary" data-request-save>Enregistrer</button></div>'+
+      '<p class="hub-muted" data-request-feedback role="status"></p></article>';
+  }).join(''):'<div class="hub-detail hub-muted">Aucune demande de recrutement dans le suivi central.</div>';
+  target.querySelectorAll('[data-request-save]').forEach(button=>button.addEventListener('click',async()=>{
+    const card=button.closest('[data-request-id]');
+    if(!card)return;
+    const id=card.dataset.requestId,status=card.querySelector('[data-request-status]')?.value;
+    const feedback=card.querySelector('[data-request-feedback]');
+    button.disabled=true;
+    feedback.textContent='Enregistrement du statut…';
+    try{
+      await hub('/api/recruiter-requests/'+encodeURIComponent(id)+'/status',{method:'PATCH',body:{status}});
+      const old=requests.find(x=>x.id===id);if(old)old.status=status;
+      feedback.textContent='✓ Statut sauvegardé. La validation ne publie pas automatiquement une annonce.';
+      feedback.style.color='#155b42';
+      card.querySelector('.hub-tag').textContent=requestStatuses[status]||status;
+    }catch(error){
+      feedback.textContent='Échec : '+(error?.message||String(error));
+      feedback.style.color='#a52419';
+    }finally{button.disabled=false;}
+  }));
 }
 function list(){
 const term=$('hubSearch').value.toLowerCase().trim();
