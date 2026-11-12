@@ -70,12 +70,14 @@ async function run(){
     }));
     await page.goto(base+'/avis.html',{waitUntil:'domcontentloaded',timeout:20000});
     await page.locator('.rv-x-card').first().waitFor({timeout:6000});
-    assert.equal(await page.locator('.rv-x-card').count(),12,'Initial sample card count');
-    assert.equal(await page.locator('.rv-x-demo').count(),12,'Every sample needs disclosure');
+    assert.equal(await page.locator('.rv-x-card').count(),32,'All sample cards must be visible initially');
+    assert.equal(await page.locator('.rv-x-demo').count(),32,'Every sample needs disclosure');
     const publicCount=await page.locator('#reviewSummary').innerText();
     assert.match(publicCount,/0 avis publié/,'Sample cards must not affect authentic review count');
     await page.locator('#experienceMore').click();
-    assert.equal(await page.locator('.rv-x-card').count(),32,'Must reveal all 32 sample scenarios');
+    assert.equal(await page.locator('.rv-x-card').count(),12,'Collapse sample gallery');
+    await page.locator('#experienceMore').click();
+    assert.equal(await page.locator('.rv-x-card').count(),32,'Expand all 32 sample scenarios');
     await page.locator('[data-example-filter="recruiter"]').click();
     assert.equal(await page.locator('.rv-x-card').count(),8,'Recruiter filter');
     await page.locator('[data-example-filter="academy"]').click();
