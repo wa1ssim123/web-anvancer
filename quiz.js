@@ -28,7 +28,7 @@ form.onsubmit=async event=>{
  button.disabled=true;button.textContent='Enregistrement du résultat…';
  try{
   await insertItem('QuizAttempts',{jobFamily:role,score,passed,answersJson:JSON.stringify(answers)});
-  const profile=(await queryItems('CandidateProfiles',{limit:1})).items[0];
+  const profile=(await queryItems('CandidateProfiles',{filters:[{field:'_owner',op:'eq',value:auth.member.id}],limit:1})).items[0];
   if(profile)await patchItemFields('CandidateProfiles',profile._id,{quizScore:score,quizPassed:passed});
   result.hidden=false;
   result.innerHTML='<span>'+(passed?'✓ BASES VALIDÉES':'↻ À RENFORCER')+'</span><h2>'+score+'%</h2><p>'+(passed?'Votre résultat a été enregistré. Vous pouvez continuer votre candidature.':'Votre résultat a été enregistré. Passez par Academy puis retentez le quiz.')+'</p>';
