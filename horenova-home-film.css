@@ -92,3 +92,30 @@ background:radial-gradient(ellipse 48% 47% at 50% 50%,rgba(5,9,12,.60),rgba(5,9,
  to{transform:scale(1.09) translate3d(1%,1%,0)}
 }
 @media(prefers-reduced-motion:reduce){.hn-intro-film::before{animation:none}}
+
+
+/* Animated illustration while ambient videos are unavailable or blocked. */
+.hn-cinema-strip::before,.hn-academy-film::before{
+ content:"";position:absolute;inset:-6%;z-index:0;pointer-events:none;
+ background-position:center;background-size:cover;background-repeat:no-repeat;
+ animation:hn-poster-drift 19s ease-in-out infinite alternate;
+}
+.hn-cinema-strip::before{
+ background-image:url("https://headless-tfcfvgrbhgw-xwassim04-1409.wix-site-host.com/assets/video-poster.jpg");
+}
+.hn-academy-film::before{
+ background-image:url("https://headless-tfcfvgrbhgw-xwassim04-1409.wix-site-host.com/assets/training.jpg");
+}
+.hn-cinema-strip>video,.hn-academy-film>video{
+ position:absolute;inset:0;z-index:1;width:100%;height:100%;
+ opacity:0;transition:opacity .65s ease;
+}
+.hn-cinema-strip>video.hn-background-playing,
+.hn-academy-film>video.hn-background-playing{opacity:1}
+.hn-cinema-strip>.shade{z-index:2}
+.hn-cinema-strip>.copy{z-index:3}
+.hn-academy-film>.hn-v13-shade{z-index:2}
+@media(prefers-reduced-motion:reduce){
+ .hn-cinema-strip::before,.hn-academy-film::before{animation:none}
+ .hn-cinema-strip>video,.hn-academy-film>video{transition:none}
+}
