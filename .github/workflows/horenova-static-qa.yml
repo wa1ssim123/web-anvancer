@@ -18,3 +18,6 @@ jobs:
         run: node qa/site-audit.cjs
       - name: Simulate candidate, recruiter and administrator permissions
         run: node --test qa/roles.test.cjs
+
+      - name: Test dynamic French, English and Arabic updates
+        run: node qa/i18n-dynamic.cjs
