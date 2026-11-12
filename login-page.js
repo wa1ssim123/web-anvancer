@@ -303,5 +303,6 @@ function init(){
  const state=getMemberState();
  if(!state.loading&&!initialCheckComplete){initialCheckComplete=true;void checkSession();}
  window.addEventListener('pagehide',()=>{off();},{once:true});
+ document.documentElement.dataset.authUiReady='1';
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
