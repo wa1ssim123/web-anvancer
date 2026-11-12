@@ -127,3 +127,30 @@ test('Passing quiz belonging to a different user never authorizes application',a
  assert.equal(response.status,422);
  assert.ok(!h.log.db.some(x=>x.sql.startsWith('INSERT INTO hr_applications')));
 });
+
+
+test('Candidate, recruiter and admin cannot perform actions belonging to the wrong role',async()=>{
+ const h=harness();
+ const denied=[
+  ['candidate-token','POST','/api/recruiter-requests',{title:'Barista',businessName:'Hotel'}],
+  ['candidate-token','GET','/api/reviews/moderation'],
+  ['recruiter-token','POST','/api/applications',{jobId:'job-1',consentToIntro:true}],
+  ['recruiter-token','PATCH','/api/recruiter-requests/'+requestId+'/status',{status:'VALIDEE'}],
+  ['admin-token','POST','/api/applications',{jobId:'job-1',consentToIntro:true}],
+  ['admin-token','POST','/api/recruiter-requests',{title:'Barista',businessName:'Hotel'}]
+ ];
+ for(const [token,method,path,body] of denied){
+  assert.equal((await h.request(method,path,token,body)).status,403,token+' '+method+' '+path);
+ }
+});
+test('Unverified candidate cannot read another candidate application',async()=>{
+ const h=harness();
+ const result=await h.request('GET','/api/applications/'+requestId,'candidate-noquiz-token');
+ assert.equal(result.status,403);
+});
+test('Only administrator can modify candidate case status',async()=>{
+ const h=harness();
+ assert.equal((await h.request('PATCH','/api/applications/'+requestId+'/status','candidate-token',{status:'RETENUE'})).status,403);
+ assert.equal((await h.request('PATCH','/api/applications/'+requestId+'/status','admin-token',{status:'ENTRETIEN'})).status,200);
+ assert.ok(h.log.db.some(x=>x.sql.startsWith('UPDATE hr_applications')&&x.args[0]==='ENTRETIEN'));
+});
