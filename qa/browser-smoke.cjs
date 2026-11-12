@@ -57,6 +57,27 @@ async function run(){
     console.error('FAIL browser locale: '+url+' — '+error.message.slice(0,180)+' URL='+where+' BODY='+pageText.slice(0,260)+' ERRORS='+issues.slice(0,5).join(' | '));
    }finally{await context.close();}
   }
+  for(const url of ['/jobs.html','/shifts.html','/explore-guide.html']){
+   const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,serviceWorkers:'block'});
+   const page=await context.newPage();
+   try{
+    await page.goto(base+url,{waitUntil:'domcontentloaded',timeout:20000});
+    const menu=page.locator('#menuBtn');
+    const panel=page.locator('#mobileMenu');
+    await menu.waitFor({state:'visible',timeout:6000});
+    await menu.click();
+    assert.equal(await menu.getAttribute('aria-expanded'),'true');
+    assert.equal(await panel.getAttribute('hidden'),null);
+    await page.keyboard.press('Escape');
+    assert.equal(await menu.getAttribute('aria-expanded'),'false');
+    assert.notEqual(await panel.getAttribute('hidden'),null);
+    const control=page.locator('#hn-language-control');
+    await control.selectOption('ar',{force:true});
+    await page.waitForFunction(()=>document.documentElement.dir==='rtl',null,{timeout:6000});
+    console.log('PASS mobile menu, Escape and Arabic RTL: '+url);
+   }catch(error){failures.push('Mobile '+url+': '+error.message.slice(0,500));console.error('FAIL mobile: '+url+' — '+error.message.slice(0,350));}
+   finally{await context.close();}
+  }
  }finally{await browser.close();await new Promise(resolve=>server.close(resolve));}
  if(failures.length){console.error('Failures: '+failures.join('\n'));process.exitCode=1;}
  else console.log('PASS: '+pages.length+' public pages exercised in real Chromium, across three languages.');
