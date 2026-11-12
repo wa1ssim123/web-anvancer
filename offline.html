@@ -1,1 +1,55 @@
-<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#090b12"><title>Horenova — Hors ligne</title><style>body{margin:0;min-height:100vh;display:grid;place-items:center;background:#090b12;color:#f5efe5;font-family:system-ui;text-align:center;padding:30px}img{width:170px;max-width:60vw}p{color:#aab0b9;line-height:1.6}button{padding:13px 18px;border:0;border-radius:999px;background:#ffc400;color:#111;font-weight:900}</style><meta name="robots" content="noindex, nofollow"></head><body><main><img src="https://static.wixstatic.com/media/d0158d_15046d228f1e47f583745d092ef2c695~mv2.png" alt="Horenova"><h1>Connexion indisponible.</h1><p>Horenova est hors ligne. Réessayez quand votre connexion revient.</p><button onclick="location.reload()">Réessayer</button></main></body></html>
+<!doctype html>
+<html lang="fr"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#090b12"><meta name="robots" content="noindex,nofollow">
+<title>HORENOVA · Réparer la connexion</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;min-height:100dvh;padding:32px 22px;background:radial-gradient(ellipse at top,#17392e 0%,#090b12 55%);color:#f5efe5;font-family:system-ui,-apple-system,sans-serif;display:grid;place-items:center;text-align:center}
+main{max-width:520px;width:100%}
+img{width:160px;max-width:55vw;height:auto}
+h1{font-size:clamp(32px,7vw,46px);line-height:1.1;margin:30px 0 18px}
+p{color:#ccd3d0;line-height:1.7}
+button,a{display:inline-flex;align-items:center;justify-content:center;min-height:54px;padding:13px 23px;border-radius:999px;text-decoration:none;font-size:16px;font-weight:750;cursor:pointer}
+button{border:0;background:#f8c943;color:#111}
+a{margin-top:13px;color:#f8c943;border:1px solid #826b32}
+button:disabled{opacity:.65;cursor:wait}
+#details{font-size:13px;color:#e7bc88}
+</style></head><body>
+<main><img src="https://static.wixstatic.com/media/d0158d_15046d228f1e47f583745d092ef2c695~mv2.png" alt="Logo HORENOVA">
+<h1>Rétablissement de l’accès</h1>
+<p>Une ancienne version hors ligne peut empêcher le chargement. Nous retirons ce cache sans supprimer ton compte.</p>
+<p id="details" role="status">Vérification en cours…</p>
+<button id="recover" type="button">Réessayer la connexion</button>
+<div><a href="https://horenova-site-officiel.onrender.com/">Ouvrir le site de secours</a></div>
+</main>
+<script>
+(async function(){
+ const button=document.getElementById('recover');
+ const info=document.getElementById('details');
+ async function recover(){
+  button.disabled=true;
+  info.textContent='Suppression du cache hors ligne…';
+  try{
+   if('serviceWorker' in navigator){
+    const registrations=await navigator.serviceWorker.getRegistrations();
+    await Promise.all(registrations.map(r=>r.unregister()));
+   }
+   if('caches' in window){
+    const keys=await caches.keys();
+    await Promise.all(keys.filter(k=>k.startsWith('horenova-')).map(k=>caches.delete(k)));
+   }
+   info.textContent='Nouvel essai de connexion…';
+   const url='/index.html?recovery='+Date.now();
+   const response=await fetch(url,{cache:'no-store',redirect:'follow'});
+   if(!response.ok)throw new Error('Code réseau '+response.status);
+   location.replace('/?recovery='+Date.now());
+  }catch(error){
+   info.textContent='La connexion au domaine ne répond pas encore. Ouvre le site de secours ou réessaie.';
+   button.disabled=false;
+  }
+ }
+ button.addEventListener('click',recover);
+ await recover();
+})();
+</script></body></html>
