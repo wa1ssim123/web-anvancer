@@ -38,6 +38,7 @@
   finished=true;clearTimeout(retry);
   intro.remove();
   document.documentElement.classList.remove('hn-entry-active');
+  document.dispatchEvent(new Event('hn-entry-finished'));
   document.querySelectorAll('body [data-hn-entry-paused="true"]').forEach(el=>{
    el.removeAttribute('data-hn-entry-paused');
    if(!document.hidden && !reduced){const p=el.play();if(p?.catch)p.catch(()=>{})}
