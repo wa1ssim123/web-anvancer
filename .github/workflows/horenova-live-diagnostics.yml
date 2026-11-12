@@ -21,7 +21,7 @@ jobs:
             echo "===== DNS $host ====="
             getent ahosts "$host" | head -n 5
           done
-          for url in http://horenova.com/ https://horenova.com/ https://www.horenova.com/ https://horenova.com/favicon.png https://horenova.com/favicon.ico https://horenova.com/robots.txt https://horenova.com/sitemap.xml; do
+          for url in http://horenova.com/ https://horenova.com/ https://www.horenova.com/ https://horenova.com/favicon.png https://horenova.com/favicon.ico https://horenova.com/assets/horenova-cinema-mobile.webp https://horenova.com/horenova-home-film.js?v=safari-motion-20261112-8 https://horenova.com/robots.txt https://horenova.com/sitemap.xml; do
             echo "===== URL $url ====="
             curl -sSL -A 'Googlebot-Image' --connect-timeout 8 --max-time 20 -o /tmp/hn-body -D /tmp/hn-headers -w 'HTTP_CODE=%{http_code} FINAL_URL=%{url_effective} CONTENT_TYPE=%{content_type} REDIRECTS=%{num_redirects} BYTES=%{size_download}\n' "$url"
             echo "curl_exit=$?"
