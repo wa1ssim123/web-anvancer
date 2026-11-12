@@ -37,11 +37,11 @@ async function run(){
     assert.equal(await page.locator('html').getAttribute('lang'),'fr');
     const french=await page.locator('body').innerText();
     await control.selectOption('ar',{force:true});
-    await page.waitForFunction(()=>document.documentElement.lang==='ar'&&document.documentElement.dir==='rtl',{timeout:6000});
+    await page.waitForFunction(()=>document.documentElement.lang==='ar'&&document.documentElement.dir==='rtl',null,{timeout:6000});
     const arabic=await page.locator('body').innerText();
     assert.notEqual(arabic,french,'Arabic selection changed no displayed text');
     await control.selectOption('en',{force:true});
-    await page.waitForFunction(()=>document.documentElement.lang==='en'&&document.documentElement.dir==='ltr',{timeout:6000});
+    await page.waitForFunction(()=>document.documentElement.lang==='en'&&document.documentElement.dir==='ltr',null,{timeout:6000});
     const english=await page.locator('body').innerText();
     assert.notEqual(english,arabic,'English selection changed no displayed text');
     await control.selectOption('fr',{force:true});
