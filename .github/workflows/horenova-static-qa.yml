@@ -21,3 +21,18 @@ jobs:
 
       - name: Test dynamic French, English and Arabic updates
         run: node qa/i18n-dynamic.cjs
+  browser-smoke:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install browser test runner
+        run: npm install --no-save playwright
+      - name: Install headless Chromium and system dependencies
+        run: npx playwright install --with-deps chromium
+      - name: Exercise FR, AR and EN on public pages
+        run: node qa/browser-smoke.cjs
