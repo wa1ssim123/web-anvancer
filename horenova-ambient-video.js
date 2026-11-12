@@ -27,7 +27,7 @@
   }
  }
  for(const video of videos){
-  video.muted=true;video.defaultMuted=true;video.loop=true;video.autoplay=true;
+  video.muted=true;video.defaultMuted=true;video.loop=true;video.autoplay=false;video.removeAttribute('autoplay');
   video.playsInline=true;video.controls=false;video.disablePictureInPicture=true;
   video.disableRemotePlayback=true;
   video.setAttribute('muted','');video.setAttribute('playsinline','');
