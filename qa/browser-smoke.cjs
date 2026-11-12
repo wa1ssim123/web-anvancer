@@ -234,6 +234,49 @@ async function run(){
     console.error('FAIL Safari low-power fallback '+e.message.slice(0,550));
    }finally{await context.close();}
   }
+  // On an iPhone where muted autoplay is granted, promote a hidden H.264
+  // video only after actual playback begins, never expose native play controls.
+  {
+   const context=await browser.newContext({
+    viewport:{width:390,height:844},isMobile:true,hasTouch:true,serviceWorkers:'block',
+    userAgent:'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1'
+   });
+   await context.addInitScript(()=>{
+    const proto=HTMLMediaElement.prototype;
+    Object.defineProperty(proto,'paused',{configurable:true,get(){return this.__fakePaused!==false}});
+    Object.defineProperty(proto,'readyState',{configurable:true,get(){return 4}});
+    proto.play=function(){
+     this.__fakePaused=false;
+     this.dispatchEvent(new Event('playing'));
+     return Promise.resolve();
+    };
+    proto.pause=function(){this.__fakePaused=true;this.dispatchEvent(new Event('pause'))};
+   });
+   const page=await context.newPage();
+   try{
+    await page.goto(base+'/',{waitUntil:'domcontentloaded',timeout:20000});
+    await page.locator('.hn-ios-native-hq.is-playing-hq').waitFor({timeout:7500});
+    const state=await page.evaluate(()=>{
+     const video=document.querySelector('.hn-ios-native-hq');
+     const film=document.querySelector('.hn-intro-film');
+     return{
+      src:video.currentSrc,controls:video.controls,loop:video.loop,muted:video.muted,
+      opacity:getComputedStyle(video).opacity,playing:film.classList.contains('hn-ios-native-playing'),
+      originalClips:film.querySelectorAll('.hn-film-clip').length
+     };
+    });
+    assert.ok(state.src.includes('horenova-cinema-mobile-hq.mp4'),'Old or wrong source: '+JSON.stringify(state));
+    assert.equal(state.controls,false);
+    assert.equal(state.muted,true);
+    assert.equal(state.loop,true);
+    assert.equal(state.originalClips,0);
+    assert.equal(state.playing,true);
+    console.log('PASS iPhone Safari autoplay granted: hardware-decoded HD MP4 promoted with no native controls');
+   }catch(e){
+    failures.push('Safari HD native playback: '+e.message.slice(0,550));
+    console.error('FAIL Safari HD native playback: '+e.message.slice(0,450));
+   }finally{await context.close();}
+  }
   // Real Chromium navigation for the two account screens. No test accounts are created.
   for(const startingMode of ['signin','signup']){
    const context=await browser.newContext({serviceWorkers:'block'});
