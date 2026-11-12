@@ -5,7 +5,7 @@ state.intent=state.intent||'job'; state.role=state.role||'Barista'; state.city=s
 const persist=()=>localStorage.setItem('mihna-v3-temp',JSON.stringify(state));
 const jobs=()=>[...(window.HORENOVA_LIVE_JOBS||[])];
 function toast(t){const e=$('#toast');if(!e)return;e.textContent=t;e.classList.add('show');clearTimeout(window._tt);window._tt=setTimeout(()=>e.classList.remove('show'),1800)}
-function setupMenu(){const b=$('#menuBtn'),m=$('#mobileMenu');if(b&&m)b.onclick=()=>{m.hidden=!m.hidden;b.textContent=m.hidden?'☰':'×'}}
+function setupMenu(){if(document.querySelector('script[src*="mobile-nav-v15.js"]'))return;const b=$('#menuBtn'),m=$('#mobileMenu');if(b&&m)b.onclick=()=>{m.hidden=!m.hidden;b.textContent=m.hidden?'☰':'×'}}
 function setupHeroVideo(){const p=$('#playHero'),w=$('.hero-photo-wrap'),v=$('#heroVideo');if(p&&w&&v)p.onclick=()=>{w.classList.toggle('playing');w.classList.contains('playing')?v.play():v.pause()};const f=$('#filmBtn'),ev=$('#exploreVideo');if(f&&ev)f.onclick=()=>{ev.style.display='block';ev.play()}}
 function setupQuiz(){const i=$('#intentSelect'),r=$('#roleSelect'),c=$('#citySelect'),b=$('#matchBtn');if(!i||!r||!c)return;i.value=state.intent;r.value=state.role;c.value=state.city;[i,r,c].forEach(x=>x.onchange=()=>{state.intent=i.value;state.role=r.value;state.city=c.value;persist()});if(b)b.onclick=()=>{state.intent=i.value;state.role=r.value;state.city=c.value;persist();if(location.pathname.endsWith('/matches.html')){renderMatch();toast('Vos matchs sont actualisés')}else location.href='/matches.html'}}
 let current=0,kind='all';
