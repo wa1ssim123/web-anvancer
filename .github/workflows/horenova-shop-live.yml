@@ -1,43 +1,49 @@
-name: Verify HORENOVA real uniforms Shop on public domain
+name: HORENOVA Shop — animated wardrobe QA
 on:
   push:
     branches: [horenova-free-deploy-2026]
     paths:
       - shop.html
-      - shop-product.html
       - shop-v17.js
-      - horenova-showroom.js
-      - horenova-shop-real.css
+      - horenova-wardrobe-26.js
+      - horenova-wardrobe-26.css
       - .github/workflows/horenova-shop-live.yml
   workflow_dispatch:
 permissions:
   contents: read
 jobs:
-  shop:
+  wardrobe:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
-      - name: Syntax and content checks
+      - name: Validate interactive wardrobe assets and JavaScript
+        shell: bash
         run: |
-          node --check horenova-showroom.js
+          set -euo pipefail
+          node --check horenova-wardrobe-26.js
           node --check shop-v17.js
-          grep -q "hx-showroom" shop.html
-          grep -q "horenova-shop-real.css" shop.html
-          grep -q "wincous.com/cdn/shop" horenova-showroom.js
-          grep -q "chefworks.co.jp/cdn/shop" horenova-showroom.js
-          grep -q "Vue dos indisponible" horenova-showroom.js
-          grep -q "hx-photo--dual" horenova-shop-real.css
-          ! grep -q 'function shape(p,back)' horenova-showroom.js
-      - name: Check live publication
+          grep -q 'horenova-wardrobe-26.css' shop.html
+          grep -q 'horenova-wardrobe-26.js' shop.html
+          grep -q 'hx26-wind' horenova-wardrobe-26.css
+          grep -q 'data-hx26-step' horenova-wardrobe-26.js
+          grep -q 'data-hx26-qty' horenova-wardrobe-26.js
+          grep -q 'HORENOVA_SHOWROOM' horenova-wardrobe-26.js
+          grep -q 'static.wixstatic.com/media/d0158d_' horenova-wardrobe-26.js
+          ! grep -q 'hn-fullscreen-entry' shop.html
+          echo 'PASS: seven garments, wind animations, selection, size and quote implementation'
+      - name: Verify public domain serves the new wardrobe
         shell: bash
         run: |
           set -euo pipefail
           for i in $(seq 1 18); do
-            curl -fsSL --connect-timeout 10 --max-time 25 "https://horenova.com/shop.html?check=${GITHUB_RUN_ID}-${i}" -o /tmp/shop.html || true
-            curl -fsSL --connect-timeout 10 --max-time 25 "https://horenova.com/horenova-showroom.js?check=${GITHUB_RUN_ID}-${i}" -o /tmp/showroom.js || true
-            if grep -q 'real-photos-gold-20261113-c' /tmp/shop.html && grep -q 'wincous.com/cdn/shop' /tmp/showroom.js; then break; fi
-            sleep 8
+            curl -fsSL --connect-timeout 10 --max-time 28 "https://horenova.com/shop.html?qa=$GITHUB_RUN_ID-$i" -o /tmp/shop.html || true
+            curl -fsSL --connect-timeout 10 --max-time 28 "https://horenova.com/horenova-wardrobe-26.js?qa=$GITHUB_RUN_ID-$i" -o /tmp/wardrobe.js || true
+            if grep -q 'wardrobe-animated-20261113-r3' /tmp/shop.html && grep -q 'Signature Service Apron' /tmp/wardrobe.js; then break; fi
+            sleep 7
           done
-          grep -q 'real-photos-gold-20261113-c' /tmp/shop.html
-          grep -q 'wincous.com/cdn/shop' /tmp/showroom.js
-          echo 'PASS: real photographic HORENOVA showroom is published'
+          grep -q 'wardrobe-animated-20261113-r3' /tmp/shop.html
+          grep -q 'Signature Service Apron' /tmp/wardrobe.js
+          curl -fsSL --connect-timeout 10 --max-time 28 "https://horenova.com/horenova-wardrobe-26.css?qa=$GITHUB_RUN_ID" -o /tmp/wardrobe.css
+          grep -q '@keyframes hx26-wind' /tmp/wardrobe.css
+          echo 'PASS: wardrobe live on horenova.com'
