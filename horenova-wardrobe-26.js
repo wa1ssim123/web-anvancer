@@ -148,4 +148,10 @@ document.addEventListener('keydown',e=>{
 function openById(id){const i=products.findIndex(p=>p.id===id);if(i>=0){select(i);open(0)}}
 window.HORENOVA_SHOWROOM={open:openById,getSelection:()=>cart.map(x=>({...x})),products:products.map(p=>({id:p.id,name:p.name}))};
 render();
+if(window.innerWidth<=900){
+  requestAnimationFrame(()=>{
+    const rack=$('.hx26-rack'),selectedGarment=$('.hx26-slot.is-selected');
+    if(rack&&selectedGarment)rack.scrollLeft=Math.max(0,selectedGarment.offsetLeft-rack.clientWidth/2+selectedGarment.clientWidth/2);
+  });
+}
 })();
