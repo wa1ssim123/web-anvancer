@@ -34,6 +34,10 @@ try{
  const mobile=await browser.newPage({viewport:{width:390,height:844},deviceScaleFactor:1,isMobile:true,hasTouch:true});
  await mobile.goto(base+'/shop.html',{waitUntil:'domcontentloaded',timeout:60000});
  await mobile.locator('.hx26-slot').first().waitFor({state:'visible',timeout:20000});
+    await mobile.waitForFunction(()=>{
+      const rack=document.querySelector('.hx26-rack'),picked=document.querySelector('.hx26-slot.is-selected');
+      return rack&&picked&&Math.abs((picked.getBoundingClientRect().left+picked.getBoundingClientRect().width/2)-(rack.getBoundingClientRect().left+rack.getBoundingClientRect().width/2))<75;
+    },null,{timeout:7500});
  assert.equal(await mobile.locator('.hx26-slot').count(),7);
  await mobile.screenshot({path:'wardrobe-mobile.png',fullPage:false});
  assert.equal(pageErrors.length,0,'Unexpected page errors: '+pageErrors.slice(0,3).join(' | '));
