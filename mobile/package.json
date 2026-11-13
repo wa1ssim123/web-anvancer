@@ -1,0 +1,30 @@
+{
+  "name": "horenova-mobile",
+  "private": true,
+  "version": "0.1.0",
+  "description": "HORENOVA iOS and Android store submission candidate (unsigned)",
+  "type": "module",
+  "scripts": {
+    "build:web": "node scripts/prepare-web.mjs && node scripts/generate-icon.mjs && node scripts/bundle-native.mjs",
+    "check": "node scripts/verify-web.mjs",
+    "android:init": "npm run build:web && npx cap add android && npx capacitor-assets generate --android && npx cap sync android",
+    "ios:init": "npm run build:web && npx cap add ios && npx capacitor-assets generate --ios && npx cap sync ios",
+    "sync": "npm run build:web && npx cap sync"
+  },
+  "dependencies": {
+    "@capacitor/core": "^8.0.0",
+    "@capacitor/app": "^8.0.0",
+    "@capacitor/haptics": "^8.0.0",
+    "@capacitor/network": "^8.0.0",
+    "@capacitor/share": "^8.0.0",
+    "@capacitor/status-bar": "^8.0.0"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^8.0.0",
+    "@capacitor/android": "^8.0.0",
+    "@capacitor/ios": "^8.0.0",
+    "@capacitor/assets": "^4.0.0",
+    "esbuild": "^0.25.0",
+    "sharp": "^0.34.0"
+  }
+}

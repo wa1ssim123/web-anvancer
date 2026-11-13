@@ -1,0 +1,14 @@
+{
+  "appId": "com.horenova.mobile",
+  "appName": "HORENOVA",
+  "webDir": "www",
+  "bundledWebRuntime": false,
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 1700,
+      "launchAutoHide": true,
+      "backgroundColor": "#090a0e",
+      "showSpinner": false
+    }
+  }
+}

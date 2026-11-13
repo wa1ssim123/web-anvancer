@@ -1,0 +1,15 @@
+/* HORENOVA native-only quick actions. The script injects this UI only inside Capacitor. */
+#hn-native-controls{position:fixed;inset:0;pointer-events:none;z-index:2147480000;font-family:Inter,system-ui,sans-serif;color:#f7ead9}
+#hn-native-controls *{box-sizing:border-box}
+#hn-native-launcher{pointer-events:auto;position:absolute;right:14px;bottom:calc(102px + env(safe-area-inset-bottom,0px));width:46px;height:46px;border-radius:50%;border:1px solid #dec18a;background:#1a1d23;color:#f6dea8;font-size:23px;box-shadow:0 7px 24px #000a;display:grid;place-items:center}
+#hn-native-panel{pointer-events:auto;position:absolute;right:13px;bottom:calc(158px + env(safe-area-inset-bottom,0px));width:min(300px,calc(100vw - 25px));padding:22px 15px 15px;background:linear-gradient(140deg,#1a1e25,#0e1014);border:1px solid #d2b17b75;border-radius:17px;box-shadow:0 15px 60px #000b}
+#hn-native-panel[hidden],#hn-native-offline[hidden]{display:none!important}
+#hn-native-panel>strong{display:block;font-size:14px;letter-spacing:1.5px;margin-bottom:15px;color:#f6e9da}
+#hn-native-panel>strong span{color:#d2b17b;font-size:10px}
+#hn-native-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+#hn-native-grid a{pointer-events:auto;text-align:center;border:1px solid #66584099;border-radius:9px;background:#22252b;color:#e6d7c4;padding:13px 7px;text-decoration:none;font-size:12px;font-weight:700}
+#hn-native-grid a:active,#hn-native-grid a:focus-visible{background:#7c613b;color:#fff}
+#hn-native-share,#hn-native-dismiss{display:block;width:100%;pointer-events:auto;border:1px solid #ad9164;padding:12px;border-radius:9px;margin-top:9px;color:#121317;background:#d2b17b;font-size:12px;font-weight:750}
+#hn-native-dismiss{background:transparent;color:#dbcbac;border-color:#61523e}
+#hn-native-offline{pointer-events:none;position:absolute;top:calc(60px + env(safe-area-inset-top,0px));left:15px;right:15px;background:#45291b;color:#ffe9c5;padding:12px;border-radius:12px;font-size:12px;text-align:center;border:1px solid #e3b778}
+@media(prefers-reduced-motion:no-preference){#hn-native-launcher{transition:transform .2s}#hn-native-launcher:active{transform:scale(.94)}}
