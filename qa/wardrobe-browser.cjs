@@ -34,6 +34,7 @@ try{
  const mobile=await browser.newPage({viewport:{width:390,height:844},deviceScaleFactor:1,isMobile:true,hasTouch:true});
  await mobile.goto(base+'/shop.html',{waitUntil:'domcontentloaded',timeout:60000});
  await mobile.locator('.hx26-slot').first().waitFor({state:'visible',timeout:20000});
+    console.log('Mobile wardrobe layout:',JSON.stringify(await mobile.evaluate(()=>{const rack=document.querySelector('.hx26-rack'),p=document.querySelector('.hx26-slot.is-selected'),items=document.querySelector('.hx26-items');return {width:innerWidth,rackWidth:rack?.clientWidth,scrollWidth:rack?.scrollWidth,scrollLeft:rack?.scrollLeft,selectedOffset:p?.offsetLeft,selectedRect:p?.getBoundingClientRect().toJSON(),rackRect:rack?.getBoundingClientRect().toJSON(),itemsRect:items?.getBoundingClientRect().toJSON()}})));
     await mobile.waitForFunction(()=>{
       const rack=document.querySelector('.hx26-rack'),picked=document.querySelector('.hx26-slot.is-selected');
       return rack&&picked&&Math.abs((picked.getBoundingClientRect().left+picked.getBoundingClientRect().width/2)-(rack.getBoundingClientRect().left+rack.getBoundingClientRect().width/2))<75;
