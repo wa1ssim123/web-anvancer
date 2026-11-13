@@ -5,6 +5,9 @@ on:
     branches: [horenova-free-deploy-2026]
     paths:
       - qa/wardrobe-browser.cjs
+      - shop.html
+      - horenova-wardrobe-26.js
+      - horenova-wardrobe-26.css
       - .github/workflows/horenova-wardrobe-browser.yml
 permissions:
   contents: read
