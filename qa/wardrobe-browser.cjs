@@ -41,6 +41,51 @@ try{
     },null,{timeout:7500});
  assert.equal(await mobile.locator('.hx26-slot').count(),7);
  await mobile.screenshot({path:'wardrobe-mobile.png',fullPage:false});
+ // Reproduce iPhone Safari bug reports: huge garment overlay, blocked modal scroll,
+ // dock overlapping product card, and inability to scroll to collection.
+ await mobile.locator('.hx26-slot.is-selected').click();
+ await mobile.locator('.hx26-dialog').waitFor({state:'visible',timeout:7500});
+ const layout=await mobile.evaluate(()=>{
+   const photo=document.querySelector('.hx26-dialog-photo'),img=photo?.querySelector('img');
+   const left=document.querySelector('.hx26-dialog-left');
+   const right=document.querySelector('.hx26-dialog-right');
+   const dialog=document.querySelector('.hx26-dialog');
+   const rect=e=>e?.getBoundingClientRect().toJSON();
+   return {photo:rect(photo),img:rect(img),left:rect(left),right:rect(right),
+     imageOverflow:getComputedStyle(photo).overflow,
+     imagePosition:getComputedStyle(img).position,
+     modalOverflowY:getComputedStyle(dialog).overflowY,
+     dialogHeight:dialog.clientHeight,dialogScrollHeight:dialog.scrollHeight};
+ });
+ console.log('IPHONE_MODAL_LAYOUT',JSON.stringify(layout));
+ assert.equal(layout.modalOverflowY,'auto','Modal itself must scroll vertically');
+ assert.match(layout.imageOverflow,/hidden|clip/,'Garment photo must be clipped');
+ assert.equal(layout.imagePosition,'absolute','Garment should be positioned inside bounded photo');
+ assert.ok(layout.img.height<=layout.photo.height+2,'Garment image too tall for photo container');
+ assert.ok(layout.img.width<=layout.photo.width+2,'Garment image too wide for photo container');
+ assert.ok(layout.left.bottom<=layout.right.top+3,'Picture must not overlap colour and size options');
+ await mobile.screenshot({path:'wardrobe-dialog-mobile.png',fullPage:false});
+ const modalScroll=await mobile.locator('.hx26-dialog').evaluate(el=>{
+   el.scrollTop=el.scrollHeight;
+   return {scrollTop:el.scrollTop,max:el.scrollHeight-el.clientHeight};
+ });
+ console.log('IPHONE_MODAL_SCROLL',JSON.stringify(modalScroll));
+ assert.ok(modalScroll.max>60&&modalScroll.scrollTop>60,
+   'iPhone product modal must scroll to sizes and add-to-cart button');
+ await mobile.locator('.hx26-x').click();
+ const pageScroll=await mobile.evaluate(()=>{
+   const dock=document.querySelector('.hn12-dock');
+   const before=window.scrollY;
+   window.scrollTo(0,Math.min(950,document.scrollingElement.scrollHeight));
+   return {scrollY:window.scrollY,before,full:document.scrollingElement.scrollHeight,
+     viewport:innerHeight,bodyOverflow:getComputedStyle(document.body).overflowY,
+     dockPosition:getComputedStyle(dock).position};
+ });
+ console.log('IPHONE_PAGE_SCROLL',JSON.stringify(pageScroll));
+ assert.ok(pageScroll.full>pageScroll.viewport+450,'Shop must contain content below rack');
+ assert.ok(pageScroll.scrollY>150,'Vertical page scroll must be possible after closing the garment dialog');
+ assert.notEqual(pageScroll.dockPosition,'fixed','Bottom navigation cannot cover shop card');
+ await mobile.screenshot({path:'wardrobe-scrolled-mobile.png',fullPage:false});
  assert.equal(pageErrors.length,0,'Unexpected page errors: '+pageErrors.slice(0,3).join(' | '));
  console.log('PASS: Interactive wardrobe carousel, clothing images, preview front/back, size and cart; desktop & phone viewports.');
 }finally{await browser.close()}
