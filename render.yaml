@@ -13,12 +13,12 @@ services:
       - path: /shop.html
         name: Cache-Control
         value: "no-cache, no-store, must-revalidate"
-      - path: /horenova-wardrobe-clean-20261113.js
+      - path: /horenova-wardrobe-atelier-20261113.js
         name: Cache-Control
         value: "no-cache, must-revalidate"
-      - path: /shop-products-clean-20261113.js
+      - path: /shop-products-atelier-20261113.js
         name: Cache-Control
         value: "no-cache, must-revalidate"
-      - path: /horenova-shop-clean-20261113.css
+      - path: /horenova-shop-atelier-20261113.css
         name: Cache-Control
         value: "no-cache, must-revalidate"
