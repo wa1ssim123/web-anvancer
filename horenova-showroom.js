@@ -17,7 +17,7 @@ let cart=[];
 try{const v=JSON.parse(localStorage.getItem(cartKey)||'[]');if(Array.isArray(v))cart=v.filter(x=>products.some(p=>p.id===x.id)&&Number.isInteger(x.qty)&&x.qty>0).slice(0,60)}catch(e){}
 function productById(id){return products.find(p=>p.id===id)}
 function save(){try{localStorage.setItem(cartKey,JSON.stringify(cart))}catch(e){}updateCount()}
-function updateCount(){root.querySelectorAll('[data-hx-count]').forEach(n=>n.textContent=cart.reduce((a,x)=>a+x.qty,0))}
+function updateCount(){document.querySelectorAll('[data-hx-count]').forEach(n=>n.textContent=cart.reduce((a,x)=>a+x.qty,0))}
 function shape(p,back){
 const kind=p.kind;
 const isApron=kind==='apron',isVest=kind==='vest';
@@ -43,19 +43,19 @@ function svg(p,color=0,back=false){
 }
 const gallery=products.map((p,i)=>`<button type="button" class="hx-hanger" data-hx-product="${p.id}" style="--hx-n:${i};--hx-r:${i%2?'-2deg':'2deg'}" aria-label="Découvrir ${safe(p.name)}"><span class="hx-hang-visual">${svg(p)}</span><span class="hx-hang-name">${safe(p.name)}</span></button>`).join('');
 root.innerHTML=`<div class="hx-show-head"><small>HORENOVA / HOSPITALITY SHOWROOM</small><h2>Le vestiaire des métiers.</h2><p>Tenues de chef, serveur, barista et réception. Explorez les détails, l'avant, le dos et les coloris.</p></div><div class="hx-stage"><div class="hx-light"></div><div class="hx-rail"></div><div class="hx-hangers">${gallery}</div></div><div class="hx-bar"><span>CHEF · BARISTA · SERVICE · ACCUEIL · ÉTAGE</span><button type="button" class="hx-open-cart" data-hx-cart>MA SÉLECTION <b data-hx-count>0</b> ↗</button></div><div class="hx-ticker"><div>HORENOVA ESSENTIALS ✦ CHEF WEAR ✦ BARISTA WEAR ✦ SERVICE UNIFORMS ✦ HOSPITALITY EDITION ✦ HORENOVA ESSENTIALS ✦</div></div><p class="hx-disclosure">Propositions de collection, représentations vectorielles originales. Photos fournisseurs, coloris, stocks et prix à confirmer avant commercialisation.</p><div class="hx-modal" id="hx-modal" hidden><div class="hx-scrim" data-hx-close></div><section id="hx-dialog" class="hx-dialog" role="dialog" aria-modal="true" aria-label="Détails de la tenue" tabindex="-1"></section></div>`;
-function modal(){root.querySelector('#hx-modal').hidden=false;document.body.classList.add('hx-modal-open');opened=true;root.querySelector('#hx-dialog').focus();}
-function close(){root.querySelector('#hx-modal').hidden=true;document.body.classList.remove('hx-modal-open');opened=false;root.querySelector('[data-hx-product]')?.focus();}
+function modal(){document.getElementById('hx-modal').hidden=false;document.body.classList.add('hx-modal-open');opened=true;document.getElementById('hx-dialog').focus();}
+function close(){document.getElementById('hx-modal').hidden=true;document.body.classList.remove('hx-modal-open');opened=false;root.querySelector('[data-hx-product]')?.focus();}
 function showProduct(p){selected=products.indexOf(p);ci=0;si=null;qty=1;face='front';cartOpen=false;modal();renderProduct()}
 function renderProduct(){
- const p=products[selected],d=root.querySelector('#hx-dialog');if(!p)return;
+ const p=products[selected],d=document.getElementById('hx-dialog');if(!p)return;
  d.innerHTML=`<button type="button" class="hx-x" data-hx-close aria-label="Fermer">×</button><div class="hx-view"><small>${safe(p.cat)} / HORENOVA STUDIO</small><div class="hx-big-garment">${svg(p,ci,face==='back')}</div><div class="hx-side"><button type="button" data-hx-side="front" aria-pressed="${face==='front'}">AVANT</button><button type="button" data-hx-side="back" aria-pressed="${face==='back'}">DOS</button></div><small>Prévisualisation illustrée · coupe et détails indicatifs</small></div><div class="hx-options"><small>HOSPITALITY / UNIFORMS</small><h2>${safe(p.name)}</h2><p>${safe(p.desc)}</p><div class="hx-alert">Disponibilité et prix à confirmer auprès du fournisseur.</div><div class="hx-heading">COLORIS <small>${safe(p.colors[ci][0])}</small></div><div class="hx-colors">${p.colors.map(([name,hex],i)=>`<button type="button" data-hx-color="${i}" aria-label="${safe(name)}" aria-pressed="${ci===i}" style="--hx-c:${hex}"></button>`).join('')}</div><div class="hx-heading">TAILLE <small>${si===null?'Choisir':safe(p.sizes[si])}</small></div><div class="hx-sizes">${p.sizes.map((sz,i)=>`<button type="button" data-hx-size="${i}" aria-pressed="${si===i}">${safe(sz)}</button>`).join('')}</div><div class="hx-heading">QUANTITÉ</div><div class="hx-qty"><button type="button" data-hx-qty="-1">−</button><span>${qty}</span><button type="button" data-hx-qty="1">+</button></div><button type="button" class="hx-cta" data-hx-add ${si===null?'disabled':''}>AJOUTER À MA SÉLECTION ↗</button><button type="button" class="hx-outline" data-hx-cart>VOIR MA SÉLECTION · <span data-hx-count>0</span></button><p class="hx-small">Aucune commande ni aucun paiement ne sont validés avant confirmation des références, tarifs et disponibilités.</p></div>`;updateCount();
 }
 function showCart(){
- cartOpen=true;modal();const d=root.querySelector('#hx-dialog');
+ cartOpen=true;modal();const d=document.getElementById('hx-dialog');
  d.innerHTML=`<button type="button" class="hx-x" data-hx-close aria-label="Fermer">×</button><div class="hx-cart-panel"><small>HORENOVA / ÉQUIPEMENTS PROFESSIONNELS</small><h2>Votre sélection.</h2><p>Préparez votre demande de disponibilité et de tarif. Aucun paiement n'est demandé.</p><div class="hx-cart-lines">${cart.length?cart.map((v,i)=>{const p=productById(v.id);return `<div class="hx-cart-line"><div class="hx-thumb">${svg(p,Math.max(0,p.colors.findIndex(c=>c[0]===v.color)))}</div><div><strong>${safe(p.name)}</strong><small>${safe(v.color)} / ${safe(v.size)} / × ${v.qty}</small></div><button type="button" data-hx-remove="${i}" aria-label="Retirer">×</button></div>`}).join(''):'<p>Aucun uniforme sélectionné.</p>'}</div><div class="hx-warning">Prix et stocks non renseignés : ceci est un bon de demande, pas une commande passée.</div><div class="hx-actions"><button type="button" class="hx-outline" data-hx-continue>RETOUR AU VESTIAIRE</button><button type="button" class="hx-cta" data-hx-export ${cart.length?'':'disabled'}>TÉLÉCHARGER MA DEMANDE ↓</button></div></div>`;d.focus();
 }
 function exportCart(){if(!cart.length)return;const lines=['HORENOVA — BON DE DEMANDE','Document de préparation, non contractuel','Date : '+new Date().toLocaleDateString('fr-FR'),''];for(const v of cart){const p=productById(v.id);lines.push(`${p.name} | ${v.color} | ${v.size} | quantité ${v.qty}`)}lines.push('','Prix, stocks et livraison à confirmer. Aucune commande transmise.');const u=URL.createObjectURL(new Blob([lines.join('\n')],{type:'text/plain;charset=utf-8'}));const a=document.createElement('a');a.href=u;a.download='horenova-uniformes-demande.txt';a.click();setTimeout(()=>URL.revokeObjectURL(u),4000)}
-root.addEventListener('click',e=>{
+const handleClick=e=>{
  const b=e.target.closest('button');if(!b){if(e.target.closest('[data-hx-close]'))close();return}
  if(b.hasAttribute('data-hx-close'))return close();
  if(b.dataset.hxProduct)return showProduct(productById(b.dataset.hxProduct));
@@ -68,7 +68,12 @@ root.addEventListener('click',e=>{
  if(b.dataset.hxRemove!==undefined){cart.splice(Number(b.dataset.hxRemove),1);save();return showCart()}
  if(b.hasAttribute('data-hx-continue'))return close();
  if(b.hasAttribute('data-hx-export'))return exportCart();
-});
-document.addEventListener('keydown',e=>{if(!opened)return;if(e.key==='Escape'){e.preventDefault();close()}if(e.key==='Tab'){const n=[...root.querySelectorAll('#hx-dialog button:not([disabled])')];if(!n.length)return;const idx=n.indexOf(document.activeElement);if(e.shiftKey&&(idx===0||idx<0)){e.preventDefault();n[n.length-1].focus()}else if(!e.shiftKey&&idx===n.length-1){e.preventDefault();n[0].focus()}}});
+};
+root.addEventListener('click',handleClick);
+document.getElementById('hx-modal').addEventListener('click',handleClick);
+document.addEventListener('keydown',e=>{if(!opened)return;if(e.key==='Escape'){e.preventDefault();close()}if(e.key==='Tab'){const n=[...document.querySelectorAll('#hx-dialog button:not([disabled])')];if(!n.length)return;const idx=n.indexOf(document.activeElement);if(e.shiftKey&&(idx===0||idx<0)){e.preventDefault();n[n.length-1].focus()}else if(!e.shiftKey&&idx===n.length-1){e.preventDefault();n[0].focus()}}});
+// Render the modal at body level to prevent CSS transforms/clipping on main from
+// moving fixed controls during click/scroll. This also fixes iPhone sheets.
+document.body.appendChild(document.getElementById('hx-modal'));
 updateCount();window.HORENOVA_SHOWROOM={products:products.map(x=>({id:x.id,name:x.name})),getSelection:()=>cart.map(x=>({...x}))};
 })();
