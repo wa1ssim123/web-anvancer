@@ -206,3 +206,229 @@ body.hx26-dialog-open{overflow:hidden!important}
 .hx26-dialog-photo,.hx26-dialog-photo:before,.hx26-dialog-photo img{pointer-events:none!important}
 .hx26-dialog-faces{position:relative;z-index:20;pointer-events:auto}
 .hx26-dialog-faces button{position:relative;z-index:21;pointer-events:auto}
+
+
+/* HORENOVA Shop · iPhone Safari layout and vertical-scroll repair
+   2026-11-13 · targeted patch, keeps wardrobe animations and visual identity. */
+html:has(body[data-hn12="shop"]) {
+  overflow-x: clip;
+  overflow-y: auto !important;
+}
+html:not(.auth-pending) body[data-hn12="shop"]:not(.hx26-dialog-open):not(.hn15-menu-open){
+  height:auto !important;
+  min-height:100dvh;
+  overflow-x: clip !important;
+  overflow-y: auto !important;
+  overscroll-behavior-y:auto !important;
+  -webkit-overflow-scrolling:touch;
+}
+body[data-hn12="shop"] .shop17-page {
+  position:relative;
+  height:auto !important;
+  min-height:100dvh;
+  overflow:visible !important;
+  padding-bottom:clamp(15px,3vw,45px);
+}
+body[data-hn12="shop"] #hx-showroom {
+  touch-action:pan-y pinch-zoom;
+  overflow:visible !important;
+}
+body[data-hn12="shop"] .hx26-hero,
+body[data-hn12="shop"] .hx26-layout,
+body[data-hn12="shop"] .hx26-showcase,
+body[data-hn12="shop"] .hx26-card {
+  touch-action:pan-y pinch-zoom;
+}
+body[data-hn12="shop"] .hx26-rack {
+  touch-action:pan-y pinch-zoom !important;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling:touch;
+}
+body[data-hn12="shop"] .hx26-slot img{pointer-events:none}
+body[data-hn12="shop"] .hn12-dock {
+  position:relative !important;
+  z-index:4 !important;
+  left:auto !important;
+  right:auto !important;
+  top:auto !important;
+  bottom:auto !important;
+  transform:none !important;
+  margin:16px 14px calc(16px + env(safe-area-inset-bottom,0px)) !important;
+  width:calc(100% - 28px);
+}
+/* Backdrop must never prevent vertical panning of the internal modal. */
+.hx26-overlay {
+  width:100vw;
+  height:100dvh;
+  max-height:100dvh;
+  overflow-x:hidden !important;
+  overflow-y:auto !important;
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior-y:contain;
+  touch-action:pan-y pinch-zoom;
+  padding:clamp(12px,2vh,20px) 12px max(16px,env(safe-area-inset-bottom,0px)) !important;
+}
+.hx26-overlay .hx26-overlay-bg {
+  position:fixed;
+  inset:0;
+  pointer-events:auto;
+}
+.hx26-overlay .hx26-dialog {
+  position:relative;
+  min-height:0 !important;
+  max-height:calc(100dvh - 26px);
+  overflow-x:hidden !important;
+  overflow-y:auto !important;
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior-y:contain;
+  touch-action:pan-y pinch-zoom;
+  margin:auto;
+  isolation:isolate;
+}
+.hx26-overlay .hx26-dialog-left {
+  min-width:0 !important;
+  overflow:hidden !important;
+  isolation:isolate;
+  position:relative;
+}
+.hx26-overlay .hx26-dialog-photo {
+  min-width:0;
+  max-width:100%;
+  overflow:hidden !important;
+  isolation:isolate;
+  contain:layout paint;
+  touch-action:pan-y pinch-zoom;
+  pointer-events:none !important;
+}
+.hx26-overlay .hx26-dialog-photo img {
+  display:block!important;
+  position:absolute!important;
+  top:0!important;
+  right:0!important;
+  bottom:0!important;
+  left:0!important;
+  margin:auto!important;
+  width:100%!important;
+  height:100%!important;
+  max-width:100%!important;
+  max-height:100%!important;
+  object-fit:contain!important;
+  object-position:center center!important;
+  pointer-events:none!important;
+}
+.hx26-overlay .hx26-dialog-faces {
+  position:relative;
+  z-index:30;
+  flex:0 0 auto;
+}
+.hx26-overlay .hx26-dialog-faces button {min-height:40px;position:relative;z-index:32}
+.hx26-overlay .hx26-dialog-right {
+  min-width:0 !important;
+  overflow-wrap:anywhere;
+}
+body.hx26-dialog-open .hn12-dock {
+  display:none !important;
+  visibility:hidden !important;
+  pointer-events:none !important;
+}
+body[data-hn12="shop"].hx26-dialog-open {
+  overflow:hidden !important;
+  touch-action:none;
+}
+@media(max-width:900px){
+  body[data-hn12="shop"] .hx26-hero{min-height:0!important}
+  body[data-hn12="shop"] .hx26-card {
+    margin-bottom:14px!important;
+    overflow:visible;
+  }
+}
+@media(max-width:600px){
+  .hx26-overlay {
+    display:flex;
+    align-items:flex-start;
+    justify-content:center;
+  }
+  .hx26-overlay .hx26-dialog {
+    display:flex!important;
+    flex-direction:column!important;
+    flex:0 1 auto;
+    width:100%;
+    max-width:520px;
+    max-height:calc(100dvh - 28px)!important;
+    height:auto!important;
+    margin:auto 0;
+    border-radius:21px;
+    -webkit-overflow-scrolling:touch;
+  }
+  .hx26-overlay .hx26-dialog-left{
+    flex:0 0 auto!important;
+    min-height:0!important;
+    height:300px!important;
+    max-height:300px!important;
+    padding:15px 17px 13px!important;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:space-between;
+  }
+  .hx26-overlay .hx26-dialog-left>small {
+    flex:0 0 auto;
+    width:100%;
+    font-size:9px;
+    line-height:1.2;
+    padding-right:45px;
+  }
+  .hx26-overlay .hx26-dialog-photo{
+    width:min(100%,400px)!important;
+    height:206px!important;
+    max-height:206px!important;
+    min-height:0!important;
+    flex:0 0 206px!important;
+    margin:0 auto!important;
+    border-radius:11px;
+    overflow:hidden!important;
+  }
+  .hx26-overlay .hx26-dialog-photo img{
+    width:100%!important;
+    height:100%!important;
+    object-fit:contain!important;
+  }
+  .hx26-overlay .hx26-dialog-faces {
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    width:100%;
+    padding:0 7px;
+    min-height:43px;
+  }
+  .hx26-overlay .hx26-dialog-faces button {
+    flex:0 1 auto;
+    min-width:100px;
+    max-width:175px;
+    min-height:42px;
+    padding:8px 11px!important;
+    white-space:nowrap;
+  }
+  .hx26-overlay .hx26-dialog-right {
+    flex:0 0 auto!important;
+    display:block!important;
+    padding:22px 20px calc(35px + env(safe-area-inset-bottom,0px))!important;
+    min-height:0!important;
+    overflow:visible!important;
+  }
+  .hx26-overlay .hx26-dialog-right h2 {
+    font-size:clamp(29px,7.8vw,35px);
+    line-height:1.07;
+  }
+  .hx26-overlay .hx26-progress{gap:6px}
+  .hx26-overlay .hx26-progress span{font-size:8px;min-width:0}
+  .hx26-overlay .hx26-dialog-cart{min-height:0!important;}
+  body[data-hn12="shop"] .hn12-dock {
+    margin:18px 12px calc(24px + env(safe-area-inset-bottom,0px)) !important;
+    width:calc(100% - 24px);
+  }
+}
+@media(prefers-reduced-motion:reduce){
+ .hx26-overlay .hx26-dialog-photo img{transition:none!important}
+}
