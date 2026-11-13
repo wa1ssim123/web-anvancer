@@ -104,3 +104,23 @@ body.hx-modal-open{overflow:hidden}
  .hx-x{top:9px;right:9px}
 }
 @media(prefers-reduced-motion:reduce){.hx-hang-visual,.hx-ticker>div{animation:none!important}.hx-hanger:hover .hx-hang-visual{transform:none!important}}
+
+
+/* Editorial rack photo from the original HORENOVA hospitality uniform concept.
+ * This is a concept visual; interactive SVG preview appears on hover/focus. */
+@media(min-width:951px){
+ .hx-stage::before{
+  content:"";position:absolute;inset:0;z-index:1;pointer-events:none;
+  background-image:url('https://static.wixstatic.com/media/d0158d_b3d3655960cb4a55a566d773b02f1198~mv2.png');
+  background-size:cover;background-position:center 50%;
+  filter:saturate(.93) contrast(1.035);
+ }
+ .hx-stage .hx-light,.hx-stage .hx-rail{opacity:0}
+ .hx-stage .hx-hang-visual{opacity:0;transition:opacity .25s,transform .5s,filter .5s}
+ .hx-stage .hx-hang-name{opacity:0;background:rgba(244,240,234,.88);padding:7px 11px;border-radius:40px;margin-top:-8px}
+ .hx-hanger:hover .hx-hang-visual,.hx-hanger:focus-visible .hx-hang-visual{
+  opacity:1;filter:drop-shadow(0 25px 28px rgba(0,0,0,.25)) drop-shadow(0 0 14px rgba(188,253,24,.4));
+ }
+ .hx-hanger:hover .hx-hang-name,.hx-hanger:focus-visible .hx-hang-name{opacity:1}
+}
+@media(prefers-reduced-motion:reduce){.hx-showroom .hx-hang-visual{animation:none!important}}
