@@ -1,0 +1,35 @@
+name: Verify HORENOVA interactive Shop on public domain
+on:
+  push:
+    branches: [horenova-free-deploy-2026]
+    paths: [.github/workflows/horenova-shop-live.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  shop:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify showroom assets are served from horenova.com
+        shell: bash
+        run: |
+          set -euo pipefail
+          for i in $(seq 1 12); do
+            curl -fsSL --connect-timeout 10 --max-time 30 "https://horenova.com/shop.html?qa=${GITHUB_RUN_ID}-${i}" -o /tmp/shop.html
+            if grep -q 'id="hx-showroom"' /tmp/shop.html && grep -q 'uniform-showroom-20261113-a' /tmp/shop.html; then break; fi
+            sleep 5
+          done
+          grep -q 'id="hx-showroom"' /tmp/shop.html
+          grep -q 'horenova-showroom.css' /tmp/shop.html
+          grep -q 'horenova-showroom.js' /tmp/shop.html
+          curl -fsSL --connect-timeout 10 --max-time 30 "https://horenova.com/horenova-showroom.js?qa=${GITHUB_RUN_ID}" -o /tmp/garments.js
+          curl -fsSL --connect-timeout 10 --max-time 30 "https://horenova.com/horenova-showroom.css?qa=${GITHUB_RUN_ID}" -o /tmp/garments.css
+          grep -q 'Veste chef exécutif' /tmp/garments.js
+          grep -q 'Tablier barista signature' /tmp/garments.js
+          grep -q 'Gilet de maître d’hôtel' /tmp/garments.js
+          grep -q 'data-hx-side' /tmp/garments.js
+          grep -q 'data-hx-export' /tmp/garments.js
+          grep -q 'hx-breeze' /tmp/garments.css
+          grep -q 'hx-modal' /tmp/garments.css
+          echo 'PASS: production homepage carries interactive uniforms, front/back, colors, sizes, persistent selections and quote download'
+          wc -c /tmp/shop.html /tmp/garments.js /tmp/garments.css
