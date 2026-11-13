@@ -1,0 +1,9 @@
+/* HORENOVA original editorial workwear rack concept: high resolution photo layer. */
+@media(min-width:951px){
+ #hx-showroom .hx-stage::before{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;background:url('https://static.wixstatic.com/media/d0158d_b3d3655960cb4a55a566d773b02f1198~mv2.png') center 50%/cover no-repeat;filter:saturate(.94) contrast(1.03)}
+ #hx-showroom .hx-stage .hx-light,#hx-showroom .hx-stage .hx-rail{opacity:0}
+ #hx-showroom .hx-stage .hx-hang-visual{opacity:0;transition:opacity .22s,transform .5s}
+ #hx-showroom .hx-stage .hx-hang-name{opacity:0;background:#f4f0eadc;padding:8px 10px;border-radius:40px}
+ #hx-showroom .hx-hanger:hover .hx-hang-visual,#hx-showroom .hx-hanger:focus-visible .hx-hang-visual{opacity:1;filter:drop-shadow(0 22px 24px #151a193a) drop-shadow(0 0 12px #c8fb1c7a)}
+ #hx-showroom .hx-hanger:hover .hx-hang-name,#hx-showroom .hx-hanger:focus-visible .hx-hang-name{opacity:1}
+}
