@@ -1,0 +1,37 @@
+'use strict';
+const {chromium}=require('playwright');
+const assert=require('node:assert/strict');
+(async()=>{
+const base=process.env.HORENOVA_TEST_ORIGIN || 'https://horenova.com';
+const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
+let pageErrors=[];
+try{
+ const page=await browser.newPage({viewport:{width:1440,height:900},deviceScaleFactor:1});
+ page.on('pageerror',e=>pageErrors.push(String(e)));
+ await page.goto(base+'/shop.html',{waitUntil:'domcontentloaded',timeout:60000});
+ await page.locator('.hx26-slot').first().waitFor({state:'visible',timeout:20000});
+ assert.equal(await page.locator('.hx26-slot').count(),7,'Should have 7 independent clothes');
+ assert.match(await page.locator('[data-hx26-name]').innerText(),/Executive Chef Jacket/);
+ await page.locator('button[data-hx26="next"]').first().click();
+ assert.match(await page.locator('[data-hx26-name]').innerText(),/Service Vest/);
+ await page.locator('button[data-hx26="prev"]').first().click();
+ assert.match(await page.locator('[data-hx26-name]').innerText(),/Executive Chef Jacket/);
+ await page.locator('.hx26-card button[data-hx26="view"]').click();
+ await page.locator('.hx26-dialog').waitFor({state:'visible',timeout:8000});
+ await page.locator('.hx26-dialog-faces button[data-hx26-face="back"]').click();
+ assert.match(await page.locator('.hx26-dialog-photo').getAttribute('class'),/is-back/);
+ await page.locator('button[data-hx26-step="1"]').click();
+ await page.locator('button[data-hx26-size="M"]').click();
+ await page.locator('button[data-hx26-step="add"]').click();
+ assert.equal(await page.locator('.hx26-cart-item').count(),1,'Cart after adding');
+ await page.locator('button.hx26-x').click();
+ await page.screenshot({path:'wardrobe-desktop.png',fullPage:false});
+ const mobile=await browser.newPage({viewport:{width:390,height:844},deviceScaleFactor:1,isMobile:true,hasTouch:true});
+ await mobile.goto(base+'/shop.html',{waitUntil:'domcontentloaded',timeout:60000});
+ await mobile.locator('.hx26-slot').first().waitFor({state:'visible',timeout:20000});
+ assert.equal(await mobile.locator('.hx26-slot').count(),7);
+ await mobile.screenshot({path:'wardrobe-mobile.png',fullPage:false});
+ assert.equal(pageErrors.length,0,'Unexpected page errors: '+pageErrors.slice(0,3).join(' | '));
+ console.log('PASS: Interactive wardrobe carousel, clothing images, preview front/back, size and cart; desktop & phone viewports.');
+}finally{await browser.close()}
+})().catch(error=>{console.error(error);process.exitCode=1});

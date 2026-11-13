@@ -1,0 +1,33 @@
+name: HORENOVA interactive wardrobe browser E2E
+on:
+  workflow_dispatch:
+  push:
+    branches: [horenova-free-deploy-2026]
+    paths:
+      - qa/wardrobe-browser.cjs
+      - .github/workflows/horenova-wardrobe-browser.yml
+permissions:
+  contents: read
+jobs:
+  wardrobe-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install headless Chromium
+        run: |
+          npm install --no-save playwright@1.56.0 --no-audit --no-fund
+          npx playwright install chromium --with-deps
+      - name: Run wardrobe interactions in desktop and mobile Chromium
+        run: node qa/wardrobe-browser.cjs
+      - name: Save real website screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: HORENOVA-wardrobe-desktop-mobile-QA
+          path: wardrobe-*.png
+          if-no-files-found: warn
+          retention-days: 7
