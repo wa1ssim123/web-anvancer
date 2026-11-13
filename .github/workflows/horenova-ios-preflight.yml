@@ -7,6 +7,10 @@ on:
     paths:
       - '.github/workflows/horenova-ios-preflight.yml'
       - 'mobile/**'
+      - 'shop.html'
+      - 'shop-v17.js'
+      - 'horenova-wardrobe-26.js'
+      - 'horenova-wardrobe-26.css'
 permissions:
   contents: read
 jobs:

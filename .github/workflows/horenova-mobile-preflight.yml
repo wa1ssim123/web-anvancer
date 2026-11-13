@@ -6,6 +6,10 @@ on:
       - release/horenova-mobile-stores-2026
     paths:
       - 'mobile/**'
+      - 'shop.html'
+      - 'shop-v17.js'
+      - 'horenova-wardrobe-26.js'
+      - 'horenova-wardrobe-26.css'
       - '.github/workflows/horenova-mobile-preflight.yml'
 permissions:
   contents: read
