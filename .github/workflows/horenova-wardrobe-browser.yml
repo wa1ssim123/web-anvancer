@@ -6,8 +6,8 @@ on:
     paths:
       - qa/wardrobe-browser.cjs
       - shop.html
-      - horenova-wardrobe-26.js
-      - horenova-wardrobe-26.css
+      - horenova-wardrobe-atelier-20261113.js
+      - horenova-shop-atelier-20261113.css
       - .github/workflows/horenova-wardrobe-browser.yml
 permissions:
   contents: read
