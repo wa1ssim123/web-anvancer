@@ -12,7 +12,7 @@ try{
  await page.goto(base+'/shop.html',{waitUntil:'domcontentloaded',timeout:60000});
  await page.locator('.hx26-slot').first().waitFor({state:'visible',timeout:20000});
  assert.equal(await page.locator('.hx26-slot').count(),7,'Should have 7 independent clothes');
- const requiredAssets=['dea4cf35e09f4ccdbbdb8ebb06b87da0','296c71016efb4cbea20495cca9d5c462','e0d976b6f83e4add80193e1dd016e4dc','83d3300a13884e669df9f7d3e1c120c7','b0e141af133c4822b9faceea8a5aef87','d1fb570993f94b0ca64fa29dd1062a7e','c46b5d85e39740a29140efeaa03d7357'];
+ const requiredAssets=['f0de10ebdb1b4f9db01bdcb5b3562dda','d7684c61777049bca3320eb6588c452c','a57fd1bc0b42499580dcf9669520c65d','078d4431c60a4ce89aeca764edcb176e','705b282295e84c89bf7c530bf67a4bc1','00a5e380f3c240ebbb411a0585e262bc','7d8857fd321548cdb069c428da8feb24'];
  await page.waitForFunction(()=>Array.from(document.querySelectorAll('.hx26-slot img')).every(im=>im.complete&&im.naturalWidth>0),null,{timeout:18000});
  const imageUrls=await page.locator('.hx26-slot img').evaluateAll(els=>els.map(el=>el.currentSrc));
  assert.deepEqual(imageUrls.map(u=>u.match(/d0158d_([a-z0-9]{32})/i)?.[1]),requiredAssets,'Live site still serves the seven old corrupted photos');
