@@ -22,6 +22,9 @@ jobs:
           grep -q 'id="hx-showroom"' /tmp/shop.html
           grep -q 'horenova-showroom.css' /tmp/shop.html
           grep -q 'horenova-showroom.js' /tmp/shop.html
+          grep -q 'horenova-showroom-visual.css' /tmp/shop.html
+          curl -fsSL --connect-timeout 10 --max-time 30 "https://horenova.com/horenova-showroom-visual.css?qa=${GITHUB_RUN_ID}" -o /tmp/visual.css
+          grep -q 'd0158d_b3d3655960cb4a55a566d773b02f1198' /tmp/visual.css
           curl -fsSL --connect-timeout 10 --max-time 30 "https://horenova.com/horenova-showroom.js?qa=${GITHUB_RUN_ID}" -o /tmp/garments.js
           curl -fsSL --connect-timeout 10 --max-time 30 "https://horenova.com/horenova-showroom.css?qa=${GITHUB_RUN_ID}" -o /tmp/garments.css
           grep -q 'Veste chef exécutif' /tmp/garments.js
