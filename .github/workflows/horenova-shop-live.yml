@@ -39,7 +39,7 @@ jobs:
           for i in $(seq 1 18); do
             curl -fsSL --connect-timeout 10 --max-time 28 "https://horenova.com/shop.html?qa=$GITHUB_RUN_ID-$i" -o /tmp/shop.html || true
             curl -fsSL --connect-timeout 10 --max-time 28 "https://horenova.com/horenova-wardrobe-clean-20261113.js?qa=$GITHUB_RUN_ID-$i" -o /tmp/wardrobe.js || true
-            if grep -q 'wardrobe-animated-20261113-r4' /tmp/shop.html && grep -q 'Signature Service Apron' /tmp/wardrobe.js; then break; fi
+            if grep -q 'horenova-wardrobe-clean-20261113.js' /tmp/shop.html && grep -q 'Signature Service Apron' /tmp/wardrobe.js; then break; fi
             sleep 7
           done
           grep -q 'horenova-wardrobe-clean-20261113.js' /tmp/shop.html
