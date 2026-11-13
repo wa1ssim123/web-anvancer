@@ -4,9 +4,9 @@ on:
     branches: [horenova-free-deploy-2026]
     paths:
       - shop.html
-      - shop-v17.js
-      - horenova-wardrobe-26.js
-      - horenova-wardrobe-26.css
+      - shop-products-clean-20261113.js
+      - horenova-wardrobe-clean-20261113.js
+      - horenova-shop-clean-20261113.css
       - .github/workflows/horenova-shop-live.yml
   workflow_dispatch:
 permissions:
@@ -21,15 +21,15 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          node --check horenova-wardrobe-26.js
-          node --check shop-v17.js
-          grep -q 'horenova-wardrobe-26.css' shop.html
-          grep -q 'horenova-wardrobe-26.js' shop.html
-          grep -q 'hx26-wind' horenova-wardrobe-26.css
-          grep -q 'data-hx26-step' horenova-wardrobe-26.js
-          grep -q 'data-hx26-qty' horenova-wardrobe-26.js
-          grep -q 'HORENOVA_SHOWROOM' horenova-wardrobe-26.js
-          grep -q 'static.wixstatic.com/media/d0158d_' horenova-wardrobe-26.js
+          node --check horenova-wardrobe-clean-20261113.js
+          node --check shop-products-clean-20261113.js
+          grep -q 'horenova-shop-clean-20261113.css' shop.html
+          grep -q 'horenova-wardrobe-clean-20261113.js' shop.html
+          grep -q 'hx26-wind' horenova-shop-clean-20261113.css
+          grep -q 'data-hx26-step' horenova-wardrobe-clean-20261113.js
+          grep -q 'data-hx26-qty' horenova-wardrobe-clean-20261113.js
+          grep -q 'HORENOVA_SHOWROOM' horenova-wardrobe-clean-20261113.js
+          grep -q 'd0158d_dea4cf35e09f4ccdbbdb8ebb06b87da0' horenova-wardrobe-clean-20261113.js
           ! grep -q 'hn-fullscreen-entry' shop.html
           echo 'PASS: seven garments, wind animations, selection, size and quote implementation'
       - name: Verify public domain serves the new wardrobe
@@ -38,12 +38,12 @@ jobs:
           set -euo pipefail
           for i in $(seq 1 18); do
             curl -fsSL --connect-timeout 10 --max-time 28 "https://horenova.com/shop.html?qa=$GITHUB_RUN_ID-$i" -o /tmp/shop.html || true
-            curl -fsSL --connect-timeout 10 --max-time 28 "https://horenova.com/horenova-wardrobe-26.js?qa=$GITHUB_RUN_ID-$i" -o /tmp/wardrobe.js || true
+            curl -fsSL --connect-timeout 10 --max-time 28 "https://horenova.com/horenova-wardrobe-clean-20261113.js?qa=$GITHUB_RUN_ID-$i" -o /tmp/wardrobe.js || true
             if grep -q 'wardrobe-animated-20261113-r4' /tmp/shop.html && grep -q 'Signature Service Apron' /tmp/wardrobe.js; then break; fi
             sleep 7
           done
-          grep -q 'wardrobe-animated-20261113-r6' /tmp/shop.html
+          grep -q 'horenova-wardrobe-clean-20261113.js' /tmp/shop.html
           grep -q 'Signature Service Apron' /tmp/wardrobe.js
-          curl -fsSL --connect-timeout 10 --max-time 28 "https://horenova.com/horenova-wardrobe-26.css?qa=$GITHUB_RUN_ID" -o /tmp/wardrobe.css
+          curl -fsSL --connect-timeout 10 --max-time 28 "https://horenova.com/horenova-shop-clean-20261113.css?qa=$GITHUB_RUN_ID" -o /tmp/wardrobe.css
           grep -q '@keyframes hx26-wind' /tmp/wardrobe.css
           echo 'PASS: wardrobe live on horenova.com'
