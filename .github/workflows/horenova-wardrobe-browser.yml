@@ -19,7 +19,7 @@ jobs:
           node-version: '22'
       - name: Install headless Chromium
         run: |
-          npm install --no-save playwright@1.56.0 --no-audit --no-fund
+          npm install --no-save playwright --no-audit --no-fund
           npx playwright install chromium --with-deps
       - name: Run wardrobe interactions in desktop and mobile Chromium
         run: node qa/wardrobe-browser.cjs
