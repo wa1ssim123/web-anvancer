@@ -70,7 +70,7 @@ function select(i){state.index=(i+products.length)%products.length;state.color=0
 function flip(){state.face=state.face==='front'?'back':'front';render();}
 function open(step=0){state.step=step;state.modal=true;overlay.hidden=false;document.body.classList.add('hx26-dialog-open');drawDialog();overlay.querySelector('button[data-hx26-close]')?.focus();}
 function close(){state.modal=false;overlay.hidden=true;document.body.classList.remove('hx26-dialog-open');const b=$('.hx26-slot.is-selected');if(b)b.focus();}
-function picture(){const p=item(),filter=color()[2];return '<div class="hx26-dialog-photo'+(state.face==='back'?' is-back':'')+'"><div class="hx26-dialog-orbit"></div><img src="'+p.image+'" alt="'+safe(p.name)+'" style="filter:'+safe(filter)+'" draggable="false"></div>';}
+function picture(){const p=item(),filter=color()[2];return '<div class="hx26-dialog-photo'+(state.face==='back'?' is-back':'')+'" style="pointer-events:none!important"><div class="hx26-dialog-orbit"></div><img src="'+p.image+'" alt="'+safe(p.name)+'" style="filter:'+safe(filter)+';pointer-events:none!important" draggable="false"></div>';}
 function drawDialog(){
  const p=item();let content='';
  if(state.step===2){
