@@ -99,3 +99,14 @@ body.shop17-detail-page .shop17-detail-copy p{color:#b8ac99}
 @media(max-width:950px){#hx-showroom .hx-stage{overflow-x:auto;height:466px}#hx-showroom .hx-hangers{left:0;right:auto;min-width:1180px;top:12%}#hx-showroom .hx-rail{left:0;right:auto;top:12%;width:1180px}#hx-showroom .hx-hanger{flex:0 0 168px}#hx-showroom .hx-hang-visual{width:162px;height:355px}#hx-showroom .hx-photo{height:330px}}
 @media(max-width:720px){#hx-showroom .hx-show-head{padding:30px 18px 12px}#hx-showroom .hx-show-head h2{font-size:clamp(38px,10vw,54px)}#hx-showroom .hx-stage{height:426px}#hx-showroom .hx-hangers{top:13%}#hx-showroom .hx-rail{top:13%}#hx-showroom .hx-hanger{height:355px}#hx-showroom .hx-hang-visual{height:330px}#hx-showroom .hx-photo{height:308px}body .hx-dialog{max-height:94dvh}body .hx-view{min-height:392px;padding:20px}body .hx-big-garment{width:190px;height:225px}body .hx-options{padding:28px 20px}body .hx-options h2{font-size:34px}}
 @media(prefers-reduced-motion:reduce){#hx-showroom .hx-hang-visual{animation:none!important}#hx-showroom .hx-hanger:hover .hx-hang-visual{transform:none!important}}
+
+/* The product dialog is moved to <body> for iOS fixed-position reliability;
+   its photographic frames therefore need unscoped rules too. */
+body .hx-modal .hx-photo{display:block;position:relative;width:100%;height:100%;min-height:0;overflow:hidden;border:1px solid #cfb58977;border-radius:5px;background:#e8e5df}
+body .hx-modal .hx-photo img{position:absolute;top:0;left:0;display:block;width:100%;height:100%;object-fit:contain;max-width:none}
+body .hx-modal .hx-photo--dual img{width:200%;object-fit:cover}
+body .hx-modal .hx-photo--dual.hx-photo--back img{left:auto;right:0}
+body .hx-modal .hx-photo-fallback{display:none;position:absolute;inset:0;align-items:center;justify-content:center;text-align:center;background:#b1a28d;color:#1a1918;padding:18px}
+body .hx-modal .hx-photo--missing img{visibility:hidden}
+body .hx-modal .hx-photo--missing .hx-photo-fallback{display:flex}
+body .hx-modal .hx-thumb .hx-photo{height:80px;width:70px}
