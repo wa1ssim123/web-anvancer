@@ -35,8 +35,9 @@ if(kind==='tunic'&&!back)detail+='<path d="M78 212H107V251H78M164 212H193V251H16
 }
 return {base,detail};
 }
+let garmentRenderId=0;
 function svg(p,color=0,back=false){
- const c=p.colors[color]?.[1]||p.colors[0][1],k=p.id+(back?'-back':'-front');
+ const c=p.colors[color]?.[1]||p.colors[0][1],k=p.id+(back?'-back':'-front')+'-'+(++garmentRenderId);
  const {base,detail}=shape(p,back);
  return `<svg class="hx-garment-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 270 360" role="img" aria-label="${safe(p.name)} : ${back?'dos':'avant'}"><defs><linearGradient id="hx-l-${k}" x1="0" y1="0" x2="1" y2=".12"><stop stop-color="#000" stop-opacity=".22"/><stop offset=".3" stop-color="#fff" stop-opacity=".18"/><stop offset=".52" stop-color="${c}"/><stop offset="1" stop-color="#000" stop-opacity=".29"/></linearGradient><filter id="hx-s-${k}" x="-25%" y="-25%" width="150%" height="160%"><feDropShadow dx="1" dy="8" stdDeviation="8" flood-opacity=".22"/></filter><pattern id="hx-p-${k}" width="7" height="7" patternUnits="userSpaceOnUse"><path d="M1 0L0 1M5 4L4 5" stroke="#fff" stroke-width=".6" stroke-opacity=".15"/></pattern></defs><path d="M135 21Q123 4 143 5Q153 7 148 18L135 31" stroke="#8a705a" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M135 30L80 62Q72 68 82 69H189Q202 66 188 60Z" stroke="#876b54" stroke-width="5" fill="none"/><path d="${base}" fill="${c}" stroke="#222" stroke-opacity=".45" stroke-width="2" filter="url(#hx-s-${k})"/><path d="${base}" fill="url(#hx-l-${k})" opacity=".75"/><path d="${base}" fill="url(#hx-p-${k})" opacity=".45"/><path d="M94 110Q104 172 93 290M176 110Q162 174 183 288" fill="none" stroke="#fff" stroke-opacity=".15" stroke-width="4"/>${detail}<path d="M73 302Q136 315 197 302" fill="none" stroke="#fff" stroke-opacity=".24" stroke-width="2"/>${back?'':`<text x="169" y="${p.kind==='apron'?145:150}" fill="#c2b36c" font-family="Arial,sans-serif" font-size="16" font-weight="900">H</text>`}</svg>`;
 }
