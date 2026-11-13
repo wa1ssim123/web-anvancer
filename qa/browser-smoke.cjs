@@ -205,6 +205,9 @@ async function run(){
     }else if(url==='/shifts.html'){
      await page.locator('video.hn-ambient-managed').waitFor({state:'attached',timeout:6000});
      await page.locator('.hn-ambient-cover').first().waitFor({state:'attached',timeout:6000});
+    }else if(url==='/shop.html'){
+     const motion=await page.locator('.hx26-sway').first().evaluate(el=>getComputedStyle(el).animationName);
+     assert.notEqual(motion,'none','Wardrobe clothing must animate without decorative video');
     }else{
      await page.locator('.hn-entry__video').waitFor({state:'attached'});
      const fallback=await page.locator('.hn-entry').evaluate(el=>getComputedStyle(el,'::before').animationName);
