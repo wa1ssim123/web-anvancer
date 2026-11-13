@@ -42,7 +42,7 @@ jobs:
             if grep -q 'wardrobe-animated-20261113-r4' /tmp/shop.html && grep -q 'Signature Service Apron' /tmp/wardrobe.js; then break; fi
             sleep 7
           done
-          grep -q 'wardrobe-animated-20261113-r3' /tmp/shop.html
+          grep -q 'wardrobe-animated-20261113-r6' /tmp/shop.html
           grep -q 'Signature Service Apron' /tmp/wardrobe.js
           curl -fsSL --connect-timeout 10 --max-time 28 "https://horenova.com/horenova-wardrobe-26.css?qa=$GITHUB_RUN_ID" -o /tmp/wardrobe.css
           grep -q '@keyframes hx26-wind' /tmp/wardrobe.css
