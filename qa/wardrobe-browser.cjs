@@ -65,6 +65,8 @@ try{
  assert.ok(layout.img.width<=layout.photo.width+2,'Garment image too wide for photo container');
  assert.ok(layout.left.bottom<=layout.right.top+3,'Picture must not overlap colour and size options');
  await mobile.screenshot({path:'wardrobe-dialog-mobile.png',fullPage:false});
+ // The iPhone browser bars reduce the actually usable viewport height.
+ await mobile.setViewportSize({width:390,height:610});
  const modalScroll=await mobile.locator('.hx26-dialog').evaluate(el=>{
    el.scrollTop=el.scrollHeight;
    return {scrollTop:el.scrollTop,max:el.scrollHeight-el.clientHeight};
