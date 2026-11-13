@@ -11,6 +11,9 @@ try{
  await page.goto(base+'/shop.html',{waitUntil:'domcontentloaded',timeout:60000});
  await page.locator('.hx26-slot').first().waitFor({state:'visible',timeout:20000});
  assert.equal(await page.locator('.hx26-slot').count(),7,'Should have 7 independent clothes');
+    const garmentImages=await page.locator('.hx26-slot img').evaluateAll(images=>images.map(img=>({ok:img.complete&&img.naturalWidth>0,src:img.currentSrc})));
+    console.log('Garment image decode status:',JSON.stringify(garmentImages));
+    assert.ok(garmentImages.every(i=>i.ok),'All seven garment images must load');
  assert.match(await page.locator('[data-hx26-name]').innerText(),/Executive Chef Jacket/);
  await page.locator('button[data-hx26="next"]').first().click();
  assert.match(await page.locator('[data-hx26-name]').innerText(),/Service Vest/);
@@ -18,6 +21,8 @@ try{
  assert.match(await page.locator('[data-hx26-name]').innerText(),/Executive Chef Jacket/);
  await page.locator('.hx26-card button[data-hx26="view"]').click();
  await page.locator('.hx26-dialog').waitFor({state:'visible',timeout:8000});
+    await page.screenshot({path:'wardrobe-dialog.png',fullPage:false});
+    console.log('Dialog photo pointer-events:',await page.locator('.hx26-dialog-photo img').evaluate(el=>getComputedStyle(el).pointerEvents));
  await page.locator('.hx26-dialog-faces button[data-hx26-face="back"]').click();
  assert.match(await page.locator('.hx26-dialog-photo').getAttribute('class'),/is-back/);
  await page.locator('button[data-hx26-step="1"]').click();
