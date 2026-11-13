@@ -78,11 +78,17 @@ try{
  const pageScroll=await mobile.evaluate(()=>{
    const dock=document.querySelector('.hn12-dock');
    const before=window.scrollY;
-   window.scrollTo(0,Math.min(950,document.scrollingElement.scrollHeight));
+   window.scrollTo({top:Math.min(950,document.scrollingElement.scrollHeight),behavior:'instant'});
    return {scrollY:window.scrollY,before,full:document.scrollingElement.scrollHeight,
      viewport:innerHeight,bodyOverflow:getComputedStyle(document.body).overflowY,
+     htmlOverflow:getComputedStyle(document.documentElement).overflowY,
+     scrollBehavior:getComputedStyle(document.documentElement).scrollBehavior,
+     position:getComputedStyle(document.body).position,
+     activeBodyClasses:document.body.className,
      dockPosition:getComputedStyle(dock).position};
  });
+ await mobile.waitForTimeout(450);
+ pageScroll.scrollY=await mobile.evaluate(()=>window.scrollY);
  console.log('IPHONE_PAGE_SCROLL',JSON.stringify(pageScroll));
  assert.ok(pageScroll.full>pageScroll.viewport+450,'Shop must contain content below rack');
  assert.ok(pageScroll.scrollY>150,'Vertical page scroll must be possible after closing the garment dialog');
