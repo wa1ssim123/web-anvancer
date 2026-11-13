@@ -57,6 +57,47 @@ async function run(){
     console.error('FAIL browser locale: '+url+' — '+error.message.slice(0,180)+' URL='+where+' BODY='+pageText.slice(0,260)+' ERRORS='+issues.slice(0,5).join(' | '));
    }finally{await context.close();}
   }
+  // End-to-end showroom: rack → garment front/back → colour and size →
+  // persistent selection → quote download, on desktop and phone. Never fake prices.
+  for(const width of [1440,390]){
+   const context=await browser.newContext({viewport:{width,height:900},isMobile:width<600,hasTouch:width<600,serviceWorkers:'block',acceptDownloads:true});
+   const page=await context.newPage();
+   const errors=[];
+   page.on('pageerror',e=>errors.push(e.message));
+   try{
+    await page.goto(base+'/shop.html',{waitUntil:'domcontentloaded',timeout:20000});
+    await page.locator('#hx-showroom .hx-hanger').first().waitFor({timeout:7000});
+    assert.equal(await page.locator('#hx-showroom .hx-hanger').count(),7,'Exactly 7 showcase garments');
+    await page.evaluate(()=>{document.getElementById('hn-fullscreen-entry')?.remove()});
+    await page.locator('[data-hx-product="chef-jacket"]').click({force:true});
+    await page.locator('#hx-dialog .hx-options').waitFor({timeout:5000});
+    assert.equal(await page.locator('#hx-dialog .hx-cta[data-hx-add]').isDisabled(),true,'Must choose a size');
+    await page.locator('[data-hx-side="back"]').click();
+    assert.equal(await page.locator('[data-hx-side="back"]').getAttribute('aria-pressed'),'true');
+    await page.locator('[data-hx-color="1"]').click();
+    assert.equal(await page.locator('[data-hx-color="1"]').getAttribute('aria-pressed'),'true');
+    await page.locator('[data-hx-size="2"]').click();
+    await page.locator('[data-hx-qty="1"]').click();
+    await page.locator('#hx-dialog .hx-cta[data-hx-add]').click();
+    assert.equal(await page.locator('#hx-dialog .hx-cart-line').count(),1,'Chosen variant did not enter selection');
+    assert.match(await page.locator('#hx-dialog .hx-cart-line').innerText(),/Noir/);
+    assert.match(await page.locator('#hx-dialog .hx-cart-line').innerText(),/× 2/);
+    assert.ok(!(await page.locator('#hx-dialog').innerText()).includes('COMPLÉTER LE PAIEMENT'),'Do not fabricate checkout');
+    const downloadWait=page.waitForEvent('download');
+    await page.locator('[data-hx-export]').click();
+    const download=await downloadWait;
+    assert.match(download.suggestedFilename(),/horenova-uniformes-demande\.txt/);
+    await page.locator('[data-hx-close]').last().click({force:true});
+    await page.reload({waitUntil:'domcontentloaded'});
+    await page.locator('#hx-showroom').waitFor();
+    assert.equal(await page.locator('[data-hx-count]').first().innerText(),'2','Selection must survive refresh');
+    assert.equal(errors.length,0,'Shop JS exceptions: '+errors.join(' / '));
+    console.log('PASS hospitality showroom '+width+'px: seven vectors, front/back, colours, sizes, quantity, cart, export, persistence');
+   }catch(e){
+    failures.push('Showroom '+width+': '+e.message.slice(0,500)+' JS='+errors.join(' / '));
+    console.error('FAIL showroom '+width+': '+e.message.slice(0,420)+' JS='+errors.join(' / '));
+   }finally{await context.close();}
+  }
   // Illustrative service cards must stay separate from authentic review statistics.
   {
    const context=await browser.newContext({viewport:{width:1280,height:900},serviceWorkers:'block'});
