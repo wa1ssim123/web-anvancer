@@ -1,9 +1,10 @@
 'use strict';
-const {chromium}=require('playwright');
+const {chromium,webkit}=require('playwright');
 const assert=require('node:assert/strict');
 (async()=>{
 const base=process.env.HORENOVA_TEST_ORIGIN || 'https://horenova.com';
-const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
+const engine=process.env.HORENOVA_BROWSER==='webkit'?webkit:chromium;
+const browser=await engine.launch({headless:true,args:engine===chromium?['--no-sandbox']:[]});
 let pageErrors=[];
 try{
  const page=await browser.newPage({viewport:{width:1440,height:900},deviceScaleFactor:1});
@@ -11,6 +12,10 @@ try{
  await page.goto(base+'/shop.html',{waitUntil:'domcontentloaded',timeout:60000});
  await page.locator('.hx26-slot').first().waitFor({state:'visible',timeout:20000});
  assert.equal(await page.locator('.hx26-slot').count(),7,'Should have 7 independent clothes');
+ const requiredAssets=['dea4cf35e09f4ccdbbdb8ebb06b87da0','296c71016efb4cbea20495cca9d5c462','e0d976b6f83e4add80193e1dd016e4dc','83d3300a13884e669df9f7d3e1c120c7','b0e141af133c4822b9faceea8a5aef87','d1fb570993f94b0ca64fa29dd1062a7e','c46b5d85e39740a29140efeaa03d7357'];
+ await page.waitForFunction(()=>Array.from(document.querySelectorAll('.hx26-slot img')).every(im=>im.complete&&im.naturalWidth>0),null,{timeout:18000});
+ const imageUrls=await page.locator('.hx26-slot img').evaluateAll(els=>els.map(el=>el.currentSrc));
+ assert.deepEqual(imageUrls.map(u=>u.match(/d0158d_([a-z0-9]{32})/i)?.[1]),requiredAssets,'Live site still serves the seven old corrupted photos');
     const garmentImages=await page.locator('.hx26-slot img').evaluateAll(images=>images.map(img=>({ok:img.complete&&img.naturalWidth>0,src:img.currentSrc})));
     console.log('Garment image decode status:',JSON.stringify(garmentImages));
     assert.ok(garmentImages.every(i=>i.ok),'All seven garment images must load');
