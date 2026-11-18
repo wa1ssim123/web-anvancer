@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#090b12">
+<meta name="robots" content="noindex,nofollow">
+<title>Mot de passe oublié — HORENOVA</title>
+<meta name="description" content="Récupérez votre compte HORENOVA en toute sécurité.">
+<style>
+*{box-sizing:border-box}body{margin:0;min-height:100svh;background:radial-gradient(circle at 85% 0,rgba(255,107,44,.16),transparent 40%),#090b12;color:#f5efe5;font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;display:flex;flex-direction:column;padding:clamp(16px,4vw,44px)}a{color:inherit}.top{max-width:1024px;width:100%;margin:0 auto;display:flex;justify-content:space-between;align-items:center;gap:20px}.top .brand{font-weight:900;letter-spacing:.09em;font-size:clamp(21px,3vw,29px);text-decoration:none}.top .back{border:1px solid #8e889050;border-radius:999px;padding:11px 16px;text-decoration:none;font-size:13px}.panel{width:min(100%,560px);margin:auto;background:#f5efe5;color:#17181c;border:1px solid #ffffff32;border-radius:26px;padding:clamp(25px,5vw,48px);box-shadow:0 28px 90px #0008}.eyebrow{color:#bb491b;font-size:11px;letter-spacing:.2em;font-weight:800}.panel h1{font-family:Georgia,"Times New Roman",serif;font-weight:500;font-size:clamp(35px,6vw,52px);line-height:1.08;margin:15px 0}.panel p{line-height:1.65;color:#5b5a5c;font-size:14px}.panel label{display:block;font-weight:750;font-size:13px;margin:26px 0 18px}.panel input{margin-top:9px;width:100%;padding:15px 17px;border:1px solid #c7c1b7;background:#fff;border-radius:12px;font-size:16px;color:#1c1c22}.panel input:focus{outline:3px solid #ff6b2c50;outline-offset:2px}.submit{display:block;width:100%;padding:16px;border:0;border-radius:14px;background:linear-gradient(110deg,#ff6b2c,#de4518);font-size:15px;font-weight:850;color:#fff;cursor:pointer}.submit:disabled{opacity:.65;cursor:wait}.status{min-height:24px;font-size:14px;line-height:1.6;margin-top:18px;color:#145d3a}.status[data-error="true"]{color:#b42318}.bottom{margin-top:26px;font-size:13px;text-align:center}.bottom a{color:#a44121;font-weight:800}.footer{text-align:center;color:#a3a0a2;font-size:12px;line-height:1.5;margin:22px auto 4px}
+</style>
+</head>
+<body>
+<header class="top"><a class="brand" href="/index.html">HORENOVA<span style="color:#ff6b2c">.</span></a><a class="back" href="/enter.html?mode=signin">← Se connecter</a></header>
+<main class="panel">
+<span class="eyebrow">PROTÉGEZ VOTRE COMPTE</span>
+<h1>Retrouvez votre accès.</h1>
+<p>Indiquez l’adresse e-mail de votre compte HORENOVA. Nous vous enverrons un lien sécurisé pour choisir un nouveau mot de passe.</p>
+<form id="recoveryForm">
+<label for="recoveryEmail">Votre adresse e-mail
+<input id="recoveryEmail" name="email" type="email" autocomplete="email" placeholder="prenom@exemple.com" maxlength="254" required></label>
+<button type="submit" class="submit" id="recoverySubmit">Recevoir mon lien de réinitialisation ↗</button>
+<p id="recoveryStatus" role="status" aria-live="polite" class="status"></p>
+</form>
+<div class="bottom">Vous vous souvenez de votre mot de passe ? <a href="/enter.html?mode=signin">Revenir à la connexion</a></div>
+</main>
+<footer class="footer">HORENOVA · Vos identifiants restent privés · Ne partagez jamais votre lien de réinitialisation.</footer>
+<script type="module">
+import { wixRequest } from '/js/wix/client.js';
+const form=document.getElementById('recoveryForm');
+const button=document.getElementById('recoverySubmit');
+const status=document.getElementById('recoveryStatus');
+form.addEventListener('submit',async event=>{
+  event.preventDefault();
+  if(button.disabled || !form.reportValidity())return;
+  button.disabled=true;
+  status.textContent='Envoi sécurisé en cours…';
+  status.dataset.error='false';
+  try{
+    await wixRequest('/_api/iam/recovery/v1/send-email',{
+      body:{email:form.elements.email.value.trim(),language:'fr'}
+    });
+    status.textContent="Si un compte correspond à cette adresse, un e-mail de récupération sera envoyé. Vérifiez aussi les courriers indésirables. Le lien ouvre la page sécurisée de Wix.";
+    form.reset();
+  }catch(error){
+    status.dataset.error='true';
+    status.textContent="L’envoi n’a pas pu être confirmé. Vérifiez votre connexion, puis réessayez ou contactez le support HORENOVA.";
+    console.warn('HORENOVA recovery request failed',error?.status||'network');
+  }finally{button.disabled=false;}
+});
+</script>
+</body>
+</html>
