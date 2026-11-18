@@ -99,7 +99,7 @@ form.addEventListener('submit',async event=>{
    if(data.kind==='shift'){
      const day=data.shiftDate||'',start=data.shiftStart||'',end=data.shiftEnd||'';
      const slots=Number(data.shiftSlots);
-     if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(day)||!/^\\d{2}:\\d{2}$/.test(start)||!/^\\d{2}:\\d{2}$/.test(end))throw Error('Date et heures du shift obligatoires.');
+     if(!/^\d{4}-\d{2}-\d{2}$/.test(day)||!/^\d{2}:\d{2}$/.test(start)||!/^\d{2}:\d{2}$/.test(end))throw Error('Date et heures du shift obligatoires.');
      if(!Number.isInteger(slots)||slots<1||slots>200)throw Error('Nombre de postes invalide (1 à 200).');
      data.scheduleText=day+' · '+start+'–'+end+' · '+slots+' poste(s)';
    }
