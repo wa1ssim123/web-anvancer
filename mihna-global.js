@@ -35,9 +35,9 @@ function injectLang(){const html='<div class="lang-switch"><button data-lang="fr
 // Authenticated role-specific navigation. Never infer a role from URL/localStorage.
 const HN_ROLE_NAV={
   recruiter:{
-    fr:[['Tableau de bord','/account.html','⌂'],['Annonces & shifts','/recruit.html','▣'],['Talents','/talents.html','★'],['Candidatures','/account.html#recruitment','◷'],['Chat','/conversations.html','✉'],['Shop','/shop.html','◇']],
-    ar:[['لوحة التحكم','/account.html','⌂'],['الوظائف والمهمات','/recruit.html','▣'],['المواهب','/talents.html','★'],['الترشيحات','/account.html#recruitment','◷'],['المحادثات','/conversations.html','✉'],['المتجر','/shop.html','◇']],
-    en:[['Dashboard','/account.html','⌂'],['Jobs & shifts','/recruit.html','▣'],['Talents','/talents.html','★'],['Applications','/account.html#recruitment','◷'],['Chat','/conversations.html','✉'],['Shop','/shop.html','◇']]
+    fr:[['Tableau de bord','/account.html','⌂'],['Annonces & shifts','/recruit.html','▣'],['Talents','/talents.html','★'],['Candidatures','/account.html#recruitment','◷'],['Chat','/conversations.html','✉'],['Shop','/shop.html','◇'],['Explore','/explore.html','◉']],
+    ar:[['لوحة التحكم','/account.html','⌂'],['الوظائف والمهمات','/recruit.html','▣'],['المواهب','/talents.html','★'],['الترشيحات','/account.html#recruitment','◷'],['المحادثات','/conversations.html','✉'],['المتجر','/shop.html','◇'],['استكشف','/explore.html','◉']],
+    en:[['Dashboard','/account.html','⌂'],['Jobs & shifts','/recruit.html','▣'],['Talents','/talents.html','★'],['Applications','/account.html#recruitment','◷'],['Chat','/conversations.html','✉'],['Shop','/shop.html','◇'],['Explore','/explore.html','◉']]
   },
   admin:{
     fr:[['Administration','/admin.html','⌂'],['Demandes','/admin.html','▣'],['Candidatures','/admin.html','✓'],['Chat','/conversations.html','✉'],['Mon espace','/account.html','♙'],['Explore','/explore.html','◉']],
@@ -48,7 +48,19 @@ const HN_ROLE_NAV={
 let hnRoleNavRequest=0;
 function roleNavMarkup(links,variant){
   if(variant==='dock')return links.map(([label,href,icon])=>'<a href="'+href+'"'+(location.pathname===href?' class="active"':'')+'><b>'+icon+'</b><span>'+label+'</span></a>').join('');
-  if(variant==='mobile')return links.map(([label,href])=>'<a href="'+href+'">'+label+' <span>↗</span></a>').join('');
+  if(variant==='mobile'){
+    const items=links.map(([label,href])=>'<a href="'+href+'">'+label+' <span>↗</span></a>').join('');
+    // Public Explore tools must remain accessible from every logged-in role.
+    const tourist='<div class="hn15-tourist-title">HORENOVA EXPLORE · GUIDES & TOURISME</div>'+
+      '<div class="hn15-tourist-grid">'+
+      '<a href="/explore-guide.html">Guide séjour</a>'+
+      '<a href="/explore-safety.html">Sécurité / anti-arnaques</a>'+
+      '<a href="/explore-prices.html">Vérifier un prix</a>'+
+      '<a href="/explore-itinerary.html">Itinéraire</a>'+
+      '<a href="/explore-experiences.html">Expériences</a>'+
+      '<a href="/explore-help.html">Assistance</a></div>';
+    return items+tourist;
+  }
   return links.map(([label,href])=>'<a href="'+href+'">'+label+'</a>').join('');
 }
 async function installMemberRoleNavigation(session){
