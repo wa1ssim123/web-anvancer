@@ -57,6 +57,7 @@
   movie.muted=true;
   movie.defaultMuted=true;
   movie.autoplay=true;
+  movie.setAttribute('autoplay','');
   movie.loop=true;
   movie.playsInline=true;
   movie.controls=false;
@@ -67,28 +68,12 @@
   movie.src='/assets/horenova-mobile-cinema-1080p30.mp4';
   movie.removeAttribute('controls');
   film.append(movie);
-  let closed=false,requesting=false,started=false,gate=null;
-  const ensureGate=()=>{
-   if(closed||started||gate)return;
-   gate=document.createElement('button');
-   gate.type='button';
-   gate.className='hn-ios-enable-hd';
-   gate.textContent='Activer la vidéo HD';
-   gate.setAttribute('aria-label','Activer la vidéo HD à vitesse normale');
-   gate.addEventListener('click',event=>{
-    event.stopPropagation();
-    // Direct user gesture is essential for Safari's media permission.
-    requestPlay();
-   });
-   intro.querySelector('.hn-intro-inner')?.append(gate);
-  };
-  const hideGate=()=>{gate?.remove();gate=null;};
+  let closed=false,requesting=false,started=false;
   const reveal=()=>{
    if(closed||movie.paused||movie.readyState<2)return;
    started=true;
    film.classList.add('hn-ios-native-playing');
    movie.classList.add('is-playing-hq');
-   hideGate();
   };
   const requestPlay=()=>{
    if(closed)return;
@@ -98,18 +83,18 @@
     requesting=true;
     Promise.resolve(promise).then(()=>{
      requesting=false;
-     if(movie.paused){ensureGate();return;}
+     if(movie.paused)return;
      reveal();
     }).catch(()=>{
      requesting=false;
      film.classList.remove('hn-ios-native-playing');
      movie.classList.remove('is-playing-hq');
-     ensureGate();
+
     });
-   }catch(error){requesting=false;ensureGate();}
+   }catch(error){requesting=false;}
   };
   movie.addEventListener('playing',reveal);
-  movie.addEventListener('canplay',()=>{if(!movie.paused)reveal();});
+  movie.addEventListener('canplay',()=>{if(!movie.paused)reveal();else if(!started&&!requesting)requestPlay();});
   movie.addEventListener('pause',()=>{
    if(closed)return;
    started=false;
@@ -120,7 +105,7 @@
    if(closed)return;
    film.classList.remove('hn-ios-native-playing');
    movie.classList.remove('is-playing-hq');
-   ensureGate();
+
   });
   // A tap anywhere on the cinematic screen may also unlock playback.
   intro.addEventListener('touchend',event=>{
@@ -129,17 +114,17 @@
   intro.addEventListener('pointerdown',event=>{
    if(!started&&!closed&&!event.target.closest('button'))requestPlay();
   },{passive:true});
-  // One automatic attempt; if blocked, show an explicit user-gesture control.
+  // Autoplay silently; if Safari blocks it (e.g. Low Power Mode), keep the animated poster without any HD activation button.
   requestPlay();
   intro.querySelector('.hn-intro-inner>button')?.addEventListener('click',()=>{
    closed=true;
-   hideGate();
    setTimeout(()=>{
     movie.pause();
     movie.removeAttribute('src');
     movie.remove();
    },1000);
   },{once:true});
+  window.addEventListener('pageshow',()=>{if(!closed&&!requesting)requestPlay()});
   document.addEventListener('visibilitychange',()=>{
    if(closed)return;
    if(document.hidden){
