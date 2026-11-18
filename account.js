@@ -8,6 +8,40 @@ const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const name=document.createElement('b'),email=document.createElement('span'),badge=document.createElement('em');
 name.textContent=auth.member?.displayName||'Compte HORENOVA';email.textContent=auth.member?.loginEmail||'';badge.textContent='COMPTE HORENOVA';
 identity.replaceChildren(name,email,badge);
+const accountHero=document.querySelector('.hn12-hero-copy');
+const roleHeroImage=document.querySelector('.hn12-hero .bg img');
+if(accountHero){
+ const kicker=accountHero.querySelector('.hn12-kicker'),heading=accountHero.querySelector('h1'),subtitle=accountHero.querySelector('p');
+ const pages={
+  recruiter:{
+   kicker:'HORENOVA · ENTREPRISES',
+   heading:'Vos recrutements.<br><em>Vos futurs talents.</em>',
+   subtitle:'Un cockpit professionnel pour vos offres, shifts et candidatures. Aucun quiz ni vidéo de motivation ne vous sera demandé.',
+   image:'https://headless-tfcfvgrbhgw-xwassim04-1409.wix-site-host.com/assets/restaurant.jpg'
+  },
+  candidate:{
+   kicker:'HORENOVA · CANDIDATS',
+   heading:'Votre talent.<br><em>Votre avenir.</em>',
+   subtitle:'Profil, langues, vidéo confidentielle, quiz métier et candidatures : tous vos progrès en un endroit.',
+   image:'https://headless-tfcfvgrbhgw-xwassim04-1409.wix-site-host.com/assets/chef-action.jpg'
+  },
+  admin:{
+   kicker:'HORENOVA · ADMINISTRATION',
+   heading:'Piloter.<br><em>Protéger. Recruter.</em>',
+   subtitle:'Supervision nationale des offres, validations, candidatures et mises en relation.',
+   image:'https://headless-tfcfvgrbhgw-xwassim04-1409.wix-site-host.com/assets/restaurant.jpg'
+  }
+ };
+ const page=pages[auth.role];
+ if(page){
+  if(kicker)kicker.textContent=page.kicker;
+  if(heading)heading.innerHTML=page.heading;
+  if(subtitle)subtitle.textContent=page.subtitle;
+  if(roleHeroImage)roleHeroImage.src=page.image;
+ }
+}
+badge.textContent=auth.role==='recruiter'?'COMPTE RECRUTEUR':auth.role==='admin'?'COMPTE ADMINISTRATEUR':'COMPTE CANDIDAT';
+
 const card=(tag,title,desc,links)=>'<div class="dash-card"><span>'+esc(tag)+'</span><h3>'+esc(title)+'</h3><p>'+esc(desc)+'</p>'+links.map(x=>'<a href="'+esc(x[1])+'">'+esc(x[0])+' ↗</a>').join(' · ')+'</div>';
 const section=()=>'<p class="hub-muted">En cas de problème temporaire, actualisez la page. Aucune information personnelle n’est publiée dans l’annuaire.</p>';
 if(auth.role==='candidate'){
