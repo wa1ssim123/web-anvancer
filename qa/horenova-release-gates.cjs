@@ -44,7 +44,7 @@ assert.match(backend,/path==='\/api\/jobs\/public'/);
 assert.match(backend,/status='VALIDEE'/);
 assert.match(backend,/SELECT id,job_title,job_role,city,kind,salary_text,schedule_text/);
 assert.match(backend,/SELECT id,job_title,job_role FROM hr_recruiter_requests/);
-assert.match(backend,/if\(!isAdmin\(user\)\)/);
+assert.match(backend,/requireRole\(user,\['admin'\]\)/);
 assert.match(backend,/\/api\/applications/);
 assert.match(backend,/\/messages/);
 assert.doesNotMatch(backend.slice(backend.indexOf("if(path==='/api/jobs/public'"),backend.indexOf("const user=await auth(req);")),/SELECT \*/);
