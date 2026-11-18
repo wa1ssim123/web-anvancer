@@ -35,7 +35,7 @@ root.innerHTML=`<div class='recruit-page'><form class='recruit-form' id='liveRec
 <button class='cta-main' type='submit'>Envoyer ma demande à Horenova ↗</button></form>
 <aside class='recruit-aside'><span class='small-title'>INTERMÉDIATION</span><h2>Un contact unique : Horenova.</h2><p>Nous recevons les candidatures et coordonnons les échanges. Aucun candidat ne reçoit directement vos coordonnées. Tout partage de données privées nécessite un accord.</p><a class='soft-btn' href='/talents.html'>Voir les profils anonymes →</a></aside></div>
 <section class='listing-page compact'><div class='listing-toolbar'><div><span class='small-title'>MES DEMANDES</span><h2>Suivi de mes recrutements.</h2></div></div><div class='jobs-grid-page' id='liveRecruitJobs'></div>
-<div class='listing-toolbar'><div><span class='small-title'>CANDIDATURES</span><h2>Horenova prépare votre sélection.</h2></div></div><div class='recruit-inbox'><article><div><span>HORENOVA RECRUTEMENT</span><h3>Équipe HORENOVA</h3><p>Les conversations sont ouvertes uniquement après validation d’une mise en relation par HORENOVA. Notre équipe conserve la visibilité sur chaque échange.</p><a href='/conversations.html' class='soft-btn'>Mes conversations ↗</a></div></article></div></section>`;
+<div class='listing-toolbar'><div><span class='small-title'>CANDIDATURES VALIDÉES</span><h2>Les candidats de votre établissement.</h2><p>Une candidature apparaît après accord du candidat et affectation par HORENOVA.</p></div><a href='/conversations.html' class='soft-btn'>Toutes mes conversations ↗</a></div><div class='recruit-inbox' id='liveRecruitApplications' aria-live='polite'><div class='empty-state'>Chargement de vos candidatures…</div></div></section>`;
 const form=document.getElementById('liveRecruitForm');
 const status=document.getElementById('recruitStatus');
 const shiftFields=document.getElementById('recruitShiftFields');
@@ -85,6 +85,36 @@ async function render(){
   }
  }));
 }
+async function renderRecruiterApplications(){
+ const area=document.getElementById('liveRecruitApplications');
+ if(!area)return;
+ try{
+   const response=await hub('/api/applications');
+   const cases=Array.isArray(response.items)?response.items:[];
+   if(!cases.length){
+     area.innerHTML='<div class="empty-state"><h3>Aucune candidature affectée.</h3><p>Lorsqu’un candidat postule à une annonce validée, HORENOVA étudie le dossier et organise la mise en relation. Vous retrouverez ici uniquement les candidatures qui vous ont été attribuées.</p><a class="soft-btn" href="/talents.html">Explorer les talents anonymisés ↗</a></div>';
+     return;
+   }
+   area.innerHTML=cases.map(a=>{
+     const name=[a.profile?.firstName,a.profile?.lastName].filter(Boolean).join(' ')||'Candidat HORENOVA';
+     const link='/conversations.html?id='+encodeURIComponent(a.id||'');
+     const state=({
+       EN_ETUDE:'En étude',PRESELECTION:'Présélection',ENTRETIEN:'Entretien',
+       MISE_EN_RELATION:'Mise en relation',RETENUE:'Retenue',REFUSEE:'Refusée',CLOTURE:'Clôturée'
+     })[a.status]||a.status||'Mise en relation';
+     return '<article class="job-card-page" style="margin-bottom:14px"><div class="job-card-content">'+
+       '<small>CONFIDENTIEL · CANDIDATURE AUTORISÉE</small><h3>'+esc(name)+'</h3>'+
+       '<p>'+esc(a.jobTitle||'Offre')+' · '+esc(a.jobRole||'')+'</p>'+
+       '<p>'+esc(state)+'</p>'+
+       '<a class="soft-btn" href="'+esc(link)+'">Ouvrir la conversation avec HORENOVA ↗</a>'+
+       '</div></article>';
+   }).join('');
+ }catch(error){
+   area.innerHTML='<div class="empty-state" role="alert"><h3>Suivi temporairement indisponible.</h3><p>Aucune candidature n’est supprimée. Rechargez cette page quand la connexion est rétablie.</p></div>';
+   console.warn('HORENOVA: recruiter applications temporarily unavailable',error?.message||'network');
+ }
+}
+
 let pendingSync=null;
 form.addEventListener('submit',async event=>{
  event.preventDefault();
@@ -130,3 +160,4 @@ form.addEventListener('submit',async event=>{
  }finally{btn.disabled=false;}
 });
 await render();
+await renderRecruiterApplications();
