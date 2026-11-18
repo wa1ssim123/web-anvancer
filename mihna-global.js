@@ -32,7 +32,41 @@ export function currentLang(){return localStorage.getItem('mihna-lang')||'fr'}
 export function setLang(lang){localStorage.setItem('mihna-lang',lang);location.reload()}
 export function applyLanguage(lang=currentLang()){document.documentElement.lang=lang;document.documentElement.dir=lang==='ar'?'rtl':'ltr';document.body?.classList.toggle('rtl',lang==='ar');document.querySelectorAll('[data-i18n]').forEach(el=>{const v=I18N[lang]?.[el.dataset.i18n];if(v)el.textContent=v});document.querySelectorAll('[data-fr][data-en][data-ar]').forEach(el=>{el.innerHTML=el.dataset[lang]||el.dataset.fr});document.querySelectorAll('.lang-switch button').forEach(b=>b.classList.toggle('active',b.dataset.lang===lang));translateLegacy(lang);}
 function injectLang(){const html='<div class="lang-switch"><button data-lang="fr">FR</button><button data-lang="ar">ع</button><button data-lang="en">EN</button></div>';for(const id of ['langMount','mobileLangMount']){const m=document.getElementById(id);if(m)m.innerHTML=html}document.querySelectorAll('.lang-switch button').forEach(b=>b.onclick=()=>setLang(b.dataset.lang));applyLanguage()}
-function renderSession(s){const d=getDemoSession();document.querySelectorAll('[data-session-link]').forEach(el=>{if(d){el.href='/account.html';if(el.classList.contains('space-btn'))el.textContent=d.role==='admin'?'Admin Horenova':d.role==='recruiter'?'Espace recruteur':'Mon espace'}else if(s.loading){if(el.classList.contains('space-btn'))el.textContent='…'}else if(s.loggedIn){el.href='/account.html';if(el.classList.contains('space-btn'))el.textContent=s.member?.displayName||s.member?.firstName||'Mon espace'}else{el.href='/login.html';if(el.classList.contains('space-btn'))el.setAttribute('data-i18n','nav.login')}});applyLanguage()}
+// Authenticated role-specific navigation. Never infer a role from URL/localStorage.
+const HN_ROLE_NAV={
+  recruiter:{
+    fr:[['Tableau de bord','/account.html','⌂'],['Annonces & shifts','/recruit.html','▣'],['Talents','/talents.html','★'],['Candidatures','/account.html#recruitment','◷'],['Chat','/conversations.html','✉'],['Shop','/shop.html','◇']],
+    ar:[['لوحة التحكم','/account.html','⌂'],['الوظائف والمهمات','/recruit.html','▣'],['المواهب','/talents.html','★'],['الترشيحات','/account.html#recruitment','◷'],['المحادثات','/conversations.html','✉'],['المتجر','/shop.html','◇']],
+    en:[['Dashboard','/account.html','⌂'],['Jobs & shifts','/recruit.html','▣'],['Talents','/talents.html','★'],['Applications','/account.html#recruitment','◷'],['Chat','/conversations.html','✉'],['Shop','/shop.html','◇']]
+  },
+  admin:{
+    fr:[['Administration','/admin.html','⌂'],['Demandes','/admin.html','▣'],['Candidatures','/admin.html','✓'],['Chat','/conversations.html','✉'],['Mon espace','/account.html','♙'],['Explore','/explore.html','◉']],
+    ar:[['الإدارة','/admin.html','⌂'],['طلبات التوظيف','/admin.html','▣'],['الترشيحات','/admin.html','✓'],['المحادثات','/conversations.html','✉'],['حسابي','/account.html','♙'],['استكشف','/explore.html','◉']],
+    en:[['Admin','/admin.html','⌂'],['Requests','/admin.html','▣'],['Applications','/admin.html','✓'],['Chat','/conversations.html','✉'],['My space','/account.html','♙'],['Explore','/explore.html','◉']]
+  }
+};
+let hnRoleNavRequest=0;
+function roleNavMarkup(links,variant){
+  if(variant==='dock')return links.map(([label,href,icon])=>'<a href="'+href+'"'+(location.pathname===href?' class="active"':'')+'><b>'+icon+'</b><span>'+label+'</span></a>').join('');
+  if(variant==='mobile')return links.map(([label,href])=>'<a href="'+href+'">'+label+' <span>↗</span></a>').join('');
+  return links.map(([label,href])=>'<a href="'+href+'">'+label+'</a>').join('');
+}
+async function installMemberRoleNavigation(session){
+  const ticket=++hnRoleNavRequest;
+  if(!session?.loggedIn||!session?.member?.id)return;
+  const role=await getRole();
+  if(ticket!==hnRoleNavRequest||getMemberState().member?.id!==session.member.id)return;
+  if(!['recruiter','admin'].includes(role))return; // Candidates retain the employment-first navigation.
+  const links=HN_ROLE_NAV[role][['fr','en','ar'].includes(currentLang())?currentLang():'fr'];
+  const top=document.querySelector('.hn12-nav');
+  const dock=document.querySelector('.hn12-dock');
+  const mobile=document.getElementById('mobileMenu');
+  if(top){top.innerHTML=roleNavMarkup(links,'top');top.dataset.roleNavigation=role;}
+  if(dock){dock.innerHTML=roleNavMarkup(links,'dock');dock.dataset.roleNavigation=role;}
+  if(mobile){mobile.innerHTML=roleNavMarkup(links,'mobile');mobile.dataset.roleNavigation=role;}
+  document.body.dataset.memberRole=role;
+}
+function renderSession(s){void installMemberRoleNavigation(s).catch(e=>console.warn('Navigation du rôle momentanément indisponible.',e));const d=getDemoSession();document.querySelectorAll('[data-session-link]').forEach(el=>{if(d){el.href='/account.html';if(el.classList.contains('space-btn'))el.textContent=d.role==='admin'?'Admin Horenova':d.role==='recruiter'?'Espace recruteur':'Mon espace'}else if(s.loading){if(el.classList.contains('space-btn'))el.textContent='…'}else if(s.loggedIn){el.href='/account.html';if(el.classList.contains('space-btn'))el.textContent=s.member?.displayName||s.member?.firstName||'Mon espace'}else{el.href='/login.html';if(el.classList.contains('space-btn'))el.setAttribute('data-i18n','nav.login')}});applyLanguage()}
 
 function initArtSystem(){
   const raw=(location.pathname.split('/').pop()||'index.html').replace(/\.html$/,'').replace(/[^a-z0-9-]/gi,'-').toLowerCase();
