@@ -39,13 +39,17 @@
 .hn-intro-film.hn-ios-loop-active.hn-ios-native-playing>.hn-ios-native-premium{
  z-index:3!important;opacity:1!important;
 }
+.hn-intro-film.hn-ios-loop-active:not(.hn-ios-native-playing)>.hn-ios-motion{
+ animation:hn-premium-poster-drift 10s ease-in-out infinite alternate!important;
+ transform-origin:center center!important;
+}
 .hn-intro-film.hn-ios-loop-active.hn-ios-native-playing>.hn-ios-motion{
- opacity:0!important;visibility:hidden!important;
+ opacity:0!important;visibility:hidden!important;animation:none!important;
 }
 @keyframes hn-premium-poster-drift{
  from{transform:scale(1.02) translate3d(-.4%,0,0)}
  to{transform:scale(1.08) translate3d(.6%,.4%,0)}
 }
 @media(prefers-reduced-motion:reduce){
- .hn-intro-film.hn-ios-loop-active::before{animation:none!important}
+ .hn-intro-film.hn-ios-loop-active::before,.hn-intro-film.hn-ios-loop-active>.hn-ios-motion{animation:none!important}
 }
