@@ -33,7 +33,7 @@
     if (panel.classList.contains('hn15-open')) closeMenu();
     else openMenu();
   });
-  panel.querySelectorAll('a[href]').forEach(anchor => anchor.addEventListener('click', closeMenu));
+  panel.addEventListener('click', event => { if (event.target.closest('a[href]')) closeMenu(); }); // event delegation also covers role-specific links added after login
   document.addEventListener('keydown', event => {
     if (event.key === 'Escape' && panel.classList.contains('hn15-open')) {
       closeMenu();
