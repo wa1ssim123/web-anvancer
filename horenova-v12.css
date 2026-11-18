@@ -511,3 +511,20 @@ body[data-hn12="admin"] .hub-request-actions .hub-action{min-height:44px;touch-a
   body[data-hn12] .hn12-page>.hn12-hero .hn12-hero-copy h1{font-size:clamp(33px,8vw,43px)!important}
   body[data-hn12] .hn12-page>.hn12-hero .hn12-hero-art{display:none!important}
 }
+
+
+/* Keep recruiter Explore visible as a seventh tab without creating a second row. */
+@media(max-width:960px){
+ body[data-member-role="recruiter"] .hn12-dock{
+   display:grid!important;
+   grid-template-columns:repeat(7,minmax(0,1fr))!important;
+   gap:0!important;
+ }
+ body[data-member-role="recruiter"] .hn12-dock a{
+   min-width:0!important;min-height:53px!important;
+   padding:4px 1px!important;font-size:clamp(7px,2vw,9px)!important;
+   white-space:normal!important;overflow:hidden;
+   text-overflow:ellipsis;text-align:center;
+ }
+ body[data-member-role="recruiter"] .hn12-dock a b{font-size:16px!important}
+}
