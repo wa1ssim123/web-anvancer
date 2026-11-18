@@ -58,9 +58,10 @@ async function checkAccount(role){
      querySelector:p=>p==='h1'?hero.title:p==='p'?hero.text:p==='.hn12-kicker'?hero.kicker:null
    }:q==='.hn12-hero .bg img'?{src:''}:null
  };
- await new Function('requireRole','queryItems','hub','document','location',
+ await new Function('requireRole','currentLang','queryItems','hub','document','location',
    'return (async function(){'+markup+'})()')(
     async()=>({role,member:{id:'test-member',displayName:'QA',loginEmail:'qa@example.invalid'}}),
+    ()=>'fr',
     async collection=>({items:[collection==='RecruiterProfiles'?{businessName:'QA Restaurant',city:'Marrakech'}:{jobFamily:'Serveur',city:'Oujda'}]}),
     async endpoint=>endpoint.includes('recruiter-requests')?
       {items:[{id:'request',status:'A_EXAMINER',kind:'shift',job_title:'Shift QA',city:'Marrakech'}]}:
