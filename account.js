@@ -1,4 +1,4 @@
-import {requireRole} from '/mihna-global.js';
+import {requireRole,currentLang} from '/mihna-global.js';
 import {queryItems} from '/js/wix/items.js';
 import {hub} from '/hn-api.js';
 const auth=await requireRole(['candidate','recruiter','admin'],false);
@@ -122,4 +122,47 @@ else{
    'Suivi des recruteurs actifs et de leurs demandes.',[['Gérer les recruteurs','/admin.html']])+
  card('SERVICES HORENOVA','Plateforme',
    'Gestion des fonctionnalités commerciales et outils professionnels.',[['Outils business','/business.html']]);
+}
+
+
+const language=currentLang();
+const roleCopies={"en":{"ESPACE PROFESSIONNEL / HORENOVA":"HORENOVA / EMPLOYER HUB","Recruter, simplement.":"Recruit with confidence.","Avec un vrai suivi.":"With transparent tracking.","Vous décrivez votre besoin. HORENOVA vérifie l’annonce avant publication et organise les mises en relation avec les candidats consentants.":"Describe your needs. HORENOVA reviews the vacancy before publication and coordinates introductions with consenting candidates.","+ Déposer une offre ou un shift":"+ Post a job or shift","01 · MON ÉTABLISSEMENT":"01 · MY BUSINESS","02 · DEMANDES D’EMPLOI":"02 · JOB REQUESTS","03 · MISSIONS / SHIFTS":"03 · SHIFTS","04 · TALENTS AU MAROC":"04 · TALENT ACROSS MOROCCO","05 · CANDIDATURES":"05 · APPLICATIONS","06 · CONVERSATIONS":"06 · CONVERSATIONS","ÉTAT RÉEL DE MES ANNONCES":"MY LIVE LISTING STATUS","Votre suivi HORENOVA.":"Your HORENOVA overview.","En attente":"Pending","Publiées":"Published","Refusées":"Rejected","Gérer toutes mes annonces":"Manage all my requests","Gérer mon établissement":"Manage my business","Créer une annonce":"Create a job","Voir mes demandes":"View requests","Publier un shift":"Post a shift","Voir mes shifts":"View shifts","Explorer les talents":"Browse talents","Mes candidatures":"My applications","Ouvrir le chat":"Open chat","Votre espace professionnel":"Your employer hub","Aucune demande pour le moment. Commencez par publier votre première annonce.":"No requests yet. Start by posting your first vacancy.","CENTRE DE CONTRÔLE":"CONTROL CENTER","Un seul objectif.":"One shared goal.","Des recrutements sérieux.":"Trusted recruitment.","Ouvrir l’administration":"Open administration","DEMANDES À EXAMINER":"REQUESTS TO REVIEW","DOSSIERS CANDIDATS":"CANDIDATE APPLICATIONS","CHATS SUPERVISÉS":"SUPERVISED CHATS","ÉTABLISSEMENTS":"BUSINESSES","SERVICES HORENOVA":"HORENOVA SERVICES","Modérer les demandes":"Review requests","Centre candidatures":"Applications center","Ouvrir les conversations":"Open conversations","Gérer les recruteurs":"Manage employers","Outils business":"Business tools","Indisponible":"Unavailable","À compléter":"To complete","COMPTE RECRUTEUR":"EMPLOYER ACCOUNT","COMPTE ADMINISTRATEUR":"ADMIN ACCOUNT","COMPTE CANDIDAT":"CANDIDATE ACCOUNT"},"ar":{"ESPACE PROFESSIONNEL / HORENOVA":"هورينوفا / فضاء المشغّل","Recruter, simplement.":"وظّف بكل سهولة.","Avec un vrai suivi.":"وتابع كل خطوة.","Vous décrivez votre besoin. HORENOVA vérifie l’annonce avant publication et organise les mises en relation avec les candidats consentants.":"حدّد احتياجات مؤسستك، وسيقوم فريق هورينوفا بمراجعة الإعلان قبل نشره وتنظيم التواصل مع المرشحين بعد موافقتهم.","+ Déposer une offre ou un shift":"+ إضافة وظيفة أو مهمة قصيرة","01 · MON ÉTABLISSEMENT":"01 · مؤسستي","02 · DEMANDES D’EMPLOI":"02 · إعلانات التوظيف","03 · MISSIONS / SHIFTS":"03 · المهام القصيرة","04 · TALENTS AU MAROC":"04 · المواهب في المغرب","05 · CANDIDATURES":"05 · الترشيحات","06 · CONVERSATIONS":"06 · المحادثات","ÉTAT RÉEL DE MES ANNONCES":"حالة إعلاناتي الفعلية","Votre suivi HORENOVA.":"متابعة نشاطك على هورينوفا.","En attente":"قيد المراجعة","Publiées":"المنشورة","Refusées":"المرفوضة","Gérer toutes mes annonces":"إدارة جميع الإعلانات","Gérer mon établissement":"إدارة المؤسسة","Créer une annonce":"إنشاء إعلان","Voir mes demandes":"عرض طلباتي","Publier un shift":"نشر مهمة قصيرة","Voir mes shifts":"عرض المهمات","Explorer les talents":"استكشاف المواهب","Mes candidatures":"الترشيحات الخاصة بي","Ouvrir le chat":"فتح المحادثة","Votre espace professionnel":"فضاؤك المهني","Aucune demande pour le moment. Commencez par publier votre première annonce.":"ليس لديك أي إعلان حالياً. ابدأ بإضافة أول وظيفة.","CENTRE DE CONTRÔLE":"مركز الإدارة","Un seul objectif.":"هدف واحد.","Des recrutements sérieux.":"توظيف موثوق.","Ouvrir l’administration":"فتح الإدارة","DEMANDES À EXAMINER":"طلبات قيد المراجعة","DOSSIERS CANDIDATS":"ملفات المرشحين","CHATS SUPERVISÉS":"محادثات خاضعة للإشراف","ÉTABLISSEMENTS":"المؤسسات","SERVICES HORENOVA":"خدمات هورينوفا","Modérer les demandes":"مراجعة الطلبات","Centre candidatures":"مركز الترشيحات","Ouvrir les conversations":"فتح المحادثات","Gérer les recruteurs":"إدارة المشغّلين","Outils business":"أدوات الأعمال","Indisponible":"غير متاح","À compléter":"غير مكتمل","COMPTE RECRUTEUR":"حساب المشغّل","COMPTE ADMINISTRATEUR":"حساب المدير","COMPTE CANDIDAT":"حساب المرشح"}};
+if((language==='en'||language==='ar')&&roleCopies[language]){
+  const dictionary=roleCopies[language];
+  const translateMarkup=str=>{
+    let value=String(str||'');
+    for(const [fr,tr] of Object.entries(dictionary))value=value.split(fr).join(tr);
+    return value;
+  };
+  if(auth.role!=='candidate'){
+    dash.innerHTML=translateMarkup(dash.innerHTML);
+    const subtitle=document.getElementById('accountSubtitle');
+    if(subtitle)subtitle.textContent=translateMarkup(subtitle.textContent);
+  }
+  badge.textContent=translateMarkup(badge.textContent);
+  const heading=document.getElementById('accountTitle');
+  if(heading && auth.role==='recruiter')heading.innerHTML=language==='ar'
+    ? 'فضاء المشغّل.<br><em>أدر احتياجات مؤسستك.</em>'
+    : 'Employer dashboard.<br><em>Manage your recruitment.</em>';
+  if(heading && auth.role==='admin')heading.innerHTML=language==='ar'
+    ? 'إدارة هورينوفا.<br><em>متابعة التوظيف الوطني.</em>'
+    : 'HORENOVA Admin.<br><em>National recruitment oversight.</em>';
+  if(accountHero){
+    const heroHeading=accountHero.querySelector('h1');
+    const heroSubtitle=accountHero.querySelector('p');
+    const translated={
+      recruiter:{
+        en:['Your next team.<br><em>Your best talent.</em>','A professional space for jobs, shifts, talent and applications. No quiz or motivation video required.'],
+        ar:['فريق مؤسستك.<br><em>يبدأ من هنا.</em>','فضاء مهني للوظائف والمهام القصيرة والمواهب والترشيحات. دون اختبار مهني أو فيديو تحفيزي للمشغّل.']
+      },
+      admin:{
+        en:['Lead.<br><em>Protect. Connect.</em>','Supervise job moderation, applications and approved recruitment introductions across Morocco.'],
+        ar:['أدِر.<br><em>احمِ. واصل.</em>','راقب إعلانات الوظائف والترشيحات وعمليات الربط بين المرشحين والمؤسسات في المغرب.']
+      }
+    }[auth.role]?.[language];
+    if(translated){
+      if(heroHeading)heroHeading.innerHTML=translated[0];
+      if(heroSubtitle)heroSubtitle.textContent=translated[1];
+    }
+  }
 }
