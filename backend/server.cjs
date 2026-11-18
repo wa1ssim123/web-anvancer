@@ -125,10 +125,17 @@ async function api(req,res,path,method) {
     const approved=await pool.query(
       "SELECT id,job_title,job_role,city,kind,salary_text,schedule_text,description,created_at FROM hr_recruiter_requests WHERE status='VALIDEE' ORDER BY created_at DESC LIMIT 200"
     );
+    // Defense in depth: employer contact details are never meant to appear on public offers.
+    // The admin must still manually review each title and description before approval.
+    const hideDirectContacts=value=>String(value||'')
+      .replace(/[\w.+-]+@[\w-]+(?:\.[\w-]+)+/g,'[coordonnées masquées]')
+      .replace(/(?:\+?212|0)[\s./-]?[5-7](?:[\s./-]?\d){8}\b/g,'[téléphone masqué]')
+      .replace(/(?:https?:\/\/|www\.)[^\s]+/gi,'[lien masqué]')
+      .slice(0,1500);
     const items=approved.rows.map(row=>({
-      id:row.id,title:row.job_title,role:row.job_role,city:row.city,
+      id:row.id,title:hideDirectContacts(row.job_title),role:row.job_role,city:row.city,
       kind:row.kind==='shift'?'shift':'job',salaryText:row.salary_text,
-      scheduleText:row.schedule_text,description:row.description,createdAt:row.created_at
+      scheduleText:row.schedule_text,description:hideDirectContacts(row.description),createdAt:row.created_at
     }));
     return json(res,200,{items},{'Cache-Control':'public, max-age=45'});
   }
