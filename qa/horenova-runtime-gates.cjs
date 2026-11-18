@@ -127,7 +127,7 @@ async function run(){
   r=await call('PATCH','/api/applications/'+applicationId+'/assign','adm-token',{requestId});
   mark('Admin assigns recruiter',r.status===200);
   r=await call('GET','/api/applications','rec-token');
-  mark('Recruiter receives assigned application',r.status===200&&r.data.items.length===1);
+  mark('Recruiter receives assigned application without candidate email',r.status===200&&r.data.items.length===1&&r.data.items[0].candidateEmail===undefined);
   r=await call('GET','/api/applications/'+applicationId+'/messages','other-token');
   mark('Another candidate cannot access chat',r.status===403);
   r=await call('POST','/api/applications/'+applicationId+'/messages','cand-token',{body:'Bonjour recrutement'});
