@@ -103,7 +103,7 @@ function present(a,user) {
     id:a.id,jobId:a.job_id,jobTitle:a.job_title,jobRole:a.job_role,status:a.status,
     createdAt:a.created_at,updatedAt:a.updated_at,
     candidateWixId:recruiter?undefined:a.candidate_wix_id,
-    candidateEmail:a.candidate_email,profile:a.profile,
+    candidateEmail:recruiter?undefined:a.candidate_email,profile:a.profile,
     consentToIntro:a.consent_to_intro,recruiterWixId:a.recruiter_wix_id,
     recruiterRequestId:a.recruiter_request_id
   };
@@ -332,6 +332,9 @@ async function api(req,res,path,method) {
       const q=await pool.query('SELECT * FROM hr_recruiter_requests WHERE id=$1',[d.requestId]);
       const request=q.rows[0];
       if(!request) throw error(404,'Demande de recrutement introuvable.');
+      if(request.status!=='VALIDEE') throw error(409,'Validez la demande avant de mettre en relation le candidat.');
+      if(request.job_role && a.job_role && request.job_role!==a.job_role)
+        throw error(422,'Le métier du recruteur ne correspond pas à celui du candidat.');
       await pool.query("UPDATE hr_applications SET recruiter_wix_id=$1,recruiter_request_id=$2,status='MISE_EN_RELATION',updated_at=now() WHERE id=$3",[request.recruiter_wix_id,request.id,id]);
       await pool.query('INSERT INTO hr_audit(actor_wix_id,event_type,application_id,detail) VALUES($1,$2,$3,$4)',[user.id,'ASSIGN_RECRUITER',id,JSON.stringify({requestId:request.id})]);
       return json(res,200,{ok:true});
