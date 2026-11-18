@@ -6,6 +6,7 @@ on:
     paths:
       - 'qa/horenova-release-gates.cjs'
       - 'qa/horenova-runtime-gates.cjs'
+      - 'qa/horenova-talents-gates.cjs'
       - 'backend/server.cjs'
       - 'app.js'
       - 'live-data.js'
@@ -35,3 +36,4 @@ jobs:
         run: |
           node qa/horenova-release-gates.cjs
           node qa/horenova-runtime-gates.cjs
+          node qa/horenova-talents-gates.cjs
