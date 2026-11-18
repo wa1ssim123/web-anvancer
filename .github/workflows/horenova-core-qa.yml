@@ -7,6 +7,13 @@ on:
       - 'qa/horenova-release-gates.cjs'
       - 'qa/horenova-runtime-gates.cjs'
       - 'qa/horenova-talents-gates.cjs'
+      - 'qa/horenova-role-gates.cjs'
+      - 'onboarding.js'
+      - 'onboarding.html'
+      - 'account.js'
+      - 'account.html'
+      - 'mihna-global.js'
+      - 'mobile-nav-v15.js'
       - 'backend/server.cjs'
       - 'app.js'
       - 'live-data.js'
@@ -37,3 +44,4 @@ jobs:
           node qa/horenova-release-gates.cjs
           node qa/horenova-runtime-gates.cjs
           node qa/horenova-talents-gates.cjs
+          node qa/horenova-role-gates.cjs
