@@ -5,6 +5,7 @@ on:
       - horenova-free-deploy-2026
     paths:
       - 'qa/horenova-release-gates.cjs'
+      - 'qa/horenova-runtime-gates.cjs'
       - 'backend/server.cjs'
       - 'app.js'
       - 'live-data.js'
@@ -31,4 +32,6 @@ jobs:
         with:
           node-version: '22'
       - name: Verify code syntax, role isolation and public vacancy wiring
-        run: node qa/horenova-release-gates.cjs
+        run: |
+          node qa/horenova-release-gates.cjs
+          node qa/horenova-runtime-gates.cjs
