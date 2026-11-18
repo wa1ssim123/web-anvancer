@@ -19,7 +19,46 @@ function shiftDate(o){const d=new Date();d.setHours(12,0,0,0);d.setDate(d.getDat
 function renderCalendar(){const box=$('#calendarStrip');if(!box)return;const _lng=localStorage.getItem('mihna-lang')||'fr';const f=new Intl.DateTimeFormat(_lng==='ar'?'ar-MA':_lng==='en'?'en-GB':'fr-MA',{weekday:'short'});box.innerHTML='<button class="day '+(selectedDay===-1?'active':'')+'" data-day="-1"><span>Tous</span><b>↗</b></button>'+[0,1,2,3,4,5,6].map(i=>`<button class="day ${i===selectedDay?'active':''}" data-day="${i}"><span>${f.format(shiftDate(i))}</span><b>${shiftDate(i).getDate()}</b></button>`).join('');$$('[data-day]').forEach(b=>b.onclick=()=>{selectedDay=+b.dataset.day;renderCalendar();renderShifts()})}
 function renderShifts(){const g=$('#shiftGrid');if(!g)return;const list=jobs().filter(j=>j.kind==='shift'&&(selectedDay===-1 || (j.dateOffset??0)===selectedDay));g.innerHTML=list.length?list.map(j=>`<article class="shift-card"><div class="shift-card-visual"><img src="${j.img||'https://headless-tfcfvgrbhgw-xwassim04-1409.wix-site-host.com/assets/restaurant.jpg'}" alt="${j.title}"><span>${j.role.toUpperCase()} · ${j.city.toUpperCase()}</span></div><div class="shift-card-body"><span class="small-title">MISSION PONCTUELLE</span><h3>${j.title}</h3><div class="shift-meta">${j.business}<br>⌖ ${j.city}<br>◷ ${j.time||'Horaire à confirmer'}</div><strong>${j.pay}</strong><a class="cta-main button-link full-btn" href="/job.html?id=${encodeURIComponent(j.id)}">Voir le shift ↗</a></div></article>`).join(''):'<article class="shift-card"><div class="shift-card-body"><h3>Pas de shift ce jour.</h3><div class="shift-meta">Essayez une autre date.</div></div></article>'}
 function renderTalents(){const g=$('#talentGrid');if(!g)return;const r=$('#talentRoleFilter')?.value||'all',c=$('#talentCityFilter')?.value||'all';const _tal=[...(window.HORENOVA_LIVE_TALENTS||[])];const list=_tal.filter(t=>(r==='all'||t.role===r)&&(c==='all'||t.city===c)).sort((a,b)=>b.rating-a.rating||b.reviews-a.reviews);g.innerHTML=list.length?list.map(t=>{const img=t.photo||(t.role==='Barista'?'https://headless-tfcfvgrbhgw-xwassim04-1409.wix-site-host.com/assets/barista.jpg':t.role?.includes('Chef')?'https://headless-tfcfvgrbhgw-xwassim04-1409.wix-site-host.com/assets/chef-action.jpg':'https://headless-tfcfvgrbhgw-xwassim04-1409.wix-site-host.com/assets/restaurant.jpg');const rating=Number(t.rating||0),reviews=Number(t.reviews||0);return `<article class="talent-card">${t.sponsored?'<span class="sponsored">SPONSORISÉ</span>':''}<div class="talent-portrait"><img src="${img}" alt="${t.name}"><div class="avatar">${t.name.split(' ').map(x=>x[0]).join('')}</div></div><div class="talent-card-body"><span class="small-title">${(t.role||'HOSPITALITÉ').toUpperCase()} · ${(t.city||'MAROC').toUpperCase()}</span><h3>${t.name}</h3><div class="stars">${reviews>0?`★★★★★ &nbsp; ${rating.toFixed(1)} <small style="color:#8a8c83">(${reviews} avis)</small>`:"Pas encore d’avis vérifiés"}</div><p>${t.bio||'Profil Horenova'}</p><a class="detail-link" href="/talent.html?id=${t.id}">Voir le profil →</a></div></article>`}).join(''):'<div class="empty-state"><h2>Aucun profil public disponible.</h2><p>Les profils publiés par de vrais candidats apparaîtront ici.</p></div>'}
-function setupTalents(){const r=$('#talentRoleFilter'),c=$('#talentCityFilter');if(r)r.onchange=renderTalents;if(c)c.onchange=renderTalents;renderTalents()}
+const _horenovaRenderTalentsCore=renderTalents;
+renderTalents=function(){
+  _horenovaRenderTalentsCore();
+  const grid=$('#talentGrid');
+  if(!grid)return;
+  if(window.HORENOVA_TALENTS_LOADING){
+    const indicator=document.createElement('p');
+    indicator.textContent='Chargement des talents du Maroc…';
+    indicator.style.cssText='grid-column:1/-1;padding:15px;text-align:center';
+    grid.appendChild(indicator);
+    return;
+  }
+  if(window.HORENOVA_TALENTS_ERROR){
+    const status=document.createElement('p');
+    status.setAttribute('role','alert');
+    status.textContent='Recherche momentanément indisponible. Réessayez.';
+    grid.appendChild(status);
+  }
+  if(window.HORENOVA_TALENTS_HAS_NEXT){
+    const button=document.createElement('button');
+    button.type='button';
+    button.className='soft-btn';
+    button.style.cssText='grid-column:1/-1;justify-self:center;margin:24px auto;min-height:48px;padding:13px 24px';
+    button.textContent='Voir plus de talents au Maroc ↗';
+    button.onclick=()=>window.HORENOVA_LOAD_MORE_TALENTS?.();
+    grid.appendChild(button);
+  }
+};
+function setupTalents(){
+  const role=$('#talentRoleFilter'),city=$('#talentCityFilter'),button=$('#talentSearchBtn');
+  const search=()=>{
+    if(typeof window.HORENOVA_SEARCH_TALENTS==='function')
+      window.HORENOVA_SEARCH_TALENTS();
+    else renderTalents();
+  };
+  if(role)role.onchange=search;
+  if(city)city.onchange=search;
+  if(button)button.onclick=search;
+  renderTalents();
+}
 function renderProfile(){const d=$('#profileData');if(!d)return;d.innerHTML=`<div><small>JE RECHERCHE</small><b>${state.intent==='shift'?'Des shifts':state.intent==='hire'?'Des talents':'Un emploi'}</b></div><div><small>MÉTIER</small><b>${state.role}</b></div><div><small>VILLE</small><b>${state.city}</b></div><div><small>FAVORIS</small><b>${state.saved.length}</b></div>`}
 function renderFavorites(){const g=$('#favoritesGrid'),e=$('#favoritesEmpty');if(!g)return;const list=jobs().filter(j=>state.saved.includes(j.id));g.innerHTML=list.map(cardJob).join('');if(e)e.hidden=list.length>0}
 function setupRecruit(){const f=$('#recruitForm');if(!f)return;f.onsubmit=e=>{e.preventDefault();const id='u'+Date.now();const item={id,kind:$('#rKind').value,title:$('#rTitle').value.trim(),business:$('#rBusiness').value.trim(),role:$('#rRole').value,city:$('#rCity').value,pay:$('#rPay').value.trim()||'À convenir',period:$('#rKind').value==='shift'?'/ shift':'/ mois',time:$('#rTime').value.trim(),dateOffset:0,img:$('#rRole').value==='Barista'?'https://headless-tfcfvgrbhgw-xwassim04-1409.wix-site-host.com/assets/barista.jpg':'https://headless-tfcfvgrbhgw-xwassim04-1409.wix-site-host.com/assets/restaurant.jpg',details:'Offre créée localement depuis l’espace recruteur.'};state.customJobs=[item,...state.customJobs];persist();f.reset();renderRecruitList();toast('Brouillon enregistré')};renderRecruitList()}
