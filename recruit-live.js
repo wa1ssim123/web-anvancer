@@ -14,13 +14,22 @@ root.innerHTML=`<div class='recruit-page'><form class='recruit-form' id='liveRec
 <div class='form-grid'>
 <label><small>TYPE</small><select name='kind'><option value='job'>Emploi</option><option value='shift'>Shift</option></select></label>
 <label><small>MÉTIER</small><select name='role'><option>Serveur</option><option>Barista</option><option>Chef de cuisine</option><option>Commis</option><option>Barman</option><option>Pâtissier</option><option>Plongeur</option><option>Réceptionniste</option></select></label>
-<label><small>VILLE</small><select name='city'><option>Casablanca</option><option>Marrakech</option><option>Rabat</option><option>Tanger</option><option>Agadir</option><option>Fès</option><option>Bouskoura</option><option>Essaouira</option></select></label>
+<label><small>VILLE *</small><input name='city' list='hnRecruitCities' required maxlength='80' value='${esc(prof?.city||'')}' placeholder='Ville au Maroc'><datalist id='hnRecruitCities'><option value='Casablanca'><option value='Rabat'><option value='Marrakech'><option value='Fès'><option value='Tanger'><option value='Agadir'><option value='Meknès'><option value='Oujda'><option value='Tétouan'><option value='Kénitra'><option value='El Jadida'><option value='Safi'><option value='Nador'><option value='Dakhla'><option value='Laâyoune'></datalist></label>
 <label><small>ÉTABLISSEMENT (PRIVÉ)</small><input name='businessName' required maxlength='120' value='${esc(prof?.businessName||'')}'></label>
 <label><small>PERSONNE À CONTACTER</small><input name='contactName' required maxlength='120' value='${esc(prof?.contactName||'')}'></label>
 <label><small>TÉLÉPHONE PRIVÉ</small><input name='phone' required maxlength='40' value='${esc(prof?.phone||'')}'></label>
 <label class='wide'><small>TITRE</small><input name='title' required maxlength='120' placeholder='Ex. Barista — matin'></label>
 <label><small>RÉMUNÉRATION</small><input name='salaryText' maxlength='120' placeholder='Ex. 5 500 DH'></label>
 <label><small>HORAIRES</small><input name='scheduleText' maxlength='120' placeholder='Ex. 18:00–23:00'></label>
+<div class='wide' id='recruitShiftFields' hidden style='padding:12px;border-radius:14px;background:#ecefe9;margin-top:10px'>
+  <strong style='display:block;margin-bottom:10px'>Détails de la mission / shift</strong>
+  <div class='form-grid'>
+    <label><small>DATE DU SHIFT</small><input type='date' name='shiftDate'></label>
+    <label><small>DÉBUT</small><input type='time' name='shiftStart'></label>
+    <label><small>FIN</small><input type='time' name='shiftEnd'></label>
+    <label><small>POSTES À POURVOIR</small><input type='number' name='shiftSlots' min='1' max='200' value='1'></label>
+  </div>
+</div>
 <label class='wide'><small>DESCRIPTION</small><textarea name='description' rows='4' maxlength='1500' placeholder='Compétences et conditions, sans coordonnées personnelles'></textarea></label>
 </div><p id='recruitStatus' role='status'></p><p class='form-error' data-error></p>
 <button class='cta-main' type='submit'>Envoyer ma demande à Horenova ↗</button></form>
@@ -29,6 +38,17 @@ root.innerHTML=`<div class='recruit-page'><form class='recruit-form' id='liveRec
 <div class='listing-toolbar'><div><span class='small-title'>CANDIDATURES</span><h2>Horenova prépare votre sélection.</h2></div></div><div class='recruit-inbox'><article><div><span>HORENOVA RECRUTEMENT</span><h3>Équipe HORENOVA</h3><p>Les conversations sont ouvertes uniquement après validation d’une mise en relation par HORENOVA. Notre équipe conserve la visibilité sur chaque échange.</p><a href='/conversations.html' class='soft-btn'>Mes conversations ↗</a></div></article></div></section>`;
 const form=document.getElementById('liveRecruitForm');
 const status=document.getElementById('recruitStatus');
+const shiftFields=document.getElementById('recruitShiftFields');
+function updateShiftFields(){
+ const isShift=form.elements.kind.value==='shift';
+ shiftFields.hidden=!isShift;
+ ['shiftDate','shiftStart','shiftEnd','shiftSlots'].forEach(key=>{
+  if(form.elements[key])form.elements[key].required=isShift;
+ });
+ form.elements.scheduleText.placeholder=isShift?'Complété automatiquement à partir du shift':'Ex. 09:00–17:00 ou temps plein';
+}
+form.elements.kind.addEventListener('change',updateShiftFields);
+updateShiftFields();
 async function render(){
  const grid=document.getElementById('liveRecruitJobs');
  if(!grid)return;
@@ -76,6 +96,13 @@ form.addEventListener('submit',async event=>{
   if(!pendingSync){
    const data=Object.fromEntries(new FormData(form).entries());
    data.title=String(data.title||'').trim();
+   if(data.kind==='shift'){
+     const day=data.shiftDate||'',start=data.shiftStart||'',end=data.shiftEnd||'';
+     const slots=Number(data.shiftSlots);
+     if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(day)||!/^\\d{2}:\\d{2}$/.test(start)||!/^\\d{2}:\\d{2}$/.test(end))throw Error('Date et heures du shift obligatoires.');
+     if(!Number.isInteger(slots)||slots<1||slots>200)throw Error('Nombre de postes invalide (1 à 200).');
+     data.scheduleText=day+' · '+start+'–'+end+' · '+slots+' poste(s)';
+   }
    data.businessName=String(data.businessName||'').trim();
    if(data.title.length<4||data.businessName.length<2)throw Error('Le titre doit contenir 4 caractères et l’établissement 2 caractères minimum.');
    data.requestStatus='À examiner';
