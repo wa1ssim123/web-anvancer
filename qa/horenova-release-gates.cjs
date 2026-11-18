@@ -46,7 +46,7 @@ assert.match(backend,/SELECT id,job_title,job_role,city,kind,salary_text,schedul
 assert.match(backend,/SELECT id,job_title,job_role FROM hr_recruiter_requests/);
 assert.match(backend,/requireRole\(user,\['admin'\]\)/);
 assert.match(backend,/\/api\/applications/);
-assert.match(backend,/\/messages/);
+assert.match(backend,/action==='messages'/);
 assert.doesNotMatch(backend.slice(backend.indexOf("if(path==='/api/jobs/public'"),backend.indexOf("const user=await auth(req);")),/SELECT \*/);
 console.log('PASS Admin moderation, sanitized public jobs, applications and messages are wired in code');
 const listing=source('live-data.js');
