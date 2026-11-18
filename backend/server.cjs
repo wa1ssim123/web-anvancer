@@ -120,6 +120,18 @@ async function api(req,res,path,method) {
     ]);
     return json(res,200,{count:summary.rows[0].count,average:summary.rows[0].average,items:listed.rows},{'Cache-Control':'public, max-age=120'});
   }
+  // Public vacancies: only HORENOVA-approved requests, never recruiter identity/contact fields.
+  if(path==='/api/jobs/public' && method==='GET'){
+    const approved=await pool.query(
+      "SELECT id,job_title,job_role,city,kind,salary_text,schedule_text,description,created_at FROM hr_recruiter_requests WHERE status='VALIDEE' ORDER BY created_at DESC LIMIT 200"
+    );
+    const items=approved.rows.map(row=>({
+      id:row.id,title:row.job_title,role:row.job_role,city:row.city,
+      kind:row.kind==='shift'?'shift':'job',salaryText:row.salary_text,
+      scheduleText:row.schedule_text,description:row.description,createdAt:row.created_at
+    }));
+    return json(res,200,{items},{'Cache-Control':'public, max-age=45'});
+  }
   const user=await auth(req);
   if(path==='/api/me' && method==='GET') return json(res,200,{id:user.id,email:user.email,role:user.role,displayName:user.displayName});
   if(path==='/api/reviews' && method==='POST'){
@@ -228,8 +240,23 @@ async function api(req,res,path,method) {
     requireRole(user,['candidate']);rate(user.id+':applications',8,3600);
     const d=await read(req),id=limit(d.jobId,100);
     if(!id || !d.consentToIntro) throw error(422,'Choisissez une offre réelle et acceptez les modalités de mise en relation.');
-    const found=await wixFetch(user.token,'/wix-data/v2/items/'+encodeURIComponent(id)+'?dataCollectionId=Jobs');
-    const job=found.dataItem?.data || {};
+    let job=null;
+    // Central approved recruiter requests are directly publishable after admin validation.
+    // Do not accept unapproved requests, do not expose private employer data.
+    if(uuid(id)){
+      const central=await pool.query(
+        "SELECT id,job_title,job_role FROM hr_recruiter_requests WHERE id=$1 AND status='VALIDEE'",
+        [id]
+      );
+      if(central.rows[0]){
+        job={_id:central.rows[0].id,title:central.rows[0].job_title,
+          role:central.rows[0].job_role,active:true};
+      }
+    }
+    if(!job){
+      const found=await wixFetch(user.token,'/wix-data/v2/items/'+encodeURIComponent(id)+'?dataCollectionId=Jobs');
+      job=found.dataItem?.data || {};
+    }
     if(!job.active || !job._id) throw error(422,'Cette offre n’est pas active.');
     const profiles=await wixItems(user.token,'CandidateProfiles',10,user.id);
     const profile=profiles.find(x=>x._owner===user.id);
