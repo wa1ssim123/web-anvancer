@@ -39,7 +39,11 @@ function listRequests(){
     try{
       await hub('/api/recruiter-requests/'+encodeURIComponent(id)+'/status',{method:'PATCH',body:{status}});
       const old=requests.find(x=>x.id===id);if(old)old.status=status;
-      feedback.textContent='✓ Statut sauvegardé. La validation ne publie pas automatiquement une annonce.';
+      feedback.textContent=status==='VALIDEE'
+        ? '✓ Annonce validée et publiée automatiquement pour les candidats dans Offres/Shifts.'
+        : status==='REFUSEE'
+        ? '✓ Demande refusée, non visible publiquement.'
+        : '✓ Demande en attente de vérification, non publiée.';
       feedback.style.color='#155b42';
       card.querySelector('.hub-tag').textContent=requestStatuses[status]||status;
     }catch(error){
