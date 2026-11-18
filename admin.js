@@ -12,7 +12,7 @@ const statuses=['EN_ETUDE','PRESELECTION','ENTRETIEN','MISE_EN_RELATION','RETENU
 let applications=[],requests=[],selected='',objectUrl=null;
 const field=(n,v,w=false)=>'<div class="hub-field '+(w?'wide':'')+'"><small>'+esc(n)+'</small><strong>'+esc(v??'Non renseigné')+'</strong></div>';
 const showError=msg=>{$('hubError').textContent=msg||'';};
-const requestStatuses={A_EXAMINER:'À examiner',VALIDEE:'Validée administrativement',REFUSEE:'Refusée'};
+const requestStatuses={A_EXAMINER:'À examiner',VALIDEE:'Validée · visible publiquement',REFUSEE:'Refusée'};
 function listRequests(){
   const count=$('hubRequestsCount'),target=$('hubRecruiterRequests');
   if(!count||!target)return;
@@ -25,6 +25,14 @@ function listRequests(){
       '<strong>'+esc(r.job_title||'Demande sans titre')+'</strong>'+
       '<span>'+esc(r.business_name||'Établissement')+' · '+esc(r.job_role||'')+'</span>'+
       '<p class="hub-tag">'+esc(requestStatuses[current])+'</p>'+
+      '<details style="margin:9px 0 12px"><summary style="cursor:pointer;font-weight:750">Vérifier les conditions avant publication</summary>'+
+      '<div style="display:grid;gap:8px;margin:9px 0;padding:14px;border-radius:12px;background:#f0f2f4">'+
+      field('Rémunération',r.salary_text)+field('Date et horaires',r.schedule_text)+
+      field('Description à examiner',r.description,true)+
+      field('Contact privé du recruteur',r.contact_name,true)+
+      field('Téléphone privé',r.phone,true)+
+      '<p class="hub-muted">Assurez-vous qu’aucune coordonnée personnelle n’est incluse dans le titre ou la description publique.</p>'+
+      '</div></details>'+
       '<div class="hub-request-actions"><label>Décision administrative <select class="hub-select" data-request-status>'+options+'</select></label>'+
       '<button type="button" class="hub-action secondary" data-request-save>Enregistrer</button></div>'+
       '<p class="hub-muted" data-request-feedback role="status"></p></article>';
