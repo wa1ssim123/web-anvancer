@@ -35,7 +35,7 @@ root.innerHTML=`<div class='recruit-page'><form class='recruit-form' id='liveRec
 <button class='cta-main' type='submit'>Envoyer ma demande à Horenova ↗</button></form>
 <aside class='recruit-aside'><span class='small-title'>INTERMÉDIATION</span><h2>Un contact unique : Horenova.</h2><p>Nous recevons les candidatures et coordonnons les échanges. Aucun candidat ne reçoit directement vos coordonnées. Tout partage de données privées nécessite un accord.</p><a class='soft-btn' href='/talents.html'>Voir les profils anonymes →</a></aside></div>
 <section class='listing-page compact'><div class='listing-toolbar'><div><span class='small-title'>MES DEMANDES</span><h2>Suivi de mes recrutements.</h2></div></div><div class='jobs-grid-page' id='liveRecruitJobs'></div>
-<div class='listing-toolbar'><div><span class='small-title'>CANDIDATURES VALIDÉES</span><h2>Les candidats de votre établissement.</h2><p>Une candidature apparaît après accord du candidat et affectation par HORENOVA.</p></div><a href='/conversations.html' class='soft-btn'>Toutes mes conversations ↗</a></div><div class='recruit-inbox' id='liveRecruitApplications' aria-live='polite'><div class='empty-state'>Chargement de vos candidatures…</div></div></section>`;
+<div class='listing-toolbar'><div><span class='small-title'>CANDIDATURES VALIDÉES</span><h2>Les candidats de votre établissement.</h2><p>Une candidature apparaît après accord du candidat et affectation par HORENOVA.</p></div><div style='display:flex;flex-wrap:wrap;gap:10px'><button type='button' class='soft-btn' id='refreshRecruitApplications'>Actualiser les candidatures ↻</button><a href='/conversations.html' class='soft-btn'>Toutes mes conversations ↗</a></div></div><div class='recruit-inbox' id='liveRecruitApplications' aria-live='polite'><div class='empty-state'>Chargement de vos candidatures…</div></div></section>`;
 const form=document.getElementById('liveRecruitForm');
 const status=document.getElementById('recruitStatus');
 const shiftFields=document.getElementById('recruitShiftFields');
@@ -161,3 +161,11 @@ form.addEventListener('submit',async event=>{
 });
 await render();
 await renderRecruiterApplications();
+const refreshRecruitApps=document.getElementById('refreshRecruitApplications');
+if(refreshRecruitApps)refreshRecruitApps.onclick=async()=>{
+ refreshRecruitApps.disabled=true;
+ try{await renderRecruiterApplications();}
+ finally{refreshRecruitApps.disabled=false;}
+};
+// A new admin assignment becomes visible across devices without a reload.
+setInterval(()=>{if(!document.hidden)renderRecruiterApplications().catch(()=>{});},60000);
