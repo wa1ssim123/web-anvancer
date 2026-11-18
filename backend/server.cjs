@@ -6,7 +6,10 @@ const PORT = Number(process.env.PORT || 10000);
 const ADMIN_WIX_ID = process.env.ADMIN_WIX_ID || '';
 const origins = new Set([
   'https://horenova.com',
-  'https://www.horenova.com'
+  'https://www.horenova.com',
+  // Known first-party URLs used for end-to-end QA before DNS cutover.
+  'https://horenova-site-officiel.onrender.com',
+  'https://headless-tfcfvgrbhgw-xwassim04-1409.wix-site-host.com'
 ]);
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
