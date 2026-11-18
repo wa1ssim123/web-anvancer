@@ -1,11 +1,11 @@
-import { requireRole, getDemoSession } from "/mihna-global.js";
+import { requireRole, applyLanguage } from "/mihna-global.js";
 const scripts={
  ar:[
-  'مرحباً بك في مهنة، منصة مصممة لمهن الضيافة والمطبخ والمقاهي والخدمة في المغرب. هدفنا أن نساعدك على تحويل مهارتك إلى فرص حقيقية بطريقة بسيطة ومهنية.',
+  'مرحباً بك في هورينوفا، منصة مصممة لمهن الضيافة والمطبخ والمقاهي والخدمة في المغرب. هدفنا أن نساعدك على تحويل مهارتك إلى فرص حقيقية بطريقة بسيطة ومهنية.',
   'ابدأ بملفك الشخصي. أضف معلوماتك الأساسية والمدينة والمهنة واللغات التي تتحدثها مع مستوى كل لغة. كلما كان ملفك واضحاً، أصبح من السهل على المؤسسات المناسبة أن تفهم نقاط قوتك.',
   'بعد ذلك سجّل فيديو تقديمياً قصيراً. هذا الفيديو خاص ولا يظهر في الملف العام. الهدف منه أن يسمع المسؤول عن التوظيف صوتك وطريقتك في التقديم عندما يكون مخولاً بمشاهدة الفيديو.',
   'قبل بعض الطلبات ستجد اختباراً صغيراً متعلقاً بالمهنة التي اخترتها. الاختبار لا يستبدل المقابلة، لكنه يساعدك على مراجعة الأساسيات ويعطي سياقاً إضافياً لطلبك.',
-  'ومن خلال أكاديمية مهنة يمكنك تطوير مهاراتك، ثم متابعة الوظائف والشيفتات وحفظ الفرص المناسبة لك. خذ وقتك، أكمل ملفك، وابدأ خطوة بخطوة. أهلاً بك في مهنة.'
+  'ومن خلال أكاديمية هورينوفا يمكنك تطوير مهاراتك، ثم متابعة الوظائف والشيفتات وحفظ الفرص المناسبة لك. خذ وقتك، أكمل ملفك، وابدأ خطوة بخطوة. أهلاً بك في هورينوفا.'
  ],
  fr:[
   'Bienvenue sur Horenova, la plateforme pensée pour les métiers de l’hospitalité, de la cuisine, du café et du service au Maroc. Notre objectif est simple : transformer votre savoir-faire en opportunités plus claires et plus humaines.',
@@ -23,8 +23,42 @@ const scripts={
  ]
 };
 const labels={ar:'▶ استمع',fr:'▶ Écouter',en:'▶ Listen'};const captions={ar:'العربية · صوت واضح + فيديو حقيقي في الحركة',fr:'Français · narration claire + vidéo en mouvement',en:'English · clear narration + moving video'};
-const role=new URLSearchParams(location.search).get('role')||getDemoSession()?.role||await (async()=>{const a=await requireRole(['candidate','recruiter','admin'],false);return a?.role})();
-if(role==='recruiter')document.getElementById('onboardingNext').href='/recruiter-setup.html';else if(role==='admin')document.getElementById('onboardingNext').href='/admin.html';
+// SECURITY: the URL's role is never trusted. The verified member's role is authoritative.
+const account=await requireRole(['candidate','recruiter','admin'],false);
+if(!account){
+  location.replace('/enter.html?mode=signin&returnTo=%2Fonboarding.html');
+  throw Error('Connexion requise pour continuer.');
+}
+const role=account.role;
+if(role==='admin'){
+  location.replace('/admin.html');
+}
+const candidateIntro=document.querySelector('.onboarding-shell');
+const recruiterIntro=document.getElementById('hnRecruiterIntro');
+if(role==='recruiter'){
+  // A recruiter NEVER gets a candidate quiz or presentation-video prompt.
+  if(candidateIntro)candidateIntro.hidden=true;
+  if(recruiterIntro)recruiterIntro.hidden=false;
+  document.body.dataset.onboardingRole='recruiter';
+  const title=document.querySelector('.hn12-hero-copy h1');
+  const intro=document.querySelector('.hn12-hero-copy p');
+  const kicker=document.querySelector('.hn12-hero-copy .hn12-kicker');
+  if(title)title.innerHTML='Votre espace recruteur.<br><em>Votre établissement, votre équipe.</em>';
+  if(intro)intro.textContent='Offres d’emploi, shifts, talents et candidatures : un seul espace de recrutement.';
+  if(kicker)kicker.textContent='BIENVENUE RECRUTEUR';
+  const continuation=document.getElementById('recruiterIntroContinue');
+  // On subsequent logins, a recruiter can access the dashboard directly.
+  if(continuation){
+    continuation.href='/recruiter-setup.html';
+  }
+}
+if(role==='candidate'){
+  if(recruiterIntro)recruiterIntro.hidden=true;
+  if(candidateIntro)candidateIntro.hidden=false;
+  document.body.dataset.onboardingRole='candidate';
+}
+applyLanguage();
+
 let lang='ar',idx=0,playing=false,utter=null;const video=document.getElementById('welcomeVideo'),caption=document.getElementById('videoCaption'),voiceBtn=document.getElementById('onboardingVoice');
 function chooseVoice(l){const prefix=l==='ar'?'ar':l==='en'?'en':'fr';const v=speechSynthesis.getVoices().filter(x=>x.lang?.toLowerCase().startsWith(prefix));return v[0]||null}
 function stop(){speechSynthesis.cancel();video.pause();playing=false;voiceBtn.textContent=labels[lang];}
