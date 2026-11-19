@@ -201,6 +201,13 @@ async function api(req,res,path,method) {
     return json(res,200,{ok:true});
   }
   // Private candidate photo presence: the photo itself is never public.
+  if(path==='/api/profile/photo' && method==='GET'){
+    requireRole(user,['candidate']);
+    const q=await pool.query('SELECT image FROM hr_candidate_photos WHERE candidate_wix_id=$1',[user.id]);
+    if(!q.rows[0])throw error(404,'Photo de profil non renseignée.');
+    res.writeHead(200,{'Content-Type':'image/jpeg','Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff'});
+    res.end(q.rows[0].image);return;
+  }
   if(path==='/api/profile/photo/status' && method==='GET'){
     requireRole(user,['candidate']);
     const query=await pool.query('SELECT 1 FROM hr_candidate_photos WHERE candidate_wix_id=$1 LIMIT 1',[user.id]);
