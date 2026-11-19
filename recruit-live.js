@@ -1,6 +1,6 @@
 import { requireRole } from '/mihna-global.js';
 import { queryItems, insertItem } from '/js/wix/items.js';
-import { hub, hubUploadWorkplacePhoto, hubPhoto } from '/hn-api.js';
+import { hub, hubUploadWorkplacePhoto, hubPhoto } from '/hn-api.js?v=professional-20261119-r1';
 const auth=await requireRole(['recruiter'],false);
 if(!auth){location.replace('/account.html');throw new Error('Espace réservé aux recruteurs');}
 const root=document.getElementById('recruitGate');
