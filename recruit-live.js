@@ -30,12 +30,12 @@ root.innerHTML=`<div class='recruit-page'><form class='recruit-form' id='liveRec
     <label><small>POSTES À POURVOIR</small><input type='number' name='shiftSlots' min='1' max='200' value='1'></label>
   </div>
 </div>
-<label><small>TYPE D'ÉTABLISSEMENT</small><select name='businessType' required><option>Restaurant</option><option>Café</option><option>Hôtel / Riad</option><option>Complexe de loisirs</option><option>Traiteur</option><option>Autre</option></select></label>
-<label><small>CONTRAT</small><select name='contractType' required><option value='CDI'>CDI</option><option value='CDD'>CDD</option><option value='Shift / mission'>Shift / mission</option><option value='Temps partiel'>Temps partiel</option><option value='Stage'>Stage</option><option value='Autre'>Autre</option></select></label>
+<label><small>TYPE D'ÉTABLISSEMENT</small><select name='businessType' required><option value=''>Choisir un établissement</option><option>Restaurant</option><option>Café</option><option>Hôtel / Riad</option><option>Complexe de loisirs</option><option>Traiteur / Événementiel</option><option>Boulangerie / Pâtisserie</option><option>Tourisme / Agence de voyages</option><option>Autre</option></select></label>
+<label><small>CONTRAT</small><select name='contractType' required><option value=''>Choisir un contrat</option><option value='CDI'>CDI</option><option value='CDD'>CDD</option><option value='Shift / mission'>Shift / mission</option><option value='Temps partiel'>Temps partiel</option><option value='Stage'>Stage</option><option value='Autre'>Autre</option></select></label>
 <label class='wide'><small>ADRESSE DU LIEU DE TRAVAIL · PUBLIQUE</small><input name='workplaceAddress' maxlength='180' required placeholder='Quartier, avenue, ville (sans téléphone ni e-mail)' value='${esc(prof?.businessAddress||'')}'></label>
 <label><small>NOMBRE DE POSTES</small><input type='number' name='openings' min='1' max='200' value='1' required></label>
 <label><small>DATE DE DÉBUT (SI CONNUE)</small><input type='date' name='startDate'></label>
-<label class='wide'><small>COMPÉTENCES & EXIGENCES</small><textarea name='requirements' rows='3' maxlength='1200' placeholder='Ex. Service en salle, expérience, langues, horaires…'></textarea></label>
+<label class='wide'><small>COMPÉTENCES & EXIGENCES *</small><textarea name='requirements' rows='3' maxlength='1200' minlength='15' required placeholder='Ex. Service en salle, 2 ans d’expérience, hygiène, langues, horaires…'></textarea></label>
 <label class='wide'><small>DESCRIPTION</small><textarea name='description' rows='4' maxlength='1500' placeholder='Compétences et conditions, sans coordonnées personnelles'></textarea></label>
 <div class='wide hn-workplace-uploader'>
   <span class='small-title'>PHOTO AUTHENTIQUE DU LIEU DE TRAVAIL · OBLIGATOIRE</span>
@@ -50,6 +50,7 @@ root.innerHTML=`<div class='recruit-page'><form class='recruit-form' id='liveRec
 <section class='listing-page compact'><div class='listing-toolbar'><div><span class='small-title'>MES DEMANDES</span><h2>Suivi de mes recrutements.</h2></div></div><div class='jobs-grid-page' id='liveRecruitJobs'></div>
 <div class='listing-toolbar'><div><span class='small-title'>CANDIDATURES VALIDÉES</span><h2>Les candidats de votre établissement.</h2><p>Une candidature apparaît après accord du candidat et affectation par HORENOVA.</p></div><div style='display:flex;flex-wrap:wrap;gap:10px'><button type='button' class='soft-btn' id='refreshRecruitApplications'>Actualiser les candidatures ↻</button><a href='/conversations.html' class='soft-btn'>Toutes mes conversations ↗</a></div></div><div class='recruit-inbox' id='liveRecruitApplications' aria-live='polite'><div class='empty-state'>Chargement de vos candidatures…</div></div></section>`;
 const form=document.getElementById('liveRecruitForm');
+if(prof?.businessType)form.elements.businessType.value=prof.businessType;
 const status=document.getElementById('recruitStatus');
 const workplaceInput=document.getElementById('workplacePhoto');
 const workplacePreview=document.getElementById('workplacePreview');
@@ -89,6 +90,8 @@ async function optimizeWorkplacePhoto(file){
 const shiftFields=document.getElementById('recruitShiftFields');
 function updateShiftFields(){
  const isShift=form.elements.kind.value==='shift';
+ if(isShift)form.elements.contractType.value='Shift / mission';
+ else if(form.elements.contractType.value==='Shift / mission')form.elements.contractType.value='';
  shiftFields.hidden=!isShift;
  ['shiftDate','shiftStart','shiftEnd','shiftSlots'].forEach(key=>{
   if(form.elements[key])form.elements[key].required=isShift;
@@ -216,6 +219,8 @@ form.addEventListener('submit',async event=>{
      if(!/^\d{4}-\d{2}-\d{2}$/.test(day)||!/^\d{2}:\d{2}$/.test(start)||!/^\d{2}:\d{2}$/.test(end))throw Error('Date et heures du shift obligatoires.');
      if(!Number.isInteger(slots)||slots<1||slots>200)throw Error('Nombre de postes invalide (1 à 200).');
      data.scheduleText=day+' · '+start+'–'+end+' · '+slots+' poste(s)';
+     data.openings=slots;
+     data.contractType='Shift / mission';
    }
    data.businessName=String(data.businessName||'').trim();
    if(data.title.length<4||data.businessName.length<2)throw Error('Le titre doit contenir 4 caractères et l’établissement 2 caractères minimum.');
