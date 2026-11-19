@@ -54,8 +54,11 @@ export const browserTokenStore = {
     load() {
         if (memory)
             return memory;
-        if (typeof localStorage === "undefined")
-            return null;
+        // Accessing the localStorage global itself can throw SecurityError in
+        // sandboxed browsers; never evaluate it outside the try block.
+        try {
+            if (typeof localStorage === "undefined") return null;
+        } catch { return null; }
         try {
             const raw = localStorage.getItem(STORAGE_KEY);
             if (raw)
@@ -68,8 +71,9 @@ export const browserTokenStore = {
     },
     save(tokens) {
         memory = tokens;
-        if (typeof localStorage === "undefined")
-            return;
+        try {
+            if (typeof localStorage === "undefined") return;
+        } catch { return; }
         try {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(tokens));
         }
