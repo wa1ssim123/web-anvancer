@@ -72,19 +72,38 @@ workplaceInput.addEventListener('change',()=>{
 });
 async function optimizeWorkplacePhoto(file){
  if(file.size>12*1024*1024)throw Error('Photo trop volumineuse : maximum 12 Mo avant optimisation.');
- const bitmap=await createImageBitmap(file);
- const canvas=document.createElement('canvas');
- const edge=1400,ratio=Math.min(1,edge/Math.max(bitmap.width,bitmap.height));
- canvas.width=Math.round(bitmap.width*ratio);canvas.height=Math.round(bitmap.height*ratio);
- canvas.getContext('2d').drawImage(bitmap,0,0,canvas.width,canvas.height);
- bitmap.close?.();
- let quality=.78,blob;
- do{
-   blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',quality));
-   quality-=.10;
- }while(blob?.size>530000 && quality>=.35);
- if(!blob||blob.size>550000)throw Error('Impossible de réduire la photo sous 550 Ko. Choisissez une autre image.');
- return blob;
+ let source=null,url='';
+ try{
+   if(typeof createImageBitmap==='function'){
+     try{source=await createImageBitmap(file);}catch{}
+   }
+   if(!source){
+     url=URL.createObjectURL(file);
+     source=await new Promise((resolve,reject)=>{
+       const image=new Image();
+       image.onload=()=>resolve(image);
+       image.onerror=()=>reject(new Error('Format de photo non pris en charge. Choisissez un JPEG ou PNG.'));
+       image.src=url;
+     });
+   }
+   const width=source.width||source.naturalWidth,height=source.height||source.naturalHeight;
+   if(!width||!height)throw new Error('Photo sans dimensions valides.');
+   const canvas=document.createElement('canvas');
+   const edge=1400,ratio=Math.min(1,edge/Math.max(width,height));
+   canvas.width=Math.max(1,Math.round(width*ratio));
+   canvas.height=Math.max(1,Math.round(height*ratio));
+   canvas.getContext('2d').drawImage(source,0,0,canvas.width,canvas.height);
+   let quality=.78,blob;
+   do{
+     blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',quality));
+     quality-=.10;
+   }while(blob?.size>530000&&quality>=.35);
+   if(!blob||blob.size>550000)throw new Error('Impossible de réduire la photo sous 550 Ko. Choisissez une autre image.');
+   return blob;
+ }finally{
+   if(source&&typeof source.close==='function')source.close();
+   if(url)URL.revokeObjectURL(url);
+ }
 }
 
 const shiftFields=document.getElementById('recruitShiftFields');
