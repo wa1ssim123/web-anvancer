@@ -27,6 +27,7 @@ const pg={Pool:class{
         sql.includes("r.status='VALIDEE'")&&req.status!=='VALIDEE'))return {rows:[]};
       return {rows:[{image:Buffer.from([0xff,0xd8,0xff,0xd9])}]};
     }
+    if(sql.includes('INSERT INTO hr_workplace_photos(')||sql.includes('INSERT INTO hr_candidate_photos('))return {rows:[]};
     if(sql.includes('SELECT 1 FROM hr_candidate_photos WHERE candidate_wix_id=$1'))return {rows:db.photos.filter(x=>x.candidate_wix_id===params[0]).map(()=>({exists:1}))};
     if(sql.includes('SELECT 1 FROM hr_workplace_photos WHERE recruiter_wix_id=$1'))return {rows:db.photos.filter(x=>x.recruiter_wix_id===params[0]).map(()=>({exists:1}))};
     if(sql.includes('SELECT id,job_title,job_role FROM hr_recruiter_requests'))
@@ -101,9 +102,9 @@ const dependencies=name=>{
 const {api}=new Function('require','process','fetch','AbortSignal','Buffer','console',
   source+'\nreturn {api};')(dependencies,
   {env:{PORT:'10000',ADMIN_WIX_ID:'admin-id'}},fakeFetch,AbortSignal,Buffer,console);
-async function call(method,path,token,body){
-  const req={headers:{authorization:token||''},
-    async *[Symbol.asyncIterator](){if(body!==undefined)yield Buffer.from(JSON.stringify(body))}};
+async function call(method,path,token,body,{mime='application/json'}={}){
+  const req={headers:{authorization:token||'','content-type':mime},
+    async *[Symbol.asyncIterator](){if(body!==undefined)yield Buffer.isBuffer(body)?body:Buffer.from(JSON.stringify(body))}};
   const res={
     status:0,raw:'',
     writeHead(code){this.status=code;},
@@ -122,6 +123,13 @@ async function run(){
   mark('Pending employer photo hidden from the public',r.status===404);
   r=await call('GET','/api/recruiter/workplace-photo/status','rec-token');
   mark('Workplace upload status visible to recruiter',r.status===200&&r.data.hasPhoto);
+  const jpeg=Buffer.concat([Buffer.from([0xff,0xd8]),Buffer.alloc(205,0x01),Buffer.from([0xff,0xd9])]);
+  r=await call('POST','/api/recruiter/workplace-photo','cand-token',jpeg,{mime:'image/jpeg'});
+  mark('Candidates cannot upload employer photos',r.status===403);
+  r=await call('POST','/api/recruiter/workplace-photo','rec-token',jpeg,{mime:'image/jpeg'});
+  mark('Recruiter uploads real workplace jpeg',r.status===200&&r.data.hasPhoto===true);
+  r=await call('POST','/api/profile/photo','rec-token',jpeg,{mime:'image/jpeg'});
+  mark('Recruiters cannot modify private candidate portraits',r.status===403);
   r=await call('GET','/api/profile/photo/status','cand-token');
   mark('Private portrait state available to candidate',r.status===200&&r.data.hasPhoto);
   r=await call('PATCH','/api/recruiter-requests/'+requestId+'/status','rec-token',{status:'VALIDEE'});
