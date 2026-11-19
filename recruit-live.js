@@ -1,6 +1,6 @@
 import { requireRole } from '/mihna-global.js';
 import { queryItems, insertItem } from '/js/wix/items.js';
-import { hub, hubUploadWorkplacePhoto } from '/hn-api.js';
+import { hub, hubUploadWorkplacePhoto, hubPhoto } from '/hn-api.js';
 const auth=await requireRole(['recruiter'],false);
 if(!auth){location.replace('/account.html');throw new Error('Espace réservé aux recruteurs');}
 const root=document.getElementById('recruitGate');
@@ -146,6 +146,9 @@ async function renderRecruiterApplications(){
    area.innerHTML=cases.map(a=>{
      const name=[a.profile?.firstName,a.profile?.lastName].filter(Boolean).join(' ')||'Candidat HORENOVA';
      const link='/conversations.html?id='+encodeURIComponent(a.id||'');
+     const dossier=a.profile?.application||{};
+     const skills=Array.isArray(dossier.skills)?dossier.skills.join(' · '):'';
+     const experience=Number.isFinite(Number(dossier.experienceYears))?Number(dossier.experienceYears)+' an(s)':'À préciser';
      const state=({
        EN_ETUDE:'En étude',PRESELECTION:'Présélection',ENTRETIEN:'Entretien',
        MISE_EN_RELATION:'Mise en relation',RETENUE:'Retenue',REFUSEE:'Refusée',CLOTURE:'Clôturée'
@@ -153,10 +156,33 @@ async function renderRecruiterApplications(){
      return '<article class="job-card-page" style="margin-bottom:14px"><div class="job-card-content">'+
        '<small>CONFIDENTIEL · CANDIDATURE AUTORISÉE</small><h3>'+esc(name)+'</h3>'+
        '<p>'+esc(a.jobTitle||'Offre')+' · '+esc(a.jobRole||'')+'</p>'+
-       '<p>'+esc(state)+'</p>'+
+       '<p><strong>Statut :</strong> '+esc(state)+'</p>'+
+       '<div class="hn-rec-dossier">'+
+       '<div><small>EXPÉRIENCE</small><b>'+esc(experience)+'</b></div>'+
+       '<div><small>DERNIER POSTE</small><b>'+esc(dossier.lastPosition||'À préciser')+'</b></div>'+
+       '<div><small>DISPONIBILITÉ</small><b>'+esc(dossier.availability||'À convenir')+'</b></div>'+
+       '<div><small>VILLE</small><b>'+esc(dossier.desiredCity||a.profile?.city||'Maroc')+'</b></div>'+
+       (skills?'<div class="wide"><small>COMPÉTENCES</small><p>'+esc(skills)+'</p></div>':'')+
+       (dossier.motivation?'<div class="wide"><small>MOTIVATION</small><p>'+esc(dossier.motivation)+'</p></div>':'')+
+       '</div>'+
+       '<div data-candidate-photo-target="'+esc(a.id||'')+'"></div>'+
+       '<button type="button" class="soft-btn" data-candidate-photo="'+esc(a.id||'')+'">Voir le portrait autorisé ↗</button> '+
        '<a class="soft-btn" href="'+esc(link)+'">Ouvrir la conversation avec HORENOVA ↗</a>'+
        '</div></article>';
    }).join('');
+   area.querySelectorAll('[data-candidate-photo]').forEach(button=>button.onclick=async()=>{
+     const id=button.dataset.candidatePhoto,target=button.closest('.job-card-page')?.querySelector('[data-candidate-photo-target]');
+     if(!id||!target)return;
+     button.disabled=true;target.textContent='Chargement du portrait confidentiel…';
+     try{
+       const url=await hubPhoto('/api/applications/'+encodeURIComponent(id)+'/photo');
+       if(!url){target.textContent='Photo non disponible pour ce candidat.';return;}
+       target.innerHTML='<img class="hn-rec-candidate-portrait" alt="Portrait privé du candidat autorisé">';
+       target.querySelector('img').src=url;
+       button.hidden=true;
+     }catch(error){target.textContent='Erreur de chargement du portrait.';}
+     finally{button.disabled=false;}
+   });
  }catch(error){
    area.innerHTML='<div class="empty-state" role="alert"><h3>Suivi temporairement indisponible.</h3><p>Aucune candidature n’est supprimée. Rechargez cette page quand la connexion est rétablie.</p></div>';
    console.warn('HORENOVA: recruiter applications temporarily unavailable',error?.message||'network');
