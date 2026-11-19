@@ -128,7 +128,12 @@ export async function accessToken() {
                 fresh = await mintTokens({ grantType: "refresh_token", refreshToken: t.refreshToken }, t.role ?? "visitor");
             }
             catch {
-                /* fall through to a new visitor */
+                // Never silently downgrade an authenticated member to an anonymous visitor.
+                // Otherwise private calls can appear to work as the wrong identity.
+                if (t.role === "member") {
+                    store.save({ accessToken: "", refreshToken: "", expiresAt: 0 });
+                    throw new Error("Votre session HORENOVA a expiré. Reconnectez-vous pour protéger votre compte.");
+                }
             }
         }
         fresh ??= await mintTokens({ grantType: "anonymous" });
