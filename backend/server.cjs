@@ -4,6 +4,8 @@ const crypto = require('node:crypto');
 const { Pool } = require('pg');
 const PORT = Number(process.env.PORT || 10000);
 const ADMIN_WIX_ID = process.env.ADMIN_WIX_ID || '';
+const ADDITIONAL_ADMIN_IDS=new Set(['d9be4582-6401-48d6-b68c-77c6e268d3bd','9f0ec78b-0150-4be9-9daf-8b874a7caa18','854202b1-66c0-4c31-9dff-862bda95f9b0','1711eb68-181b-465c-95ef-3d78b25fdd14']);
+const isAdminId=id=>!!id&&(id===ADMIN_WIX_ID||ADDITIONAL_ADMIN_IDS.has(id));
 const origins = new Set([
   'https://horenova.com',
   'https://www.horenova.com',
@@ -78,7 +80,7 @@ async function auth(req) {
   const member=result.member;
   if(!member?.id || ['BLOCKED','DELETED','OFFLINE'].includes(member.status)) throw error(401,'Membre non autorisé.');
   let role='none';
-  if(member.id === ADMIN_WIX_ID && ADMIN_WIX_ID) role='admin';
+  if(isAdminId(member.id)) role='admin';
   else {
     const roles=await wixItems(token,'AccountRoles',5,member.id);
     const own=roles.find(x=>x._owner === member.id);
@@ -233,8 +235,8 @@ async function api(req,res,path,method) {
     requireRole(user,['admin','recruiter']);
     if(!uuid(securedWorkplace[1]))throw error(400,'Identifiant de demande invalide.');
     const rows=await pool.query(
-      'SELECT p.image FROM hr_job_photos p JOIN hr_recruiter_requests r ON r.id=p.request_id WHERE r.id=$1 AND ($2::text=$3::text OR r.recruiter_wix_id=$2) LIMIT 1',
-      [securedWorkplace[1],user.id,ADMIN_WIX_ID]
+      'SELECT p.image FROM hr_job_photos p JOIN hr_recruiter_requests r ON r.id=p.request_id WHERE r.id=$1 AND ($2::boolean OR r.recruiter_wix_id=$3) LIMIT 1',
+      [securedWorkplace[1],user.role==='admin',user.id]
     );
     if(!rows.rows[0])throw error(404,'Photo du lieu de travail absente.');
     res.writeHead(200,{'Content-Type':'image/jpeg','Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff'});
