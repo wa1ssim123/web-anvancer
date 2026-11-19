@@ -106,7 +106,8 @@ function present(a,user) {
     id:a.id,jobId:a.job_id,jobTitle:a.job_title,jobRole:a.job_role,status:a.status,
     createdAt:a.created_at,updatedAt:a.updated_at,
     candidateWixId:recruiter?undefined:a.candidate_wix_id,
-    candidateEmail:recruiter?undefined:a.candidate_email,profile:a.profile,
+    candidateEmail:recruiter?undefined:a.candidate_email,
+    profile:recruiter?{...a.profile,application:a.profile?.application?{...a.profile.application,phone:undefined}:undefined}:a.profile,
     consentToIntro:a.consent_to_intro,recruiterWixId:a.recruiter_wix_id,
     recruiterRequestId:a.recruiter_request_id
   };
@@ -126,7 +127,7 @@ async function api(req,res,path,method) {
   // Public vacancies: only HORENOVA-approved requests, never recruiter identity/contact fields.
   if(path==='/api/jobs/public' && method==='GET'){
     const approved=await pool.query(
-      "SELECT id,job_title,job_role,city,kind,salary_text,schedule_text,description,created_at FROM hr_recruiter_requests WHERE status='VALIDEE' ORDER BY created_at DESC LIMIT 200"
+      "SELECT r.id,r.business_name,r.business_type,r.workplace_address,r.job_title,r.job_role,r.city,r.kind,r.contract_type,r.requirements,r.openings,r.start_date,r.salary_text,r.schedule_text,r.description,r.created_at,EXISTS(SELECT 1 FROM hr_workplace_photos p WHERE p.recruiter_wix_id=r.recruiter_wix_id) AS has_photo FROM hr_recruiter_requests r WHERE r.status='VALIDEE' ORDER BY r.created_at DESC LIMIT 200"
     );
     // Defense in depth: employer contact details are never meant to appear on public offers.
     // The admin must still manually review each title and description before approval.
@@ -136,11 +137,28 @@ async function api(req,res,path,method) {
       .replace(/(?:https?:\/\/|www\.)[^\s]+/gi,'[lien masqué]')
       .slice(0,1500);
     const items=approved.rows.map(row=>({
-      id:row.id,title:hideDirectContacts(row.job_title),role:row.job_role,city:row.city,
-      kind:row.kind==='shift'?'shift':'job',salaryText:row.salary_text,
-      scheduleText:row.schedule_text,description:hideDirectContacts(row.description),createdAt:row.created_at
+      id:row.id,title:hideDirectContacts(row.job_title),role:hideDirectContacts(row.job_role),city:hideDirectContacts(row.city),
+      businessName:hideDirectContacts(row.business_name),businessType:hideDirectContacts(row.business_type),
+      workplaceAddress:hideDirectContacts(row.workplace_address),
+      kind:row.kind==='shift'?'shift':'job',contractType:hideDirectContacts(row.contract_type),
+      requirements:hideDirectContacts(row.requirements),openings:row.openings||1,
+      startDate:row.start_date||null,salaryText:hideDirectContacts(row.salary_text),
+      scheduleText:hideDirectContacts(row.schedule_text),description:hideDirectContacts(row.description),
+      photoUrl:row.has_photo?'/api/jobs/public/'+row.id+'/workplace-photo':null,
+      hasWorkplacePhoto:!!row.has_photo,createdAt:row.created_at
     }));
     return json(res,200,{items},{'Cache-Control':'public, max-age=45'});
+  }
+  const publicWorkplace=path.match(/^\/api\/jobs\/public\/([0-9a-f-]+)\/workplace-photo$/i);
+  if(publicWorkplace && method==='GET'){
+    if(!uuid(publicWorkplace[1]))throw error(400,'Identifiant d’annonce invalide.');
+    const response=await pool.query(
+      "SELECT p.image FROM hr_workplace_photos p JOIN hr_recruiter_requests r ON r.recruiter_wix_id=p.recruiter_wix_id WHERE r.id=$1 AND r.status='VALIDEE' LIMIT 1",
+      [publicWorkplace[1]]
+    );
+    if(!response.rows[0])throw error(404,'Aucune photo validée pour cette annonce.');
+    res.writeHead(200,{'Content-Type':'image/jpeg','Cache-Control':'public, max-age=120','X-Content-Type-Options':'nosniff'});
+    res.end(response.rows[0].image);return;
   }
   const user=await auth(req);
   if(path==='/api/me' && method==='GET') return json(res,200,{id:user.id,email:user.email,role:user.role,displayName:user.displayName});
@@ -182,6 +200,39 @@ async function api(req,res,path,method) {
     await pool.query("INSERT INTO hr_audit(actor_wix_id,event_type,detail) VALUES($1,'REVIEW_MODERATION',$2)",[user.id,JSON.stringify({reviewId:reviewModeration[1],status:d.status})]);
     return json(res,200,{ok:true});
   }
+  // Private candidate photo presence: the photo itself is never public.
+  if(path==='/api/profile/photo/status' && method==='GET'){
+    requireRole(user,['candidate']);
+    const query=await pool.query('SELECT 1 FROM hr_candidate_photos WHERE candidate_wix_id=$1 LIMIT 1',[user.id]);
+    return json(res,200,{hasPhoto:!!query.rows[0]});
+  }
+  if(path==='/api/recruiter/workplace-photo' && method==='POST'){
+    requireRole(user,['recruiter']);rate(user.id+':workplace-photo',12,3600);
+    if((req.headers['content-type']||'').split(';')[0]!=='image/jpeg')throw error(415,'Photo JPEG uniquement.');
+    const image=await read(req,550000,true);
+    if(image.length<200||image[0]!==0xff||image[1]!==0xd8||
+      image[image.length-2]!==0xff||image[image.length-1]!==0xd9)
+      throw error(422,'Photo du lieu de travail invalide.');
+    await pool.query("INSERT INTO hr_workplace_photos(recruiter_wix_id,mime,image) VALUES($1,'image/jpeg',$2) ON CONFLICT (recruiter_wix_id) DO UPDATE SET image=EXCLUDED.image,updated_at=now()",[user.id,image]);
+    return json(res,200,{ok:true,hasPhoto:true});
+  }
+  if(path==='/api/recruiter/workplace-photo/status' && method==='GET'){
+    requireRole(user,['recruiter']);
+    const q=await pool.query('SELECT 1 FROM hr_workplace_photos WHERE recruiter_wix_id=$1 LIMIT 1',[user.id]);
+    return json(res,200,{hasPhoto:!!q.rows[0]});
+  }
+  const securedWorkplace=path.match(/^\/api\/recruiter-requests\/([0-9a-f-]+)\/workplace-photo$/i);
+  if(securedWorkplace && method==='GET'){
+    requireRole(user,['admin','recruiter']);
+    if(!uuid(securedWorkplace[1]))throw error(400,'Identifiant de demande invalide.');
+    const rows=await pool.query(
+      'SELECT p.image FROM hr_workplace_photos p JOIN hr_recruiter_requests r ON r.recruiter_wix_id=p.recruiter_wix_id WHERE r.id=$1 AND ($2::text=$3::text OR r.recruiter_wix_id=$2) LIMIT 1',
+      [securedWorkplace[1],user.id,ADMIN_WIX_ID]
+    );
+    if(!rows.rows[0])throw error(404,'Photo du lieu de travail absente.');
+    res.writeHead(200,{'Content-Type':'image/jpeg','Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff'});
+    res.end(rows.rows[0].image);return;
+  }
   if(path==='/api/recruiter-requests' && method==='POST'){
     requireRole(user,['recruiter']);
     const d=await read(req);
@@ -195,12 +246,19 @@ async function api(req,res,path,method) {
       if(existing.rows[0])return json(res,200,{id:existing.rows[0].id,ok:true,alreadyRecorded:true});
     }
     rate(user.id+':requests',10,3600);
+    const photo=await pool.query('SELECT 1 FROM hr_workplace_photos WHERE recruiter_wix_id=$1 LIMIT 1',[user.id]);
+    if(!photo.rows[0])throw error(422,'Ajoutez une photo du lieu de travail avant d’envoyer l’annonce.');
+    const openings=Number(d.openings||1);
+    if(!Number.isInteger(openings)||openings<1||openings>200)throw error(422,'Nombre de postes invalide.');
+    const startDate=/^\d{4}-\d{2}-\d{2}$/.test(d.startDate||'')?d.startDate:null;
     const values=[user.id,business,limit(d.contactName,120),limit(d.phone,40),
       title,limit(d.role,90),limit(d.city,80),limit(d.kind,12),limit(d.salaryText,100),
-      limit(d.scheduleText,120),limit(d.description,1500),wixRequestId];
+      limit(d.scheduleText,120),limit(d.description,1500),wixRequestId,
+      limit(d.businessType,80),limit(d.workplaceAddress,180),limit(d.contractType,60),
+      limit(d.requirements,1200),openings,startDate];
     let q;
     try{
-      q=await pool.query('INSERT INTO hr_recruiter_requests(recruiter_wix_id,business_name,contact_name,contact_phone,job_title,job_role,city,kind,salary_text,schedule_text,description,wix_request_id) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) RETURNING id',values);
+      q=await pool.query('INSERT INTO hr_recruiter_requests(recruiter_wix_id,business_name,contact_name,contact_phone,job_title,job_role,city,kind,salary_text,schedule_text,description,wix_request_id,business_type,workplace_address,contract_type,requirements,openings,start_date) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18) RETURNING id',values);
     }catch(e){
       if(e.code==='23505' && wixRequestId){
         const previous=await pool.query('SELECT id FROM hr_recruiter_requests WHERE recruiter_wix_id=$1 AND wix_request_id=$2 LIMIT 1',[user.id,wixRequestId]);
@@ -246,6 +304,14 @@ async function api(req,res,path,method) {
     await pool.query("INSERT INTO hr_candidate_photos(candidate_wix_id,mime,image) VALUES($1,'image/jpeg',$2) ON CONFLICT (candidate_wix_id) DO UPDATE SET image=EXCLUDED.image,updated_at=now()",[user.id,photo]);
     return json(res,200,{ok:true});
   }
+  if(path==='/api/admin/recruitment-overview' && method==='GET'){
+    requireRole(user,['admin']);
+    const [overall,publicJobs]=await Promise.all([
+      pool.query("SELECT kind,status,COUNT(*)::integer AS total FROM hr_recruiter_requests GROUP BY kind,status"),
+      pool.query("SELECT COUNT(*)::integer AS total FROM hr_applications")
+    ]);
+    return json(res,200,{requests:overall.rows,applicationCount:publicJobs.rows[0]?.total||0});
+  }
   if(path==='/api/applications' && method==='POST') {
     requireRole(user,['candidate']);rate(user.id+':applications',8,3600);
     const d=await read(req),id=limit(d.jobId,100);
@@ -277,6 +343,24 @@ async function api(req,res,path,method) {
     const allowed=['firstName','lastName','age','city','jobFamily','bio','arabic','arabicLevel','french','frenchLevel','english','englishLevel','otherLanguage','otherLanguageLevel','preferredLanguage','videoFileId','videoConsent','profileComplete'];
     const snapshot=Object.fromEntries(allowed.map(k=>[k,profile[k]??null]));
     snapshot.quizScore=best.score??null; snapshot.quizPassed=true;
+    const form=d.application||{};
+    const experienceYears=Number(form.experienceYears);
+    if(!Number.isFinite(experienceYears)||experienceYears<0||experienceYears>60)
+      throw error(422,'Précisez correctement vos années d’expérience.');
+    const motivation=limit(form.motivation,900);
+    if(motivation.length<35)throw error(422,'Présentez vos motivations en au moins 35 caractères.');
+    const skills=Array.isArray(form.skills)?form.skills.slice(0,12).map(x=>limit(x,40)).filter(Boolean):[];
+    if(!skills.length)throw error(422,'Ajoutez au moins une compétence professionnelle.');
+    const phone=limit(form.phone,40);
+    if(!/^\+?[0-9\s().-]{8,25}$/.test(phone))throw error(422,'Numéro de téléphone candidat invalide.');
+    const uploaded=await pool.query('SELECT 1 FROM hr_candidate_photos WHERE candidate_wix_id=$1 LIMIT 1',[user.id]);
+    if(!uploaded.rows[0])throw error(422,'Ajoutez une photo de profil à votre candidature.');
+    snapshot.application={
+      experienceYears,skills,phone,
+      lastPosition:limit(form.lastPosition,90),availability:limit(form.availability,50),
+      desiredCity:limit(form.desiredCity,80),contractPreference:limit(form.contractPreference,60),
+      motivation,earliestStart:limit(form.earliestStart,10)
+    };
     const params=[user.id,user.email,job._id,limit(job.title,150),limit(job.role,90),JSON.stringify(snapshot)];
     let created;
     try {
