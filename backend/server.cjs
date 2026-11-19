@@ -278,8 +278,8 @@ async function api(req,res,path,method) {
   if(path==='/api/recruiter-requests' && method==='GET') {
     requireRole(user,['recruiter','admin']);
     const q=user.role==='admin' ?
-      await pool.query('SELECT * FROM hr_recruiter_requests ORDER BY created_at DESC LIMIT 150') :
-      await pool.query('SELECT * FROM hr_recruiter_requests WHERE recruiter_wix_id=$1 ORDER BY created_at DESC LIMIT 150',[user.id]);
+      await pool.query('SELECT r.*, EXISTS(SELECT 1 FROM hr_workplace_photos p WHERE p.recruiter_wix_id=r.recruiter_wix_id) AS has_workplace_photo FROM hr_recruiter_requests r ORDER BY r.created_at DESC LIMIT 150') :
+      await pool.query('SELECT r.*, EXISTS(SELECT 1 FROM hr_workplace_photos p WHERE p.recruiter_wix_id=r.recruiter_wix_id) AS has_workplace_photo FROM hr_recruiter_requests r WHERE r.recruiter_wix_id=$1 ORDER BY r.created_at DESC LIMIT 150',[user.id]);
     return json(res,200,{items:q.rows});
   }
   // Only the verified HORENOVA administrator can moderate employer requests.
