@@ -24,3 +24,15 @@ export async function hubUploadPhoto(blob){
   if(!r.ok)throw Error(d.error||'Envoi de la photo impossible');
   return d;
 }
+
+export async function hubUploadWorkplacePhoto(blob){
+  if(!blob||blob.type!=='image/jpeg'||blob.size>550000)throw Error('La photo du lieu doit être au format JPEG et peser moins de 550 Ko après optimisation.');
+  const token=await accessToken();
+  const response=await fetch(BASE+'/api/recruiter/workplace-photo',{
+    method:'POST',mode:'cors',cache:'no-store',
+    headers:{Authorization:token,'Content-Type':'image/jpeg'},body:blob
+  });
+  const data=await response.json().catch(()=>({}));
+  if(!response.ok)throw Error(data.error||'Impossible d’enregistrer la photo du lieu de travail.');
+  return data;
+}
