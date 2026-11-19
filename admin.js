@@ -54,6 +54,7 @@ function listRequests(){
         : '✓ Demande en attente de vérification, non publiée.';
       feedback.style.color='#155b42';
       card.querySelector('.hub-tag').textContent=requestStatuses[status]||status;
+      document.dispatchEvent(new Event('hn-admin-moderation-changed'));
     }catch(error){
       feedback.textContent='Échec : '+(error?.message||String(error));
       feedback.style.color='#a52419';
@@ -72,7 +73,7 @@ selected=id;list();
 const a=applications.find(x=>x.id===id);if(!a)return;
 const p=a.profile||{},languages=[['Arabe',p.arabic,p.arabicLevel],['Français',p.french,p.frenchLevel],['Anglais',p.english,p.englishLevel]].filter(z=>z[1]).map(z=>z[0]+' '+z[2]+'/5').join(' · ');
 const select=statuses.map(s=>'<option value="'+s+'" '+(a.status===s?'selected':'')+'>'+esc(names[s])+'</option>').join('');
-const reqOptions='<option value="">Sélectionner un recruteur…</option>'+requests.filter(r=>!r.job_role||r.job_role===a.jobRole).map(r=>'<option value="'+esc(r.id)+'">'+esc(r.business_name+' · '+r.job_title)+'</option>').join('');
+const reqOptions='<option value="">Sélectionner un recruteur…</option>'+requests.filter(r=>r.status==='VALIDEE'&&(!r.job_role||r.job_role===a.jobRole)).map(r=>'<option value="'+esc(r.id)+'">'+esc(r.business_name+' · '+r.job_title)+'</option>').join('');
 $('hubDetail').innerHTML='<div class="hub-detail"><span class="hub-small">DOSSIER PRIVÉ · '+esc(id.slice(0,8))+'</span><div class="hub-profile"><div id="hubPortrait" class="hub-photo hub-photo-placeholder">◉</div><div><h3>'+esc(p.firstName||'')+' '+esc(p.lastName||'')+'</h3><p class="hub-muted">'+esc(a.jobTitle)+'</p><span class="hub-tag">'+esc(names[a.status]||a.status)+'</span></div></div><div class="hub-grid">'+field('E-mail',a.candidateEmail)+field('Âge',p.age)+field('Ville',p.city)+field('Métier',p.jobFamily)+field('Langues',languages,true)+field('Quiz',p.quizPassed?p.quizScore+' %':'Non validé')+field('Vidéo privée',p.videoFileId?'Enregistrée':'Absente')+field('Présentation',p.bio,true)+field('Consentement candidat',a.consentToIntro?'Oui':'Non',true)+'</div><div class="hub-controls"><label>Statut<select class="hub-select" id="hubStatus">'+select+'</select></label><button class="hub-action" type="button" id="saveStatus">Enregistrer le statut</button><label>Associer une demande d’établissement<select class="hub-select" id="recruitRequest">'+reqOptions+'</select></label><button class="hub-action secondary" type="button" id="assignRequest" '+(a.recruiterWixId?'disabled':'')+'>Autoriser la mise en relation</button><a class="hub-action secondary" href="/conversations.html?id='+encodeURIComponent(id)+'">Ouvrir la conversation à trois ↗</a><p class="hub-error" id="caseError"></p></div></div>';
 $('saveStatus').onclick=async()=>{try{await hub('/api/applications/'+id+'/status',{method:'PATCH',body:{status:$('hubStatus').value}});await refresh();}catch(e){$('caseError').textContent=e.message;}};
 $('assignRequest').onclick=async()=>{try{const requestId=$('recruitRequest').value;if(!requestId)throw Error('Sélectionnez une demande.');if(!a.consentToIntro)throw Error('Consentement candidat requis.');await hub('/api/applications/'+id+'/assign',{method:'PATCH',body:{requestId}});await refresh();}catch(e){$('caseError').textContent=e.message;}};
@@ -84,4 +85,5 @@ try{showError('');const [a,r]=await Promise.all([hub('/api/applications'),hub('/
 catch(e){showError(e.message+' Les dossiers privés restent accessibles dans le CMS administrateur Wix.');$('hubCases').innerHTML='<div class="hub-detail hub-muted">Service des dossiers non disponible.</div>';}
 }
 $('hubSearch').oninput=list;$('hubRefresh').onclick=refresh;await refresh();
+try{const {mountAdminOverview}=await import('/admin-overview.js?v=admin-publish-20261119-b');await mountAdminOverview();}catch(error){console.error('Contrôle des publications indisponible',error);}
 }
