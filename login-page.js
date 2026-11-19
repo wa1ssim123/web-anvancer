@@ -197,6 +197,35 @@ function failureMessage(r,fallback){
 }
 function init(){
  if(!signin||!signup||!verify)return;
+ // Wix member credentials cannot survive a page navigation when the app is
+ // displayed in a sandboxed document with blocked browser storage.
+ // Detect this before any authentication attempt, and offer a top-level tab.
+ let storageAvailable=false;
+ try{
+   const key='hn-auth-storage-test';
+   window.localStorage.setItem(key,'1');
+   storageAvailable=window.localStorage.getItem(key)==='1';
+   window.localStorage.removeItem(key);
+ }catch{}
+ if(!storageAvailable){
+   const box=document.createElement('div');
+   box.setAttribute('role','alert');
+   box.style.cssText='padding:18px;margin:12px 0 20px;border-radius:14px;border:2px solid #e56528;background:#fff3e8;color:#54240c;font:600 14px/1.65 Inter,system-ui,sans-serif';
+   const title=document.createElement('strong');title.textContent='Connexion bloquée par ce navigateur intégré';
+   const p=document.createElement('p');p.textContent='Cette fenêtre empêche l’enregistrement sécurisé de votre session. Ouvrez HORENOVA directement dans un nouvel onglet de Safari, Chrome ou Edge pour vous connecter.';
+   const link=document.createElement('a');
+   link.href='https://horenova.com/enter.html?mode=signin';
+   link.target='_blank';link.rel='noopener noreferrer';
+   link.textContent='Ouvrir HORENOVA dans le navigateur ↗';
+   link.style.cssText='display:inline-block;background:#ed5a20;color:#fff;border-radius:10px;padding:12px 16px;text-decoration:none;font-weight:800';
+   box.append(title,p,link);
+   signin.prepend(box);
+   signup.prepend(box.cloneNode(true));
+   document.querySelectorAll('#signinForm button[type="submit"],#signupForm button[type="submit"]').forEach(b=>{b.disabled=true;b.title='Ouvrez HORENOVA dans un navigateur externe';});
+   document.documentElement.dataset.authUiReady='1';
+   return;
+ }
+
  $$('[data-auth-tab]').forEach(b=>b.addEventListener('click',()=>{
    if(working)return;
    changeMode(b.dataset.authTab);
