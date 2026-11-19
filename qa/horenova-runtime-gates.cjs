@@ -21,6 +21,12 @@ const pg={Pool:class{
     if(sql.startsWith('SELECT 1 AS ok'))return {rows:[{ok:1}]};
     if(sql.includes('FROM hr_recruiter_requests r WHERE r.status=\'VALIDEE\''))
       return {rows:db.requests.filter(row=>row.status==='VALIDEE').map(row=>({...row,has_photo:true}))};
+    if(sql.includes('SELECT p.image FROM hr_workplace_photos p JOIN hr_recruiter_requests r')){
+      const req=db.requests.find(x=>x.id===params[0]);
+      if(!req||!db.photos.some(x=>x.recruiter_wix_id===req.recruiter_wix_id)||(
+        sql.includes("r.status='VALIDEE'")&&req.status!=='VALIDEE'))return {rows:[]};
+      return {rows:[{image:Buffer.from([0xff,0xd8,0xff,0xd9])}]};
+    }
     if(sql.includes('SELECT 1 FROM hr_candidate_photos WHERE candidate_wix_id=$1'))return {rows:db.photos.filter(x=>x.candidate_wix_id===params[0]).map(()=>({exists:1}))};
     if(sql.includes('SELECT 1 FROM hr_workplace_photos WHERE recruiter_wix_id=$1'))return {rows:db.photos.filter(x=>x.recruiter_wix_id===params[0]).map(()=>({exists:1}))};
     if(sql.includes('SELECT id,job_title,job_role FROM hr_recruiter_requests'))
@@ -105,13 +111,19 @@ async function call(method,path,token,body){
   };
   try{await api(req,res,path,method);}
   catch(error){res.status=error.status||500;res.raw=JSON.stringify({error:error.message});}
-  return {status:res.status,data:res.raw?JSON.parse(res.raw):null};
+  return {status:res.status,data:Buffer.isBuffer(res.raw)?{photo:true}:res.raw?JSON.parse(res.raw):null};
 }
 async function run(){
   const out=[];
   const mark=(name,condition)=>{assert.ok(condition,name);out.push(name);};
   let r=await call('GET','/api/jobs/public');
   mark('Pending offers hidden',r.status===200&&r.data.items.length===0);
+  r=await call('GET','/api/jobs/public/'+requestId+'/workplace-photo');
+  mark('Pending employer photo hidden from the public',r.status===404);
+  r=await call('GET','/api/recruiter/workplace-photo/status','rec-token');
+  mark('Workplace upload status visible to recruiter',r.status===200&&r.data.hasPhoto);
+  r=await call('GET','/api/profile/photo/status','cand-token');
+  mark('Private portrait state available to candidate',r.status===200&&r.data.hasPhoto);
   r=await call('PATCH','/api/recruiter-requests/'+requestId+'/status','rec-token',{status:'VALIDEE'});
   mark('Recruiter denied moderation',r.status===403);
   r=await call('PATCH','/api/recruiter-requests/'+requestId+'/status','adm-token',{status:'VALIDEE'});
@@ -120,6 +132,8 @@ async function run(){
   mark('Public listing redacts email and phone',r.status===200&&r.data.items.length===1&&
     !JSON.stringify(r.data.items).includes('test@example.com')&&
     !JSON.stringify(r.data.items).includes('+212612345678'));
+  r=await call('GET','/api/jobs/public/'+requestId+'/workplace-photo');
+  mark('Approved workplace photo becomes public',r.status===200&&r.data.photo===true);
   r=await call('POST','/api/applications','cand-token',{jobId:requestId,consentToIntro:true,application:{experienceYears:3,lastPosition:'Serveur',skills:['Service client','Hygiène'],availability:'Immédiatement',desiredCity:'Casablanca',contractPreference:'CDI',earliestStart:'2026-12-01',phone:'+212612345678',motivation:'Je possède une expérience de plusieurs années en service et je souhaite rejoindre une nouvelle équipe.'}});
   mark('Candidate application with professional dossier recorded',r.status===201&&r.data.item.id===applicationId&&r.data.item.profile.application.skills.length===2);
   r=await call('GET','/api/applications','adm-token');
