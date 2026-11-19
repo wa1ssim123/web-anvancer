@@ -21,12 +21,17 @@ const normalizeJob=j=>{
   const schedule=safeText(j.scheduleText||'');
   return {
     id:safeText(j.id||j._id),kind,title:safeText(j.title||'Offre HORENOVA'),
-    business:'Employeur partenaire · HORENOVA',
+    business:safeText(j.businessName||j.business||'Employeur vérifié · HORENOVA'),
+    businessType:safeText(j.businessType||''),workplaceAddress:safeText(j.workplaceAddress||''),
+    contractType:safeText(j.contractType||''),requirements:safeText(j.requirements||''),
+    openings:Number(j.openings)||1,startDate:safeText(j.startDate||''),
     role,city:safeText(j.city||'Maroc'),pay:safeText(j.salaryText||'À convenir'),
     period:kind==='shift'?'/ shift':'/ mois',
     time:schedule,dateOffset:kind==='shift'?offsetForShift(j.scheduleText):0,
-    img:imageForRole(j.jobRole||j.role),details:safeText(j.description||''),
-    sponsored:false,live:true,approved:true
+    img:/^\/api\/jobs\/public\/[0-9a-f-]+\/workplace-photo$/i.test(j.photoUrl||'')
+      ?apiBase+j.photoUrl:imageForRole(j.jobRole||j.role),
+    hasWorkplacePhoto:!!j.hasWorkplacePhoto,
+    details:safeText(j.description||''),sponsored:false,live:true,approved:true
   };
 };
 async function centralVacancies(){
