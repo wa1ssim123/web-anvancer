@@ -13,14 +13,16 @@ const db={
     job_title:'Serveur test@example.com',job_role:'Serveur',city:'Casablanca',
     kind:'job',salary_text:'5500 DH',schedule_text:'09:00-17:00',
     description:'Contact +212612345678 (must be redacted)',status:'A_EXAMINER'}],
-  applications:[],messages:[],audits:[]
+  applications:[],messages:[],audits:[],photos:[{candidate_wix_id:'cand-id',recruiter_wix_id:'rec-id'}]
 };
 const pg={Pool:class{
   async query(statement,params=[]){
     const sql=String(statement).replace(/\s+/g,' ').trim();
     if(sql.startsWith('SELECT 1 AS ok'))return {rows:[{ok:1}]};
-    if(sql.includes('FROM hr_recruiter_requests')&&sql.includes("status='VALIDEE'")&&!sql.includes("AND status='VALIDEE'"))
-      return {rows:db.requests.filter(row=>row.status==='VALIDEE')};
+    if(sql.includes('FROM hr_recruiter_requests r WHERE r.status=\'VALIDEE\''))
+      return {rows:db.requests.filter(row=>row.status==='VALIDEE').map(row=>({...row,has_photo:true}))};
+    if(sql.includes('SELECT 1 FROM hr_candidate_photos WHERE candidate_wix_id=$1'))return {rows:db.photos.filter(x=>x.candidate_wix_id===params[0]).map(()=>({exists:1}))};
+    if(sql.includes('SELECT 1 FROM hr_workplace_photos WHERE recruiter_wix_id=$1'))return {rows:db.photos.filter(x=>x.recruiter_wix_id===params[0]).map(()=>({exists:1}))};
     if(sql.includes('SELECT id,job_title,job_role FROM hr_recruiter_requests'))
       return {rows:db.requests.filter(row=>row.id===params[0]&&row.status==='VALIDEE')};
     if(sql.includes('SELECT * FROM hr_recruiter_requests WHERE id='))
@@ -118,8 +120,8 @@ async function run(){
   mark('Public listing redacts email and phone',r.status===200&&r.data.items.length===1&&
     !JSON.stringify(r.data.items).includes('test@example.com')&&
     !JSON.stringify(r.data.items).includes('+212612345678'));
-  r=await call('POST','/api/applications','cand-token',{jobId:requestId,consentToIntro:true});
-  mark('Candidate application recorded',r.status===201&&r.data.item.id===applicationId);
+  r=await call('POST','/api/applications','cand-token',{jobId:requestId,consentToIntro:true,application:{experienceYears:3,lastPosition:'Serveur',skills:['Service client','Hygiène'],availability:'Immédiatement',desiredCity:'Casablanca',contractPreference:'CDI',earliestStart:'2026-12-01',phone:'+212612345678',motivation:'Je possède une expérience de plusieurs années en service et je souhaite rejoindre une nouvelle équipe.'}});
+  mark('Candidate application with professional dossier recorded',r.status===201&&r.data.item.id===applicationId&&r.data.item.profile.application.skills.length===2);
   r=await call('GET','/api/applications','adm-token');
   mark('Admin sees application',r.status===200&&r.data.items.length===1);
   r=await call('GET','/api/applications','rec-token');
