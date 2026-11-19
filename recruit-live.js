@@ -1,6 +1,6 @@
 import { requireRole } from '/mihna-global.js';
 import { queryItems, insertItem } from '/js/wix/items.js';
-import { hub } from '/hn-api.js';
+import { hub, hubUploadWorkplacePhoto } from '/hn-api.js';
 const auth=await requireRole(['recruiter'],false);
 if(!auth){location.replace('/account.html');throw new Error('Espace réservé aux recruteurs');}
 const root=document.getElementById('recruitGate');
@@ -30,7 +30,20 @@ root.innerHTML=`<div class='recruit-page'><form class='recruit-form' id='liveRec
     <label><small>POSTES À POURVOIR</small><input type='number' name='shiftSlots' min='1' max='200' value='1'></label>
   </div>
 </div>
+<label><small>TYPE D'ÉTABLISSEMENT</small><select name='businessType' required><option>Restaurant</option><option>Café</option><option>Hôtel / Riad</option><option>Complexe de loisirs</option><option>Traiteur</option><option>Autre</option></select></label>
+<label><small>CONTRAT</small><select name='contractType' required><option value='CDI'>CDI</option><option value='CDD'>CDD</option><option value='Shift / mission'>Shift / mission</option><option value='Temps partiel'>Temps partiel</option><option value='Stage'>Stage</option><option value='Autre'>Autre</option></select></label>
+<label class='wide'><small>ADRESSE DU LIEU DE TRAVAIL · PUBLIQUE</small><input name='workplaceAddress' maxlength='180' required placeholder='Quartier, avenue, ville (sans téléphone ni e-mail)' value='${esc(prof?.businessAddress||'')}'></label>
+<label><small>NOMBRE DE POSTES</small><input type='number' name='openings' min='1' max='200' value='1' required></label>
+<label><small>DATE DE DÉBUT (SI CONNUE)</small><input type='date' name='startDate'></label>
+<label class='wide'><small>COMPÉTENCES & EXIGENCES</small><textarea name='requirements' rows='3' maxlength='1200' placeholder='Ex. Service en salle, expérience, langues, horaires…'></textarea></label>
 <label class='wide'><small>DESCRIPTION</small><textarea name='description' rows='4' maxlength='1500' placeholder='Compétences et conditions, sans coordonnées personnelles'></textarea></label>
+<div class='wide hn-workplace-uploader'>
+  <span class='small-title'>PHOTO AUTHENTIQUE DU LIEU DE TRAVAIL · OBLIGATOIRE</span>
+  <p>Ajoutez une photo récente de la salle, de la réception, du café ou du complexe où la personne travaillera. Après validation HORENOVA, elle sera visible sur votre annonce nationale. Aucun visage identifiable sans autorisation.</p>
+  <input type='file' name='workplacePhoto' id='workplacePhoto' accept='image/jpeg,image/png,image/webp,image/heic,image/heif' aria-label='Photo de l’établissement'>
+  <img id='workplacePreview' alt='Aperçu du lieu de travail' hidden>
+  <small id='workplacePhotoStatus' role='status'>Image JPEG, PNG ou HEIC · optimisée automatiquement · format horizontal conseillé.</small>
+</div>
 </div><p id='recruitStatus' role='status'></p><p class='form-error' data-error></p>
 <button class='cta-main' type='submit'>Envoyer ma demande à Horenova ↗</button></form>
 <aside class='recruit-aside'><span class='small-title'>INTERMÉDIATION</span><h2>Un contact unique : Horenova.</h2><p>Nous recevons les candidatures et coordonnons les échanges. Aucun candidat ne reçoit directement vos coordonnées. Tout partage de données privées nécessite un accord.</p><a class='soft-btn' href='/talents.html'>Voir les profils anonymes →</a></aside></div>
@@ -38,6 +51,41 @@ root.innerHTML=`<div class='recruit-page'><form class='recruit-form' id='liveRec
 <div class='listing-toolbar'><div><span class='small-title'>CANDIDATURES VALIDÉES</span><h2>Les candidats de votre établissement.</h2><p>Une candidature apparaît après accord du candidat et affectation par HORENOVA.</p></div><div style='display:flex;flex-wrap:wrap;gap:10px'><button type='button' class='soft-btn' id='refreshRecruitApplications'>Actualiser les candidatures ↻</button><a href='/conversations.html' class='soft-btn'>Toutes mes conversations ↗</a></div></div><div class='recruit-inbox' id='liveRecruitApplications' aria-live='polite'><div class='empty-state'>Chargement de vos candidatures…</div></div></section>`;
 const form=document.getElementById('liveRecruitForm');
 const status=document.getElementById('recruitStatus');
+const workplaceInput=document.getElementById('workplacePhoto');
+const workplacePreview=document.getElementById('workplacePreview');
+const workplaceInfo=document.getElementById('workplacePhotoStatus');
+let hasWorkplacePhoto=false;
+try{
+ const state=await hub('/api/recruiter/workplace-photo/status');
+ hasWorkplacePhoto=!!state.hasPhoto;
+ if(hasWorkplacePhoto)workplaceInfo.textContent='✓ Une photo de votre établissement est déjà enregistrée. Ajoutez-en une autre seulement pour la remplacer.';
+}catch{workplaceInfo.textContent='Statut de la photo non disponible. Ajoutez une image pour cette annonce.';}
+workplaceInput.required=!hasWorkplacePhoto;
+workplaceInput.addEventListener('change',()=>{
+ const file=workplaceInput.files?.[0];
+ if(!file)return;
+ if(!file.type.startsWith('image/')){workplaceInfo.textContent='Choisissez une photo (JPEG, PNG ou HEIC).';return;}
+ workplacePreview.src=URL.createObjectURL(file);
+ workplacePreview.hidden=false;
+ workplaceInfo.textContent=file.name+' · '+(file.size/1024/1024).toFixed(1)+' Mo';
+});
+async function optimizeWorkplacePhoto(file){
+ if(file.size>12*1024*1024)throw Error('Photo trop volumineuse : maximum 12 Mo avant optimisation.');
+ const bitmap=await createImageBitmap(file);
+ const canvas=document.createElement('canvas');
+ const edge=1400,ratio=Math.min(1,edge/Math.max(bitmap.width,bitmap.height));
+ canvas.width=Math.round(bitmap.width*ratio);canvas.height=Math.round(bitmap.height*ratio);
+ canvas.getContext('2d').drawImage(bitmap,0,0,canvas.width,canvas.height);
+ bitmap.close?.();
+ let quality=.78,blob;
+ do{
+   blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',quality));
+   quality-=.10;
+ }while(blob?.size>530000 && quality>=.35);
+ if(!blob||blob.size>550000)throw Error('Impossible de réduire la photo sous 550 Ko. Choisissez une autre image.');
+ return blob;
+}
+
 const shiftFields=document.getElementById('recruitShiftFields');
 function updateShiftFields(){
  const isShift=form.elements.kind.value==='shift';
@@ -60,7 +108,7 @@ async function render(){
  const saved=results[1].status==='fulfilled'?(results[1].value.items||[]):[];
  const mine=saved.filter(j=>!auth.member?.id||!j._owner||j._owner===auth.member.id);
  const delivered=new Set((central||[]).map(j=>j.wix_request_id).filter(Boolean));
- const centralCards=(central||[]).map(j=>'<article class="job-card-page"><div class="job-card-content"><small>'+esc(j.kind||'Emploi')+' · '+esc(j.job_role||'')+'</small><h3>'+esc(j.job_title||'Demande')+'</h3><p>'+esc(j.city||'')+' · '+esc(j.business_name||'')+'</p><strong>'+esc({A_EXAMINER:'✓ Reçue · à examiner',VALIDEE:'✓ Validée par HORENOVA',REFUSEE:'Refusée par HORENOVA'}[j.status]||'✓ Reçue par HORENOVA')+'</strong></div></article>').join('');
+ const centralCards=(central||[]).map(j=>'<article class="job-card-page"><div class="job-card-content"><small>'+esc(j.kind||'Emploi')+' · '+esc(j.job_role||'')+'</small><h3>'+esc(j.job_title||'Demande')+'</h3><p>'+esc(j.city||'')+' · '+esc(j.business_name||'')+'</p><strong>'+esc({A_EXAMINER:'✓ Reçue · à examiner',VALIDEE:'✓ Publiée · visible pour les candidats',REFUSEE:'Refusée par HORENOVA'}[j.status]||'✓ Reçue par HORENOVA')+'</strong></div></article>').join('');
  const legacy=mine.filter(j=>!central||!delivered.has(j._id));
  const legacyCards=legacy.map(j=>'<article class="job-card-page"><div class="job-card-content"><small>'+esc(j.kind||'Emploi')+' · '+esc(j.role||'')+'</small><h3>'+esc(j.title||'Demande')+'</h3><p>'+esc(j.city||'')+' · '+esc(j.businessName||'')+'</p><strong>'+(central?'Enregistrée dans Wix · suivi à synchroniser':'Enregistrée dans Wix · vérification du suivi indisponible')+'</strong>'+(central&&auth.role==='recruiter'?'<p><button type="button" class="soft-btn" data-sync="'+esc(j._id)+'">Synchroniser cette demande</button></p>':'')+'</div></article>').join('');
  const warning=central===null?'<div class="empty-state">La connexion au suivi central est momentanément indisponible. Aucune synchronisation ne peut être confirmée.</div>':'';
@@ -124,7 +172,17 @@ form.addEventListener('submit',async event=>{
  btn.disabled=true;err.textContent='';status.className='';
  try{
   if(!pendingSync){
+   const imageFile=workplaceInput.files?.[0]||null;
+   if(!imageFile && !hasWorkplacePhoto)throw Error('Ajoutez une photo réelle du lieu de travail.');
+   if(imageFile){
+     status.textContent='Optimisation et sauvegarde de la photo de l’établissement…';
+     await hubUploadWorkplacePhoto(await optimizeWorkplacePhoto(imageFile));
+     hasWorkplacePhoto=true;
+     workplaceInput.required=false;
+     workplaceInfo.textContent='✓ Photo enregistrée. Elle apparaîtra après validation de l’annonce.';
+   }
    const data=Object.fromEntries(new FormData(form).entries());
+   delete data.workplacePhoto; // A File must never be serialized into CMS JSON.
    data.title=String(data.title||'').trim();
    if(data.kind==='shift'){
      const day=data.shiftDate||'',start=data.shiftStart||'',end=data.shiftEnd||'';
@@ -146,7 +204,7 @@ form.addEventListener('submit',async event=>{
   }});
   pendingSync=null;
   status.className='recruit-status-ok';
-  status.textContent='✓ Demande enregistrée et reçue par HORENOVA. Notre équipe peut désormais la traiter.';
+  status.textContent='✓ Demande et photo enregistrées. Publication après validation par l’administrateur HORENOVA.';
   form.elements.title.value='';
   form.elements.description.value='';
   await render();
