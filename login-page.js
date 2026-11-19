@@ -16,7 +16,7 @@ function validReturn(value){
 }
 const safeReturn=validReturn(requestedReturn);
 const HINT_KEY='horenova-session-hint-v1';
-const ADMIN_MEMBER_ID='d0158d67-a1cc-4b65-b3d3-67e20c84fdb3';
+const ADMIN_MEMBER_IDS=new Set(['d0158d67-a1cc-4b65-b3d3-67e20c84fdb3','d9be4582-6401-48d6-b68c-77c6e268d3bd','9f0ec78b-0150-4be9-9daf-8b874a7caa18','854202b1-66c0-4c31-9dff-862bda95f9b0','1711eb68-181b-465c-95ef-3d78b25fdd14']);
 let selectedRole='candidate',pendingRole=null,working=false,navigating=false,initialCheckComplete=false;
 let existingCompletionMode=false,registeredSession=false;
 let activeMode=requestedMode;
@@ -117,7 +117,7 @@ async function existingRole(){
   if(!member)return null;
   // Admin identity is verified against the same Wix member id as mihna-global.js.
   // Never ask the administrator to create a public candidate/recruiter role.
-  if(member.id===ADMIN_MEMBER_ID)return 'admin';
+  if(ADMIN_MEMBER_IDS.has(member.id))return 'admin';
   const result=await queryItems('AccountRoles',{filters:[{field:'_owner',op:'eq',value:member.id}],limit:1});
   const record=result.items?.[0];
   return supportedRoles.includes(record?.role)||record?.role==='admin' ? record.role : null;
@@ -236,7 +236,7 @@ function init(){
      }
      const confirmed=await confirmedSession();
      if(!confirmed)throw Error('Connexion acceptée, mais la session Wix n’est pas encore vérifiée. Réessayez dans un instant.');
-     localStorage.setItem(HINT_KEY,'1');
+     try{window.localStorage.setItem(HINT_KEY,'1')}catch{/* Private browsing, embedded browsers and restricted storage: Wix member session remains in memory. */}
      const role=await existingRole();
      if(role)go(roleDestination(role));
      else{finishExistingMode();info(signup,'Connexion réussie. Finalisez maintenant votre profil sans recréer de compte.');}
@@ -250,7 +250,7 @@ function init(){
    try{
      if(verifiedMember()){
        const role=await ensureRole(selectedRole);
-       localStorage.setItem(HINT_KEY,'1');
+       try{window.localStorage.setItem(HINT_KEY,'1')}catch{/* Private browsing, embedded browsers and restricted storage: Wix member session remains in memory. */}
        go(roleDestination(role,true));
        return;
      }
@@ -273,7 +273,7 @@ function init(){
      const confirmed=await confirmedSession();
      if(!confirmed)throw Error('Compte créé, mais la session doit être confirmée. Connectez-vous pour terminer sans recréer le compte.');
      const role=await ensureRole(selectedRole);
-     localStorage.setItem(HINT_KEY,'1');
+     try{window.localStorage.setItem(HINT_KEY,'1')}catch{/* Private browsing, embedded browsers and restricted storage: Wix member session remains in memory. */}
      go(roleDestination(role,true));
    }catch(e){
      err(signup,e.message||'Inscription impossible.');
@@ -288,7 +288,7 @@ function init(){
      if(r.state!=='SUCCESS')throw Error(r.error||'Code de vérification invalide.');
      if(!await confirmedSession())throw Error('Vérification acceptée. Reconnectez-vous pour terminer votre compte.');
      const role=await ensureRole(pendingRole||selectedRole);
-     localStorage.setItem(HINT_KEY,'1');go(roleDestination(role,true));
+     try{window.localStorage.setItem(HINT_KEY,'1')}catch{/* Private browsing, embedded browsers and restricted storage: Wix member session remains in memory. */}go(roleDestination(role,true));
    }catch(e){err(verify,e.message||'Impossible de vérifier le code.');}
    finally{working=false;btn.disabled=false;}
  });
