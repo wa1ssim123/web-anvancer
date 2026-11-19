@@ -39,9 +39,9 @@ form.addEventListener('submit',async event=>{
   status.dataset.error='false';
   try{
     await wixRequest('/_api/iam/recovery/v1/send-email',{
-      body:{email:form.elements.email.value.trim(),language:'fr'}
+      body:{email:form.elements.email.value.trim(),language:'fr',redirect:{url:'https://horenova.com/enter.html?mode=signin',clientId:'66235a46-9a81-4c6e-869b-bdb973ca1588'}}
     });
-    status.textContent="Si un compte correspond à cette adresse, un e-mail de récupération sera envoyé. Vérifiez aussi les courriers indésirables. Le lien ouvre la page sécurisée de Wix.";
+    status.textContent="Si un compte correspond à cette adresse, un e-mail de récupération sera envoyé. Vérifiez aussi les courriers indésirables. Le lien doit ouvrir la page sécurisée de Wix pour définir le mot de passe, puis revenir sur HORENOVA. Si le lien ne présente aucun formulaire, contactez l’équipe HORENOVA.";
     form.reset();
   }catch(error){
     status.dataset.error='true';
