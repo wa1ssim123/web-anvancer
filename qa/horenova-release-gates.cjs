@@ -18,11 +18,11 @@ for(const file of ['backend/server.cjs','app.js']){
   checkSyntax(file,false);
 }
 for(const file of ['live-data.js','recruit-live.js','recruiter-setup.js',
-  'login-page.js','account.js','apply.js','admin.js','conversations.js','hn-api.js',
+  'login-page.js','account.js','apply.js','admin.js','admin-overview.js','conversations.js','hn-api.js',
   'js/wix/client.js','js/wix/auth.js','candidate-setup.js']){
   checkSyntax(file,true);
 }
-console.log('PASS JavaScript syntax (14 files)');
+console.log('PASS JavaScript syntax (15 files)');
 const shop=source('shop.html');
 assert.match(shop,/hn-shop-exit/);
 assert.match(shop,/href="\/index.html" class="hn-shop-exit"/);
