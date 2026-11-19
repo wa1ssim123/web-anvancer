@@ -127,7 +127,7 @@ async function api(req,res,path,method) {
   // Public vacancies: only HORENOVA-approved requests, never recruiter identity/contact fields.
   if(path==='/api/jobs/public' && method==='GET'){
     const approved=await pool.query(
-      "SELECT r.id,r.business_name,r.business_type,r.workplace_address,r.job_title,r.job_role,r.city,r.kind,r.contract_type,r.requirements,r.openings,r.start_date,r.salary_text,r.schedule_text,r.description,r.created_at,EXISTS(SELECT 1 FROM hr_workplace_photos p WHERE p.recruiter_wix_id=r.recruiter_wix_id) AS has_photo FROM hr_recruiter_requests r WHERE r.status='VALIDEE' ORDER BY r.created_at DESC LIMIT 200"
+      "SELECT r.id,r.business_name,r.business_type,r.workplace_address,r.job_title,r.job_role,r.city,r.kind,r.contract_type,r.requirements,r.openings,r.start_date,r.salary_text,r.schedule_text,r.description,r.created_at,EXISTS(SELECT 1 FROM hr_job_photos p WHERE p.request_id=r.id) AS has_photo FROM hr_recruiter_requests r WHERE r.status='VALIDEE' ORDER BY r.created_at DESC LIMIT 200"
     );
     // Defense in depth: employer contact details are never meant to appear on public offers.
     // The admin must still manually review each title and description before approval.
@@ -153,7 +153,7 @@ async function api(req,res,path,method) {
   if(publicWorkplace && method==='GET'){
     if(!uuid(publicWorkplace[1]))throw error(400,'Identifiant d’annonce invalide.');
     const response=await pool.query(
-      "SELECT p.image FROM hr_workplace_photos p JOIN hr_recruiter_requests r ON r.recruiter_wix_id=p.recruiter_wix_id WHERE r.id=$1 AND r.status='VALIDEE' LIMIT 1",
+      "SELECT p.image FROM hr_job_photos p JOIN hr_recruiter_requests r ON r.id=p.request_id WHERE r.id=$1 AND r.status='VALIDEE' LIMIT 1",
       [publicWorkplace[1]]
     );
     if(!response.rows[0])throw error(404,'Aucune photo validée pour cette annonce.');
@@ -233,7 +233,7 @@ async function api(req,res,path,method) {
     requireRole(user,['admin','recruiter']);
     if(!uuid(securedWorkplace[1]))throw error(400,'Identifiant de demande invalide.');
     const rows=await pool.query(
-      'SELECT p.image FROM hr_workplace_photos p JOIN hr_recruiter_requests r ON r.recruiter_wix_id=p.recruiter_wix_id WHERE r.id=$1 AND ($2::text=$3::text OR r.recruiter_wix_id=$2) LIMIT 1',
+      'SELECT p.image FROM hr_job_photos p JOIN hr_recruiter_requests r ON r.id=p.request_id WHERE r.id=$1 AND ($2::text=$3::text OR r.recruiter_wix_id=$2) LIMIT 1',
       [securedWorkplace[1],user.id,ADMIN_WIX_ID]
     );
     if(!rows.rows[0])throw error(404,'Photo du lieu de travail absente.');
@@ -247,10 +247,17 @@ async function api(req,res,path,method) {
     const title=limit(d.jobTitle || d.title,120), business=limit(d.businessName,120);
     if(title.length<4 || business.length<2) throw error(422,'Titre et établissement obligatoires.');
     const wixRequestId=limit(d.wixRequestId,100);
+    const savePhotoForRequest=async requestId=>{
+      await pool.query(
+        'INSERT INTO hr_job_photos(request_id,mime,image) SELECT $1,mime,image FROM hr_workplace_photos WHERE recruiter_wix_id=$2 ON CONFLICT(request_id) DO NOTHING',
+        [requestId,user.id]
+      );
+    };
+
     // Retry after a partial Wix success must not create a duplicate central request.
     if(wixRequestId){
       const existing=await pool.query('SELECT id FROM hr_recruiter_requests WHERE recruiter_wix_id=$1 AND wix_request_id=$2 ORDER BY created_at DESC LIMIT 1',[user.id,wixRequestId]);
-      if(existing.rows[0])return json(res,200,{id:existing.rows[0].id,ok:true,alreadyRecorded:true});
+      if(existing.rows[0]){await savePhotoForRequest(existing.rows[0].id);return json(res,200,{id:existing.rows[0].id,ok:true,alreadyRecorded:true});}
     }
     rate(user.id+':requests',10,3600);
     const photo=await pool.query('SELECT 1 FROM hr_workplace_photos WHERE recruiter_wix_id=$1 LIMIT 1',[user.id]);
@@ -269,17 +276,18 @@ async function api(req,res,path,method) {
     }catch(e){
       if(e.code==='23505' && wixRequestId){
         const previous=await pool.query('SELECT id FROM hr_recruiter_requests WHERE recruiter_wix_id=$1 AND wix_request_id=$2 LIMIT 1',[user.id,wixRequestId]);
-        if(previous.rows[0])return json(res,200,{id:previous.rows[0].id,ok:true,alreadyRecorded:true});
+        if(previous.rows[0]){await savePhotoForRequest(previous.rows[0].id);return json(res,200,{id:previous.rows[0].id,ok:true,alreadyRecorded:true});}
       }
       throw e;
     }
+    await savePhotoForRequest(q.rows[0].id);
     return json(res,201,{id:q.rows[0].id,ok:true});
   }
   if(path==='/api/recruiter-requests' && method==='GET') {
     requireRole(user,['recruiter','admin']);
     const q=user.role==='admin' ?
-      await pool.query('SELECT r.*, EXISTS(SELECT 1 FROM hr_workplace_photos p WHERE p.recruiter_wix_id=r.recruiter_wix_id) AS has_workplace_photo FROM hr_recruiter_requests r ORDER BY r.created_at DESC LIMIT 150') :
-      await pool.query('SELECT r.*, EXISTS(SELECT 1 FROM hr_workplace_photos p WHERE p.recruiter_wix_id=r.recruiter_wix_id) AS has_workplace_photo FROM hr_recruiter_requests r WHERE r.recruiter_wix_id=$1 ORDER BY r.created_at DESC LIMIT 150',[user.id]);
+      await pool.query('SELECT r.*, EXISTS(SELECT 1 FROM hr_job_photos p WHERE p.request_id=r.id) AS has_workplace_photo FROM hr_recruiter_requests r ORDER BY r.created_at DESC LIMIT 150') :
+      await pool.query('SELECT r.*, EXISTS(SELECT 1 FROM hr_job_photos p WHERE p.request_id=r.id) AS has_workplace_photo FROM hr_recruiter_requests r WHERE r.recruiter_wix_id=$1 ORDER BY r.created_at DESC LIMIT 150',[user.id]);
     return json(res,200,{items:q.rows});
   }
   // Only the verified HORENOVA administrator can moderate employer requests.
