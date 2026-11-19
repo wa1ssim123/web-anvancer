@@ -13,7 +13,7 @@ const db={
     job_title:'Serveur test@example.com',job_role:'Serveur',city:'Casablanca',
     kind:'job',salary_text:'5500 DH',schedule_text:'09:00-17:00',
     description:'Contact +212612345678 (must be redacted)',status:'A_EXAMINER'}],
-  applications:[],messages:[],audits:[],photos:[{candidate_wix_id:'cand-id',recruiter_wix_id:'rec-id'}]
+  applications:[],messages:[],audits:[],photos:[{candidate_wix_id:'cand-id',recruiter_wix_id:'rec-id'}],snapshots:[{request_id:requestId}]
 };
 const pg={Pool:class{
   async query(statement,params=[]){
@@ -21,13 +21,17 @@ const pg={Pool:class{
     if(sql.startsWith('SELECT 1 AS ok'))return {rows:[{ok:1}]};
     if(sql.includes('FROM hr_recruiter_requests r WHERE r.status=\'VALIDEE\''))
       return {rows:db.requests.filter(row=>row.status==='VALIDEE').map(row=>({...row,has_photo:true}))};
-    if(sql.includes('SELECT p.image FROM hr_workplace_photos p JOIN hr_recruiter_requests r')){
+    if(sql.includes('SELECT p.image FROM hr_job_photos p JOIN hr_recruiter_requests r')){
       const req=db.requests.find(x=>x.id===params[0]);
-      if(!req||!db.photos.some(x=>x.recruiter_wix_id===req.recruiter_wix_id)||(
+      if(!req||!db.snapshots.some(x=>x.request_id===req.id)||(
         sql.includes("r.status='VALIDEE'")&&req.status!=='VALIDEE'))return {rows:[]};
       return {rows:[{image:Buffer.from([0xff,0xd8,0xff,0xd9])}]};
     }
     if(sql.includes('INSERT INTO hr_workplace_photos(')||sql.includes('INSERT INTO hr_candidate_photos('))return {rows:[]};
+    if(sql.includes('INSERT INTO hr_job_photos(')){
+      if(!db.snapshots.some(x=>x.request_id===params[0]))db.snapshots.push({request_id:params[0]});
+      return {rows:[]};
+    }
     if(sql.includes('SELECT 1 FROM hr_candidate_photos WHERE candidate_wix_id=$1'))return {rows:db.photos.filter(x=>x.candidate_wix_id===params[0]).map(()=>({exists:1}))};
     if(sql.includes('SELECT 1 FROM hr_workplace_photos WHERE recruiter_wix_id=$1'))return {rows:db.photos.filter(x=>x.recruiter_wix_id===params[0]).map(()=>({exists:1}))};
     if(sql.includes('SELECT id,job_title,job_role FROM hr_recruiter_requests'))
