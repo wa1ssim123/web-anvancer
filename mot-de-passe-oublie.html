@@ -39,7 +39,7 @@ form.addEventListener('submit',async event=>{
   status.dataset.error='false';
   try{
     await wixRequest('/_api/iam/recovery/v1/send-email',{
-      body:{email:form.elements.email.value.trim(),language:'fr',redirect:{url:'https://horenova.com/enter.html?mode=signin',clientId:'66235a46-9a81-4c6e-869b-bdb973ca1588'}}
+      body:{email:form.elements.email.value.trim(),language:'fr',redirect:{url:'https://horenova.com/enter.html?mode=signin',clientId:'21d8c848-48f9-48ac-95d3-4d93cfb9d8b2'}}
     });
     status.textContent="Si un compte correspond à cette adresse, un e-mail de récupération sera envoyé. Vérifiez aussi les courriers indésirables. Le lien doit ouvrir la page sécurisée de Wix pour définir le mot de passe, puis revenir sur HORENOVA. Si le lien ne présente aucun formulaire, contactez l’équipe HORENOVA.";
     form.reset();
