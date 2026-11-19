@@ -96,16 +96,34 @@ photoInput.onchange=()=>{
 };
 async function optimizedPortrait(file){
  if(file.size>8*1024*1024)throw Error('Photo trop volumineuse : maximum 8 Mo.');
- const bitmap=await createImageBitmap(file);
- const canvas=document.createElement('canvas');canvas.width=500;canvas.height=500;
- const side=Math.min(bitmap.width,bitmap.height);
- canvas.getContext('2d').drawImage(bitmap,(bitmap.width-side)/2,(bitmap.height-side)/2,side,side,0,0,500,500);
- bitmap.close?.();
- let blob,quality=.8;
- do{blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',quality));quality-=.12;}
- while(blob?.size>430000&&quality>=.3);
- if(!blob||blob.size>450000)throw Error('Impossible de réduire la photo. Choisissez une autre image.');
- return blob;
+ let source=null,objectUrl='';
+ try{
+   if(typeof createImageBitmap==='function'){
+     try{source=await createImageBitmap(file);}catch{}
+   }
+   if(!source){
+     objectUrl=URL.createObjectURL(file);
+     source=await new Promise((resolve,reject)=>{
+       const image=new Image();
+       image.onload=()=>resolve(image);
+       image.onerror=()=>reject(new Error('Photo non prise en charge. Choisissez un JPEG ou PNG.'));
+       image.src=objectUrl;
+     });
+   }
+   const canvas=document.createElement('canvas');canvas.width=500;canvas.height=500;
+   const width=source.width||source.naturalWidth,height=source.height||source.naturalHeight;
+   if(!width||!height)throw new Error('Dimensions de photo invalides.');
+   const side=Math.min(width,height);
+   canvas.getContext('2d').drawImage(source,(width-side)/2,(height-side)/2,side,side,0,0,500,500);
+   let blob,quality=.8;
+   do{blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',quality));quality-=.12;}
+   while(blob?.size>430000&&quality>=.3);
+   if(!blob||blob.size>450000)throw new Error('Impossible de réduire la photo. Choisissez une autre image.');
+   return blob;
+ }finally{
+   if(source&&typeof source.close==='function')source.close();
+   if(objectUrl)URL.revokeObjectURL(objectUrl);
+ }
 }
 form.addEventListener('submit',async event=>{
  event.preventDefault();
