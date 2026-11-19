@@ -1,6 +1,6 @@
 import {requireRole} from '/mihna-global.js';
 import {queryItems,insertItem} from '/js/wix/items.js';
-import {hub,hubPhoto,hubUploadPhoto} from '/hn-api.js';
+import {hub,hubPhoto,hubUploadPhoto} from '/hn-api.js?v=professional-20261119-r1';
 const auth=await requireRole(['candidate']);
 if(!auth)throw Error('Espace candidat uniquement');
 const q=new URLSearchParams(location.search);
