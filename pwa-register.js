@@ -37,7 +37,7 @@
  */
 (function(){
   'use strict';
-  const BUILD='2026.11.20.support-r2';
+  const BUILD='2026.11.20.mobile-r1';
   const RECHECK_MS=90000;
   let running=false;
   function addLauncher(){
