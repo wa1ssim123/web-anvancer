@@ -1,0 +1,57 @@
+/* HORENOVA · accessibilité quiz, tableau recruteur et annuaire professionnel */
+/* Les couleurs du quiz privilégient un contraste fort, même sur écrans à faible luminosité. */
+body[data-hn12="quiz"] .quiz-exam{background:#f3f0e9!important;color:#18242b!important;border-radius:28px;padding:clamp(22px,4.3vw,58px)!important;max-width:1160px;margin:30px auto 68px}
+body[data-hn12="quiz"] .quiz-exam-head h1,body[data-hn12="quiz"] .quiz-exam-head em,body[data-hn12="quiz"] .quiz-exam-head p,body[data-hn12="quiz"] .quiz-exam-head span{color:#17252e!important;text-shadow:none!important;opacity:1!important}
+body[data-hn12="quiz"] .quiz-question-list{display:grid;gap:16px}
+body[data-hn12="quiz"] .quiz-question-list fieldset{border:1px solid #ccd4ce!important;background:#fff!important;border-radius:20px;padding:22px!important;min-width:0;box-shadow:0 8px 22px #172c2b12;color:#142830!important}
+body[data-hn12="quiz"] .quiz-question-list legend{display:block!important;padding:8px 12px!important;font-weight:850!important;line-height:1.48!important;font-size:clamp(15px,1.6vw,19px)!important;color:#15262e!important;white-space:normal}
+body[data-hn12="quiz"] .quiz-question-list legend b{color:#bd4c21!important;margin-right:12px;font-size:18px!important}
+body[data-hn12="quiz"] .quiz-question-list fieldset label{display:flex!important;align-items:center!important;gap:13px!important;margin:10px 0!important;padding:15px!important;border:1px solid #bfc9c6!important;border-radius:13px!important;background:#f7f9f8!important;color:#1a303a!important;opacity:1!important;cursor:pointer;font-weight:650!important;transition:background .18s,border-color .18s,box-shadow .18s}
+body[data-hn12="quiz"] .quiz-question-list fieldset label span{color:#172e38!important;opacity:1!important;font-size:clamp(14px,1.4vw,16px)!important;line-height:1.5!important}
+body[data-hn12="quiz"] .quiz-question-list fieldset input[type=radio]{accent-color:#c2582a;flex:none;width:20px;height:20px;opacity:1!important}
+body[data-hn12="quiz"] .quiz-question-list fieldset label:has(input:checked){border:2px solid #aa471a!important;background:#fff0e7!important;box-shadow:0 0 0 3px #e9b59a50}
+body[data-hn12="quiz"] .quiz-question-list fieldset label:focus-within{outline:3px solid #a94718;outline-offset:2px}
+body[data-hn12="quiz"] .quiz-question-list>button[type=submit]{font-size:16px!important;min-height:52px!important;background:#b54c1f!important;color:white!important}
+body[data-hn12="quiz"] .quiz-result{border-radius:20px;background:#fff;color:#132d32;padding:26px;border:1px solid #aec6bc}
+body[data-hn12="quiz"] .quiz-result h2,body[data-hn12="quiz"] .quiz-result p{color:#132d32!important}
+.hn-rec-command{position:relative;background:linear-gradient(118deg,#0c1d27,#1c3e3f 74%,#314d40);color:#fff!important;border:1px solid #bfe5df35;border-radius:26px;padding:clamp(22px,3.5vw,39px);margin:0 0 24px;box-shadow:0 25px 52px #11292922;overflow:hidden}
+.hn-rec-command::after{content:'';position:absolute;width:270px;height:270px;border:1px solid #ffffff22;border-radius:50%;right:-70px;top:-125px;pointer-events:none}
+.hn-rec-command h2{color:#fff!important;font:500 clamp(29px,3.6vw,44px)/1.08 Georgia,serif;max-width:680px;margin:12px 0}
+.hn-rec-command p{max-width:660px;color:#c5d7d1!important;font-size:14px;line-height:1.65}
+.hn-rec-command .hn-rec-eyebrow{color:#ffd39e;font-size:11px;font-weight:900;letter-spacing:.15em}
+.hn-rec-command .hn-rec-head{display:flex;flex-wrap:wrap;gap:24px;align-items:center;justify-content:space-between}
+.hn-rec-command .hn-rec-create{background:#f7b47b;color:#172a30;border-radius:12px;display:inline-flex;padding:13px 17px;text-decoration:none;font-weight:850;white-space:nowrap;position:relative;z-index:1}
+.hn-rec-command .hn-rec-create:hover{background:#ffcd9e}
+.hn-rec-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:26px}
+.hn-rec-kpi{padding:18px;border-radius:17px;border:1px solid #ffffff37;background:#ffffff13;display:flex;flex-direction:column;gap:5px}
+.hn-rec-kpi span{font-size:12px;color:#d6e2de}.hn-rec-kpi strong{color:#fff;font:700 clamp(24px,3.4vw,37px)/1.1 system-ui}
+.hn-rec-board{margin:0 0 25px;padding:21px;background:#fff;border:1px solid #dfe3db;border-radius:21px;box-shadow:0 12px 35px #122f2e11}
+.hn-rec-board .hn-rec-board-head{display:flex;gap:15px;justify-content:space-between;align-items:center;flex-wrap:wrap}
+.hn-rec-board h3{margin:0 0 6px;color:#19343b;font-size:24px}.hn-rec-board p{font-size:13px;color:#4c6666;margin:0}
+.hn-rec-tabs{display:flex;gap:9px;flex-wrap:wrap;margin:19px 0 20px}
+.hn-rec-tabs button{border-radius:12px;padding:12px 16px;border:1px solid #cdd8d3;background:#f7faf8;color:#243e42;font:750 13px system-ui;cursor:pointer}
+.hn-rec-tabs button[aria-selected=true]{background:#12393b;border-color:#12393b;color:#fff}
+.hn-rec-board .jobs-grid-page{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:13px}
+.hn-rec-board .job-card-page{border:1px solid #dae3df;box-shadow:0 6px 18px #173a2c0c;min-width:0}
+.hn-rec-board .job-card-page[hidden]{display:none!important}
+.hn-rec-status{display:inline-block;margin:12px 0;padding:6px 11px;border-radius:10px;font-size:11px!important;font-weight:800!important;color:#274440;background:#e8f5ee}
+.hn-rec-status.pending{background:#fff3de;color:#885019}.hn-rec-status.rejected{background:#fff0ed;color:#933d38}.hn-rec-status.issue{background:#ffebeb;color:#ab2222}
+.hn-rec-card-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}.hn-rec-card-actions a,.hn-rec-card-actions button{font:800 12px system-ui;border:1px solid #b7d2c4;border-radius:9px;color:#16433a;background:#f1faf3;padding:9px 11px;cursor:pointer;text-decoration:none}
+.hn-rec-empty{padding:20px;text-align:center;color:#617673;font-size:14px}
+.hn-rec-helper{margin:0 0 22px;padding:16px 21px;background:#fff9ee;border:1px solid #f2ddac;color:#594522;border-radius:15px}
+.hn-talent-professional{border:1px solid #e3e7df!important;border-radius:20px!important;overflow:hidden!important;box-shadow:0 13px 36px #192c2b12}
+.hn-talent-visual{height:198px;background:linear-gradient(130deg,#163b3e 10%,#306a5b 65%,#d5af80);display:flex;align-items:center;justify-content:center;position:relative;color:#fff}
+.hn-talent-visual:before{content:'';width:200px;height:200px;border:1px solid #ffffff45;border-radius:50%;position:absolute;transform:translate(80px,-65px)}
+.hn-talent-visual b{font:500 74px Georgia,serif;letter-spacing:-.08em;color:#fff;text-shadow:0 3px 15px #102a3066}
+.hn-talent-visual small{position:absolute;bottom:12px;left:18px;color:#f6eee1;background:#203c39b3;border-radius:9px;padding:7px 11px;font-size:11px;letter-spacing:.04em}
+.hn-talent-professional .talent-card-body h3{font:600 clamp(22px,2vw,29px) Georgia,serif;color:#153139}
+.hn-talent-languages{display:block;margin:14px 0 10px;color:#205b4b;font-size:12px;font-weight:800}
+.hn-talent-professional .talent-card-body p{min-height:44px;line-height:1.55}
+.hn-talent-detail-kicker{color:#305b50;font-weight:800}
+.hn-talent-detail-note{padding:14px 17px;border:1px solid #cadbd3;border-radius:13px;background:#eff7f2;color:#254d43!important}
+.hn-candidate-progress{border:1px solid #d9e6dc;background:#f5fbf6;border-radius:19px;padding:20px;grid-column:1/-1}
+.hn-candidate-progress h3{margin:7px 0 12px;color:#19383a;font-size:21px}.hn-candidate-progress p{font-size:13px;color:#42564c}
+.hn-candidate-progress ol{margin:0;padding-left:20px}.hn-candidate-progress li{margin:8px 0;color:#284439}
+.hn-candidate-progress a{font-weight:800;color:#a34619}
+@media(max-width:720px){.hn-rec-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.hn-rec-command{padding:20px}.hn-rec-command .hn-rec-head{align-items:flex-start}.hn-rec-board{padding:15px}.hn-rec-tabs button{flex:1 1 auto}body[data-hn12="quiz"] .quiz-exam{margin:12px!important;padding:15px!important}body[data-hn12="quiz"] .quiz-question-list fieldset{padding:13px!important}}
+@media(prefers-reduced-motion:reduce){.hn-rec-command .hn-rec-create,body[data-hn12="quiz"] .quiz-question-list fieldset label{transition:none}}
