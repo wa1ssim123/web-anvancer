@@ -150,6 +150,10 @@ async function run(){
     assert.ok(nonOverlapping(layout.brandText,layout.language),'Language overlaps wordmark at '+width+': '+JSON.stringify(layout));
     assert.ok(layout.brand.width>=110,'Brand squeezed at '+width+': '+JSON.stringify(layout));
     if(width<=700)assert.ok(layout.cta.y>=layout.brand.bottom-1,'CTA must have separate mobile row at '+width);
+    if(layout.scrollWidth>layout.innerWidth+2){
+      const offenders=await page.evaluate(()=>[...document.querySelectorAll('body *')].map(el=>({tag:el.tagName,classes:typeof el.className==='string'?el.className.slice(0,90):'',width:Math.round(el.getBoundingClientRect().width),right:Math.round(el.getBoundingClientRect().right)})).filter(x=>x.right>innerWidth+2).sort((a,b)=>b.right-a.right).slice(0,12));
+      console.error('OVERFLOW_DIAGNOSTICS '+width+': '+JSON.stringify(offenders));
+    }
     assert.ok(layout.scrollWidth<=layout.innerWidth+2,'Page overflow at '+width+': '+JSON.stringify(layout));
     const media=await page.locator('.hn-intro-film video, .hn-cinema-strip video, .hn-academy-film video').evaluateAll(vs=>vs.map(v=>({controls:v.controls,muted:v.muted,loop:v.loop,inline:v.playsInline,autoplay:v.autoplay})));
     assert.ok(media.length>=4,'Expected cinematic video surfaces');
@@ -239,7 +243,7 @@ async function run(){
     await page.goto(base+'/',{waitUntil:'domcontentloaded',timeout:20000});
     await page.waitForFunction(()=>document.querySelector('.hn-intro')?.classList.contains('open'),null,{timeout:6000});
     await page.waitForFunction(()=>document.querySelector('.hn-intro-film.hn-ios-loop-active')&&document.querySelectorAll('.hn-intro-film video').length===1,null,{timeout:6000});
-    await page.locator('.hn-ios-enable-hd').waitFor({state:'visible',timeout:5500});
+    assert.equal(await page.locator('.hn-ios-enable-hd').count(),0,'Old HD unlock overlay must remain removed');
     const image=page.locator('.hn-ios-motion');
     await image.waitFor({state:'attached',timeout:5000});
     await page.waitForFunction(()=>document.querySelector('.hn-ios-motion')?.complete,null,{timeout:9000});
@@ -318,39 +322,31 @@ async function run(){
     console.error('FAIL Safari HD native playback: '+e.message.slice(0,450));
    }finally{await context.close();}
   }
-  // Safari Low Power Mode recovery: one user tap unlocks native HD playback.
+  // The intended Low Power Mode recovery is a crisp full-HD still photo.
+  // The obsolete HD activation button is intentionally not part of the UI.
   {
    const context=await browser.newContext({
     viewport:{width:390,height:844},isMobile:true,hasTouch:true,serviceWorkers:'block',
     userAgent:'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1'
    });
    await context.addInitScript(()=>{
-    const proto=HTMLMediaElement.prototype;
-    Object.defineProperty(proto,'paused',{configurable:true,get(){return this.__qaPaused!==false}});
-    Object.defineProperty(proto,'readyState',{configurable:true,get(){return 4}});
-    proto.play=function(){
-      if(!this.__qaAllowed)return Promise.reject(new DOMException('Battery saver autoplay denied','NotAllowedError'));
-      this.__qaPaused=false;
-      this.dispatchEvent(new Event('playing'));
-      return Promise.resolve();
-    };
-    proto.pause=function(){this.__qaPaused=true;this.dispatchEvent(new Event('pause'))};
+    HTMLMediaElement.prototype.play=function(){return Promise.reject(new DOMException('Battery saver autoplay denied','NotAllowedError'));};
    });
    const page=await context.newPage();
    try{
     await page.goto(base+'/',{waitUntil:'domcontentloaded',timeout:20000});
-    await page.locator('.hn-ios-enable-hd').waitFor({state:'visible',timeout:7000});
-    await page.evaluate(()=>{document.querySelector('.hn-ios-native-premium').__qaAllowed=true;});
-    // The button removes itself as soon as HD playback starts. Dispatch its
-    // click directly to avoid Playwright retrying an already-detached element.
-    await page.locator('.hn-ios-enable-hd').evaluate(el=>el.click());
-    await page.locator('.hn-ios-native-premium.is-playing-hq').waitFor({timeout:5000});
-    assert.equal(await page.locator('.hn-ios-enable-hd').count(),0,'HD unlock button must disappear when movie plays');
-    console.log('PASS Safari battery saver: user tap unlocks HD H264 and removes activation control');
-   }catch(e){
-    failures.push('Safari HD unlock: '+e.message.slice(0,520));
-    console.error('FAIL Safari HD unlock: '+e.message.slice(0,430));
-   }finally{await context.close();}
+    await page.locator('.hn-intro-film.hn-ios-loop-active').waitFor({timeout:7000});
+    assert.equal(await page.locator('.hn-ios-enable-hd').count(),0,'Deprecated HD activation must not return');
+    const image=page.locator('.hn-ios-motion');
+    await image.waitFor({state:'attached',timeout:5000});
+    await page.waitForFunction(()=>document.querySelector('.hn-ios-motion')?.complete,null,{timeout:9000});
+    const state=await image.evaluate(el=>({width:el.naturalWidth,visible:getComputedStyle(el).display!=='none'}));
+    assert.ok(state.width>=1080&&state.visible,'HD still photo missing '+JSON.stringify(state));
+    await page.locator('.hn-intro-inner>button').first().click();
+    await page.waitForFunction(()=>document.querySelector('.hn-intro')?.classList.contains('gone'),null,{timeout:3000});
+    console.log('PASS Safari battery saver: crisp HD still and Enter without outdated playback controls');
+   }catch(e){failures.push('Safari HD fallback: '+e.message.slice(0,520));console.error('FAIL Safari HD fallback: '+e.message.slice(0,430));}
+   finally{await context.close();}
   }
   // Real Chromium navigation for the two account screens. No test accounts are created.
   for(const startingMode of ['signin','signup']){
