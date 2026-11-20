@@ -133,7 +133,7 @@ if(form){
   if(!hasPhoto&&!file){err.textContent='Choisissez une photo pour continuer.';return;}
   const fd=new FormData(form);
   const phone=String(fd.get('phone')||'').trim();
-  if(!/^\\+?[0-9\\s().-]{8,25}$/.test(phone)){err.textContent='Indiquez un téléphone valide.';return;}
+  if(!/^\+?[0-9\s().-]{8,25}$/.test(phone)){err.textContent='Indiquez un téléphone valide.';return;}
   const application={
    firstName:String(fd.get('firstName')||'').trim(),
    lastName:String(fd.get('lastName')||'').trim(),
