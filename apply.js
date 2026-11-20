@@ -1,5 +1,5 @@
 /* HORENOVA — simplified application flow, single form, no quiz or video gate. */
-import {requireRole} from '/mihna-global.js';
+import {requireRole,currentLang} from '/mihna-global.js';
 import {queryItems} from '/js/wix/items.js';
 import {hub,hubPhoto,hubUploadPhoto} from '/hn-api.js?v=candidate-easy-20261120-r1';
 const auth=await requireRole(['candidate']);
@@ -171,7 +171,7 @@ if(form){
   try{
    if(file){button.textContent='Enregistrement de la photo…';await hubUploadPhoto(await optimizedPortrait(file));hasPhoto=true;}
    button.textContent='Enregistrement de votre candidature…';
-   const result=await hub('/api/applications',{method:'POST',body:{jobId,consentToIntro:true,application}});
+   const result=await hub('/api/applications',{method:'POST',body:{jobId,consentToIntro:true,locale:currentLang(),application}});
    const caseId=result?.item?.id;
    if(!caseId)throw Error('HORENOVA n’a pas confirmé l’enregistrement du dossier.');
    box.innerHTML='<div class="hn-easy-success" role="status"><b>✓</b><h2>'+(result.alreadyApplied?'Candidature déjà enregistrée !':'Votre candidature est envoyée !')+'</h2>'+
