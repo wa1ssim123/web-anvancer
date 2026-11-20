@@ -3,30 +3,20 @@
 // SQL is parameterised, authorization checked on every conversation.
 const crypto=require('node:crypto');
 function createSupportHandler({pool,json,read,rate,auth,error,limit,uuid}) {
+ // Support schema is provisioned by the database owner. The Render API
+ // role deliberately has no CREATE permission; avoid breaking live support.
  let schemaPromise=null;
  async function ensureSchema(){
-  if(!schemaPromise) {
-   schemaPromise=(async()=>{
-    await pool.query(`CREATE TABLE IF NOT EXISTS hr_support_threads (
-      id UUID PRIMARY KEY, member_wix_id TEXT NOT NULL, member_email TEXT NOT NULL DEFAULT '',
-      member_role TEXT NOT NULL, subject TEXT NOT NULL, category TEXT NOT NULL,
-      status TEXT NOT NULL DEFAULT 'OPEN',
-      last_message_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-      member_last_read_at TIMESTAMPTZ,
-      admin_last_read_at TIMESTAMPTZ,
-      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(), updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-    )`);
-    await pool.query(`CREATE TABLE IF NOT EXISTS hr_support_messages (
-      id UUID PRIMARY KEY, thread_id UUID NOT NULL REFERENCES hr_support_threads(id) ON DELETE CASCADE,
-      sender_wix_id TEXT NOT NULL, sender_role TEXT NOT NULL, body TEXT NOT NULL,
-      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-    )`);
-    await pool.query(`CREATE TABLE IF NOT EXISTS hr_support_presence (
-      admin_wix_id TEXT PRIMARY KEY, last_seen_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-    )`);
-    await pool.query('CREATE INDEX IF NOT EXISTS hr_support_member_idx ON hr_support_threads(member_wix_id,last_message_at DESC)');
-    await pool.query('CREATE INDEX IF NOT EXISTS hr_support_messages_idx ON hr_support_messages(thread_id,created_at ASC)');
-   })().catch(e=>{schemaPromise=null;console.error('support schema unavailable',e.code||e.message);throw error(503,'Support temporairement indisponible. Appelez le 0648377009.');});
+  if(!schemaPromise){
+   schemaPromise=Promise.all([
+    pool.query('SELECT 1 FROM hr_support_threads LIMIT 0'),
+    pool.query('SELECT 1 FROM hr_support_messages LIMIT 0'),
+    pool.query('SELECT 1 FROM hr_support_presence LIMIT 0')
+   ]).then(()=>true).catch(e=>{
+    schemaPromise=null;
+    console.warn('HORENOVA support database check failed',e.code||e.name||'error');
+    throw error(503,'Impossible de charger vos conversations pour le moment. Réessayez ou appelez le 0648377009.');
+   });
   }
   return schemaPromise;
  }
