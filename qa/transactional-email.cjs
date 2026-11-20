@@ -44,7 +44,7 @@ class MockPool{
  constructor(){this.rows=new Map();this.sql=[];}
  async query(sql,params=[]){
   this.sql.push(sql);
-  if(/CREATE TABLE|CREATE INDEX/i.test(sql))return {rows:[]};
+  if(sql.includes('SELECT 1 FROM hr_email_outbox LIMIT 0'))return {rows:[]};
   if(sql.includes('INSERT INTO hr_email_outbox')){
    const [key,kind,to,locale,data]=params;
    if(this.rows.has(key))return {rows:[]};
