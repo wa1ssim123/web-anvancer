@@ -40,7 +40,7 @@ if(accountHero){
   if(roleHeroImage)roleHeroImage.src=page.image;
  }
 }
-badge.textContent=auth.role==='recruiter'?'COMPTE RECRUTEUR':auth.role==='admin'?'COMPTE ADMINISTRATEUR':'COMPTE CANDIDAT';
+badge.textContent=auth.role==='recruiter'?'COMPTE RECRUTEUR':auth.role==='admin'?'SUPERVISEUR NATIONAL':'COMPTE CANDIDAT';
 
 const card=(tag,title,desc,links)=>'<div class="dash-card"><span>'+esc(tag)+'</span><h3>'+esc(title)+'</h3><p>'+esc(desc)+'</p>'+links.map(x=>'<a href="'+esc(x[1])+'">'+esc(x[0])+' ↗</a>').join(' · ')+'</div>';
 const section=()=>'<p class="hub-muted">En cas de problème temporaire, actualisez la page. Aucune information personnelle n’est publiée dans l’annuaire.</p>';
