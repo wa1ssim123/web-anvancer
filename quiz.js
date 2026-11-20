@@ -63,7 +63,7 @@ const QUIZ_COPY={
  en:{title:'A clear quiz for your profession.',description:'Answer all five questions. Pass mark: 60%. Your result is saved for this profession.',answered:'answer(s) out of',submit:'Submit my answers',saving:'Saving result…',success:'Profession basics passed',retry:'More practice needed',successText:'Your profession quiz is saved. You can continue registration or apply for matching jobs.',retryText:'You can try again after some practice.',continue:'Continue',missing:'Answer all five questions.',error:'The result could not be confirmed.',retryLink:'Open Academy'},
  ar:{title:'اختبار واضح لمهنتك.',description:'أجب عن الأسئلة الخمسة. الحد الأدنى للنجاح 60٪. تُحفظ النتيجة لهذه المهنة.',answered:'إجابة من أصل',submit:'تأكيد إجاباتي',saving:'جارٍ حفظ النتيجة…',success:'تم اجتياز أساسيات المهنة',retry:'تحتاج إلى مزيد من التدريب',successText:'تم حفظ نتيجة اختبار مهنتك. يمكنك إتمام التسجيل أو الترشح للوظائف المناسبة.',retryText:'يمكنك المحاولة مجدداً بعد التدريب.',continue:'متابعة',missing:'أجب عن الأسئلة الخمسة.',error:'تعذر تأكيد حفظ النتيجة.',retryLink:'افتح الأكاديمية'}
 };
-const quizLang=['fr','en','ar'].includes(localStorage.getItem('mihna-lang'))?localStorage.getItem('mihna-lang'):'fr';
+let quizLang='fr';try{const selected=localStorage.getItem('mihna-lang');if(['fr','en','ar'].includes(selected))quizLang=selected;}catch{}
 const copy=QUIZ_COPY[quizLang];
 const sourceQuestions=BANK[role]||BANK.default;
 const translated=QUIZ_I18N[quizLang]?.[BANK[role]?role:'default'];
@@ -99,7 +99,7 @@ form.onsubmit=async event=>{
   const saved=await insertItem('QuizAttempts',{jobFamily:role,score,passed,answersJson:JSON.stringify(answers)});
   if(!saved?._id)throw Error(copy.error);
   const profile=(await queryItems('CandidateProfiles',{filters:[{field:'_owner',op:'eq',value:auth.member.id}],limit:1})).items[0];
-  if(profile)await patchItemFields('CandidateProfiles',profile._id,{quizScore:score,quizPassed:passed});
+  if(profile){try{await patchItemFields('CandidateProfiles',profile._id,{quizScore:score,quizPassed:passed});}catch(error){console.warn('Quiz attempt saved; optional profile score sync deferred.',error?.message||'cms');}}
   result.hidden=false;
   result.innerHTML='<span>'+(passed?'✓ '+copy.success:'↻ '+copy.retry)+'</span><h2>'+score+'%</h2><p>'+(passed?copy.successText:copy.retryText)+'</p>';
   if(passed){
