@@ -63,6 +63,7 @@ function harness(){
    if(name==='node:http')return {createServer(fn){handler=fn;return server;}};
    if(name==='node:crypto')return require(name);
    if(name==='pg')return {Pool};
+    if(name==='./support.cjs')return {createSupportHandler:()=>async()=>{throw Error('Support is tested separately.')}};
    throw Error('Unexpected require '+name);
   },
   fetch:fakeFetch,console,Buffer,URL,AbortSignal,
