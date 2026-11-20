@@ -1,5 +1,5 @@
 'use strict';
-/* HORENOVA home smoke: real DOM/CSS, public Shop + Academy links, Morocco/Canada story, FR/EN/AR. */
+/* HORENOVA home smoke: real DOM/CSS, Shop, Academy, Matching and brand story, FR/EN/AR. */
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const path=require('node:path');
@@ -12,6 +12,7 @@ const home=read('horenova-home.js');
 const css=read('horenova-home-story-20261120.css');
 assert.match(html,/class="hn-intro-shortcut hn-intro-shortcut-shop" href="\/shop.html"/);
 assert.match(html,/class="hn-intro-shortcut hn-intro-shortcut-academy" href="\/academy.html"/);
+assert.match(html,/class="hn-intro-shortcut hn-intro-shortcut-matching" href="\/matching-guide.html"/);
 assert.match(html,/id="notre-histoire"/);
 assert.match(css,/max-width:360px/);
 const store="export const getMemberState=()=>({loggedIn:false,member:null});export const subscribeMember=()=>()=>{};";
@@ -41,15 +42,17 @@ async function scenario(browser,lang,width,height){
  await page.waitForFunction(l=>document.documentElement.lang===l,lang);
  assert.equal(await page.locator('.hn-intro-shortcut-shop').getAttribute('href'),'/shop.html');
  assert.equal(await page.locator('.hn-intro-shortcut-academy').getAttribute('href'),'/academy.html');
- assert.equal(await page.locator('.hn-intro-shortcut').count(),2);
+ assert.equal(await page.locator('.hn-intro-shortcut-matching').getAttribute('href'),'/matching-guide.html');
+ assert.equal(await page.locator('.hn-intro-shortcut').count(),3);
  const translated={
-  fr:['POUR S’ÉQUIPER','POUR APPRENDRE','Deux horizons.'],
-  en:['TO EQUIP YOURSELF','TO LEARN','Two horizons.'],
-  ar:['للتجهيز','للتعلم','أفقان.']
+  fr:['POUR S’ÉQUIPER','POUR APPRENDRE','POUR TROUVER SA PLACE','Deux horizons.'],
+  en:['TO EQUIP YOURSELF','TO LEARN','FIND YOUR PLACE','Two horizons.'],
+  ar:['للتجهيز','للتعلم','لتجد مكانك المناسب','أفقان.']
  }[lang];
  const actual=await page.evaluate(()=>[
   document.querySelector('.hn-intro-shortcut-shop .hn-intro-shortcut-overline')?.textContent?.trim(),
   document.querySelector('.hn-intro-shortcut-academy .hn-intro-shortcut-overline')?.textContent?.trim(),
+  document.querySelector('.hn-intro-shortcut-matching .hn-intro-shortcut-overline')?.textContent?.trim(),
   document.querySelector('#hn-origin-title')?.firstChild?.textContent?.trim()
  ]);
  assert.deepEqual(actual,translated);
