@@ -66,6 +66,7 @@ function harness(){
    if(name==='node:crypto')return require(name);
    if(name==='pg')return {Pool};
     if(name==='./support.cjs')return {createSupportHandler:()=>async()=>{throw Error('Support is tested separately.')}};
+   if(name==='./transactional-mail.cjs')return {createTransactionalMailer:()=>({start:async()=>{},enqueue:async()=>({queued:true}),stats:async()=>({enabled:false,states:[]})})};
    throw Error('Unexpected require '+name);
   },
   fetch:fakeFetch,console,Buffer,URL,AbortSignal,
