@@ -361,7 +361,7 @@ async function api(req,res,path,method) {
     if(firstName.length<2||lastName.length<2)
       throw error(422,'Indiquez votre prénom et votre nom.');
     const phone=limit(form.phone,40);
-    if(!/^\\+?[0-9\\s().-]{8,25}$/.test(phone))
+    if(!/^\+?[0-9\s().-]{8,25}$/.test(phone))
       throw error(422,'Ajoutez un numéro de téléphone valide.');
     const desiredCity=limit(form.desiredCity,80);
     if(desiredCity.length<2)throw error(422,'Précisez votre ville.');
