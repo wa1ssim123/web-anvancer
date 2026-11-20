@@ -40,7 +40,7 @@
   'use strict';
   const BUILD='2026.11.20.candidate-v4';
   const CHECK_EVERY_MS=90000;
-  const SUPPORT_CSS='/support.css?v=20261120-fab-r3';
+  const SUPPORT_CSS='/support.css?v=support-direct-20261120-v1';
   const tr={
     fr:{button:'Assistance',heading:'Besoin d’aide ?',description:'Notre équipe HORENOVA vous accompagne.',chat:'Écrire au support',chatDetail:'Conversation privée',phone:'Appeler HORENOVA',phoneDetail:'06 48 37 70 09',update:'Nouvelle version HORENOVA disponible.',draft:'Enregistrez vos modifications avant de mettre à jour.',reload:'Mettre à jour'},
     en:{button:'Support',heading:'Need help?',description:'HORENOVA is here to assist you.',chat:'Chat with support',chatDetail:'Private conversation',phone:'Call HORENOVA',phoneDetail:'06 48 37 70 09',update:'A newer HORENOVA version is available.',draft:'Save your current changes before refreshing.',reload:'Update'},
@@ -90,37 +90,16 @@
     const root=document.createElement('div');
     root.className='hs-launcher hs-fab-v3';
     root.setAttribute('aria-label','HORENOVA · '+words.button);
-    const panel=document.createElement('section');
-    panel.className='hs-fab-panel';panel.id='hnSupportFabMenu';panel.hidden=true;
-    panel.setAttribute('aria-label',words.heading);
-    const head=document.createElement('div');head.className='hs-fab-head';
-    const intro=document.createElement('div');intro.className='hs-fab-intro';
-    const eyebrow=document.createElement('small');eyebrow.textContent='HORENOVA · SUPPORT';
-    const title=document.createElement('h2');title.textContent=words.heading;
-    const desc=document.createElement('p');desc.textContent=words.description;
-    intro.append(eyebrow,title,desc);head.append(intro);
-    const actions=document.createElement('div');actions.className='hs-fab-actions';
-    actions.append(makeAction('chat','/support.html',words.chat,words.chatDetail));
-    actions.append(makeAction('phone','tel:+212648377009',words.phone,words.phoneDetail));
-    panel.append(head,actions);
-    const button=document.createElement('button');button.className='hs-fab-trigger';
-    button.type='button';button.setAttribute('aria-controls',panel.id);
-    button.setAttribute('aria-expanded','false');
-    button.setAttribute('aria-label',words.button);
+    // Direct to the private support page, no popover or intermediate screen.
+    const link=document.createElement('a');
+    link.className='hs-fab-trigger hs-fab-direct';
+    link.href='/support.html';
+    link.setAttribute('aria-label',words.chat);
     const mark=document.createElement('span');mark.className='hs-fab-icon';mark.innerHTML=svg('chat');
-    const text=document.createElement('span');text.className='hs-fab-caption';text.textContent=words.button;
-    button.append(mark,text);
-    root.append(panel,button);document.body.append(root);
+    const caption=document.createElement('span');caption.className='hs-fab-caption';caption.textContent=words.button;
+    link.append(mark,caption);
+    root.append(link);document.body.append(root);
     launcher=root;placeLauncher();
-    function setOpen(open){
-      panel.hidden=!open;button.setAttribute('aria-expanded',String(open));
-      root.classList.toggle('hs-fab-open',open);
-      mark.innerHTML=svg(open?'close':'chat');
-      if(open){placeLauncher();panel.querySelector('a')?.focus({preventScroll:true});}
-    }
-    button.addEventListener('click',()=>setOpen(panel.hidden));
-    document.addEventListener('pointerdown',event=>{if(!panel.hidden&&!root.contains(event.target))setOpen(false);});
-    document.addEventListener('keydown',event=>{if(event.key==='Escape'&&!panel.hidden){setOpen(false);button.focus({preventScroll:true});}});
     window.addEventListener('resize',placeLauncher,{passive:true});
     window.addEventListener('orientationchange',placeLauncher,{passive:true});
     document.addEventListener('hn-dock-updated',placeLauncher);
