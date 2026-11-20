@@ -114,7 +114,10 @@ function present(a,user) {
     recruiterRequestId:a.recruiter_request_id
   };
 }
+const {createSupportHandler}=require('./support.cjs');
+const supportHandler=createSupportHandler({pool,json,read,rate,auth,error,limit,uuid});
 async function api(req,res,path,method) {
+  if(path.startsWith('/api/support/'))return supportHandler(req,res,path,method);
   if(path==='/health' && method==='GET'){
     const q=await pool.query('SELECT 1 AS ok');
     return json(res,200,{ok:q.rows[0].ok===1,service:'horenova-production-api'});
