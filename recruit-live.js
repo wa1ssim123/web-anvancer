@@ -288,7 +288,7 @@ form.addEventListener('submit',async event=>{
    pendingSync={data,id:record._id};
   }
   status.textContent='Transmission au suivi central HORENOVA…';
-  await hub('/api/recruiter-requests',{method:'POST',body:{
+  const submitted=await hub('/api/recruiter-requests',{method:'POST',body:{
    ...pendingSync.data,jobTitle:pendingSync.data.title,wixRequestId:pendingSync.id,locale:currentLang()
   }});
   pendingSync=null;
