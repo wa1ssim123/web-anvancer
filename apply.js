@@ -1,13 +1,28 @@
 import {requireRole} from '/mihna-global.js';
-import {queryItems,insertItem} from '/js/wix/items.js';
+import {queryItems,insertItem,getItemById} from '/js/wix/items.js';
 import {hub,hubPhoto,hubUploadPhoto} from '/hn-api.js?v=professional-20261119-r1';
 const auth=await requireRole(['candidate']);
 if(!auth)throw Error('Espace candidat uniquement');
 const q=new URLSearchParams(location.search);
-const jobId=q.get('id')||'',role=q.get('role')||'Serveur',title=q.get('title')||'Offre HORENOVA';
+const jobId=q.get('id')||'';
+let role=q.get('role')||'Serveur',title=q.get('title')||'Offre HORENOVA',verifiedJob=false;
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
 const box=document.getElementById('applyChecks'),job=document.getElementById('applyJob');
-job.innerHTML='<span>OFFRE À LAQUELLE VOUS POSTULEZ</span><h2>'+esc(title)+'</h2><p>'+esc(role)+' · Recrutement vérifié par HORENOVA</p>';
+if(jobId){
+ try{
+  const publicResponse=await hub('/api/jobs/public');
+  const match=(publicResponse.items||[]).find(item=>String(item.id)===jobId);
+  if(match){role=String(match.role||role);title=String(match.title||title);verifiedJob=true;}
+ }catch(error){console.warn('Central job verification deferred',error?.message||'network');}
+ if(!verifiedJob){
+  try{
+   const legacy=await getItemById('Jobs',jobId);
+   if(legacy?.active===true){role=String(legacy.role||role);title=String(legacy.title||title);verifiedJob=true;}
+  }catch(error){console.warn('Published Wix job verification deferred',error?.message||'network');}
+ }
+}
+job.innerHTML='<span>OFFRE À LAQUELLE VOUS POSTULEZ</span><h2>'+esc(title)+'</h2><p>'+esc(role)+' · '+(verifiedJob?'Annonce active et vérifiée':'Annonce non confirmée · retournez aux offres publiées')+'</p>';
+
 let profile=null,publicProfile=null,passed=false,score=0,hasPhoto=false;
 const errors=[];
 try{
@@ -34,12 +49,12 @@ document.getElementById('applyCandidateName').textContent=name||'Votre profil pr
 document.getElementById('applyCandidateMeta').textContent=[
  profile?.jobFamily||role,profile?.city||'',profile?.age?profile.age+' ans':''
 ].filter(Boolean).join(' · ')+' · Photo et coordonnées privées';
-const ready=!!(profile?.profileComplete&&profile?.videoFileId&&profile?.videoConsent&&passed&&jobId);
+const ready=!!(profile?.profileComplete&&profile?.videoFileId&&profile?.videoConsent&&passed&&jobId&&verifiedJob);
 const checks=[
  ['Profil candidat complet',!!profile?.profileComplete],
  ['Présentation vidéo privée',!!profile?.videoFileId&&!!profile?.videoConsent],
  ['Quiz métier '+role,passed],
- ['Offre sélectionnée',!!jobId]
+ ['Offre active et vérifiée',!!jobId&&verifiedJob]
 ];
 const checksHTML='<div class="hn-app-steps"><b>01 · PROFIL</b><b>02 · COMPÉTENCES</b><b>03 · PHOTO</b><b>04 · ENVOI</b></div>'+
 '<h3>Votre dossier est-il prêt ?</h3>'+
@@ -47,7 +62,7 @@ checks.map(([label,ok])=>'<div class="hn-app-check '+(ok?'':'is-bad')+'"><span>'
 (!profile?.profileComplete||!profile?.videoFileId?
  '<p><a href="/candidate-setup.html" class="hn-role-primary">Compléter mon profil et ma vidéo ↗</a></p>':
  !passed?'<p><a href="/quiz.html?role='+encodeURIComponent(role)+'&returnTo='+encodeURIComponent(location.pathname+location.search)+'" class="hn-role-primary">Passer mon quiz métier ↗</a></p>':
- !jobId?'<p><a href="/jobs.html" class="hn-role-primary">Choisir une offre ↗</a></p>':'');
+ !jobId||!verifiedJob?'<p><a href="/jobs.html" class="hn-role-primary">Choisir une offre publiée ↗</a></p>':'');
 const skillChoices=[
  'Accueil & service client','Service en salle','Hygiène & sécurité','Travail en équipe',
  'Barista & café','Cuisine & préparation','Mise en place','Caisse / POS',
@@ -129,7 +144,7 @@ form.addEventListener('submit',async event=>{
  event.preventDefault();
  const errorBox=document.getElementById('applyDossierError'),button=document.getElementById('applySubmit');
  errorBox.textContent='';
- if(!ready){errorBox.textContent='Profil, vidéo, quiz métier et offre obligatoires.';return;}
+ if(!ready){errorBox.textContent='Vérifiez votre profil, la vidéo, le quiz exact du métier et la publication réelle de l’offre.';return;}
  if(!form.reportValidity())return;
  const skills=[...form.querySelectorAll('input[name="skill"]:checked')].map(x=>x.value);
  if(!skills.length){errorBox.textContent='Choisissez au moins une compétence.';return;}
