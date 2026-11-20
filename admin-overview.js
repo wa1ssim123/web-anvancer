@@ -52,11 +52,13 @@ export async function mountAdminOverview(){
   stats.innerHTML='<p>Vérification des collections publiques et des annonces validées…</p>';
   const res=await Promise.allSettled([
    hub('/api/jobs/public'),hub('/api/recruiter-requests'),hub('/api/applications'),
-   countItems('CandidatePublicProfiles'),countItems('Jobs',[{field:'active',op:'eq',value:true}])
+   countItems('CandidatePublicProfiles'),countItems('Jobs',[{field:'active',op:'eq',value:true}]),
+   hub('/api/admin/email-status')
   ]);
   const get=(i,key)=>res[i].status==='fulfilled'?(key?res[i].value?.[key]:res[i].value):null;
   const publicJobs=get(0,'items'),requests=get(1,'items'),applications=get(2,'items');
-  const talents=get(3),cms=get(4);
+  const talents=get(3),cms=get(4),mail=get(5);
+  const mailTotal=state=>mail?.states?.find(row=>row.state===state)?.total||0;
   const live=Array.isArray(publicJobs)?publicJobs:null;
   const reqs=Array.isArray(requests)?requests:null;
   const files=Array.isArray(applications)?applications:null;
@@ -68,7 +70,10 @@ export async function mountAdminOverview(){
    stat('Talents publics','Profils anonymisés',talents)+
    stat('Demandes à examiner','Avant publication',reqs?pending.length:null)+
    stat('Candidatures','Dossiers confidentiels',files?files.length:null)+
-   stat('Autres offres CMS','Catalogue Wix actif',cms);
+   stat('Autres offres CMS','Catalogue Wix actif',cms)+
+   stat('E-mails de confirmation','Confirmés par le prestataire',mail?mailTotal('sent'):null)+
+   stat('E-mails en attente',mail?.enabled?'En attente de traitement':'Expéditeur non configuré',mail?mailTotal('queued')+mailTotal('sending'):null)+
+   stat('E-mails à vérifier','Tentatives d’envoi échouées',mail?mailTotal('failed'):null);
   const compare=live===null?'Impossible de vérifier le catalogue public : son état reste inconnu.':
    failed.length?'⚠ '+failed.length+' annonce(s) validée(s) introuvable(s) publiquement.':
    '✓ La vérification compare les demandes validées avec les offres réellement accessibles.';
