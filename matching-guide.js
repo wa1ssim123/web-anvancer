@@ -178,9 +178,9 @@
     "ar": "اكتشف الوظائف والمناوبات القصيرة."
   },
   "step3Text": {
-    "fr": "Consultez les offres d'emploi et les missions courtes. Repérez les annonces qui correspondent à votre métier, à votre ville et à vos disponibilités, puis ouvrez celle qui vous intéresse pour lire les détails.",
-    "en": "Browse job listings and short shifts. Look for openings that fit your role, city and availability, then open a listing to read its details.",
-    "ar": "تصفّح عروض العمل والمناوبات القصيرة، واختر ما يناسب مهنتك ومدينتك وأوقات تفرغك، ثم افتح الإعلان لقراءة تفاصيله."
+    "fr": "Consultez les offres d'emploi et les missions courtes. Repérez les annonces qui correspondent à votre métier, à votre ville et à vos disponibilités. Vous pouvez aussi explorer l'espace Matching pour voir les opportunités rapprochées de vos critères, puis ouvrir une annonce pour lire ses détails.",
+    "en": "Browse job listings and short shifts that suit your occupation, city and availability. You can also explore the Matching space to discover opportunities that fit your criteria, then open a listing for the full details.",
+    "ar": "تصفّح عروض العمل والمناوبات القصيرة التي تناسب مهنتك ومدينتك وأوقات تفرغك. ويمكنك أيضاً استكشاف مساحة المطابقة لاكتشاف الفرص الأقرب إلى اختياراتك، ثم فتح الإعلان لقراءة تفاصيله."
   },
   "step3Link1": {
     "fr": "Voir les offres",
@@ -351,6 +351,31 @@
     "fr": "Assistance",
     "en": "Support",
     "ar": "المساعدة"
+  },
+  "step3Link3": {
+    "fr": "Découvrir mes matchs",
+    "en": "Explore my matches",
+    "ar": "اكتشف الفرص المطابقة"
+  },
+  "artTitle": {
+    "fr": "LA RENCONTRE<br>HUMAINE.",
+    "en": "THE HUMAN<br>CONNECTION.",
+    "ar": "اللقاء<br>الإنساني."
+  },
+  "talentLabel": {
+    "fr": "TALENT",
+    "en": "TALENT",
+    "ar": "موهبة"
+  },
+  "missionLabel": {
+    "fr": "MISSION",
+    "en": "OPPORTUNITY",
+    "ar": "فرصة"
+  },
+  "headerNavLabel": {
+    "fr": "Navigation principale",
+    "en": "Main navigation",
+    "ar": "التنقل الرئيسي"
   }
 };
   const locales = new Set(['fr','en','ar']);
@@ -374,6 +399,10 @@
       const key = node.getAttribute('data-msg-html');
       // All markup comes from a static, internally defined dictionary.
       if (Object.hasOwn(messages, key)) node.innerHTML = messages[key][lang];
+    });
+    document.querySelectorAll('[data-msg-aria]').forEach(node => {
+      const key = node.getAttribute('data-msg-aria');
+      if (Object.hasOwn(messages, key)) node.setAttribute('aria-label', messages[key][lang]);
     });
     document.title = {
       fr: 'Comment fonctionne le matching ? | HORENOVA',
