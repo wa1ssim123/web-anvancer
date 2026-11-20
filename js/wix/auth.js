@@ -34,6 +34,26 @@ export const PROFILE_ON_SIGNUP = true;
 const REDIRECT_SESSION = "/headless/v1/redirect-session";
 /** The stateToken of a login/registration that stopped at email verification — verifyMemberEmail continues it. */
 let pendingStateToken = null;
+const PENDING_EMAIL_KEY='hn-wix-email-challenge-v2';
+// Wix sends a code tied to a temporary state token. Keep it only in this tab,
+// with a short expiration, so switching to a mail app won't restart registration.
+function rememberPendingEmail(stateToken){
+ try{
+  if(stateToken)sessionStorage.setItem(PENDING_EMAIL_KEY,JSON.stringify({token:stateToken,at:Date.now()}));
+  else sessionStorage.removeItem(PENDING_EMAIL_KEY);
+ }catch{}
+}
+function savedPendingEmail(){
+ if(pendingStateToken)return pendingStateToken;
+ try{
+  const raw=JSON.parse(sessionStorage.getItem(PENDING_EMAIL_KEY)||'null');
+  if(raw?.token&&Number.isFinite(raw.at)&&Date.now()-raw.at<15*60*1000){
+   pendingStateToken=raw.token;return pendingStateToken;
+  }
+  sessionStorage.removeItem(PENDING_EMAIL_KEY);
+ }catch{}
+ return null;
+}
 /** True when the persisted token set is a member's (no network) — the store skips the profile read when false. */
 export function loggedInHint() {
     return loadTokens()?.role === "member";
@@ -44,13 +64,16 @@ async function finish(raw) {
     const outcome = authOutcome(raw);
     if (outcome.state === "SUCCESS") {
         pendingStateToken = null;
+        rememberPendingEmail(null);
         if (!outcome.sessionToken)
             return failure(NO_SESSION_ERROR);
         setTokens(await memberTokensForSession(outcome.sessionToken));
         return { state: "SUCCESS" };
     }
-    if (outcome.stateToken)
-        pendingStateToken = outcome.stateToken;
+    if(outcome.stateToken){
+        pendingStateToken=outcome.stateToken;
+        rememberPendingEmail(outcome.stateToken);
+    }
     return toLoginResult(outcome);
 }
 const message = (e) => (e instanceof Error ? e.message : String(e));
@@ -93,8 +116,8 @@ export async function registerMember(email, password, profile, _options = {}) {
  * POST /_api/iam/verification/v1/auth/verify  { code, stateToken }  → { state, sessionToken?, stateToken? }
  */
 export async function verifyMemberEmail(verificationCode) {
-    if (!pendingStateToken)
-        return failure("No sign-in is waiting for a verification code.");
+    if (!savedPendingEmail())
+        return failure("Le code ne peut plus être vérifié dans cette session. Cliquez sur « Se connecter » avec le compte déjà créé pour recevoir un nouveau code. Ne recréez pas le compte.");
     let raw;
     try {
         raw = await wixRequest("/_api/iam/verification/v1/auth/verify", { body: { code: verificationCode, stateToken: pendingStateToken } });
