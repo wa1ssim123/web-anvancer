@@ -116,6 +116,16 @@ function present(a,user) {
 }
 const {createSupportHandler}=require('./support.cjs');
 const supportHandler=createSupportHandler({pool,json,read,rate,auth,error,limit,uuid});
+const {createTransactionalMailer}=require('./transactional-mail.cjs');
+const mailer=createTransactionalMailer({pool});
+const queueReceipt=async event=>{
+  try { return await mailer.enqueue(event); }
+  catch(e){
+    // Never make a successful business event look like a failed submission.
+    console.warn('HORENOVA email queue temporarily unavailable',e.code||e.name||'error');
+    return {queued:false};
+  }
+};
 async function api(req,res,path,method) {
   if(path.startsWith('/api/support/'))return supportHandler(req,res,path,method);
   if(path==='/health' && method==='GET'){
@@ -167,6 +177,10 @@ async function api(req,res,path,method) {
   }
   const user=await auth(req);
   if(path==='/api/me' && method==='GET') return json(res,200,{id:user.id,email:user.email,role:user.role,displayName:user.displayName});
+   if(path==='/api/admin/email-status' && method==='GET'){
+     requireRole(user,['admin']);
+     return json(res,200,await mailer.stats());
+   }
   if(path==='/api/reviews' && method==='POST'){
     rate(user.id+':reviews',4,3600);
     const d=await read(req,12000),score=Number(d.rating);
@@ -250,6 +264,7 @@ async function api(req,res,path,method) {
     const d=await read(req);
     // Accept the legacy public form's "title" and the central API's "jobTitle".
     const title=limit(d.jobTitle || d.title,120), business=limit(d.businessName,120);
+     if(!['job','shift'].includes(d.kind))throw error(422,'Choisissez un emploi ou un shift.');
     if(title.length<4 || business.length<2) throw error(422,'Titre et établissement obligatoires.');
     const wixRequestId=limit(d.wixRequestId,100);
     const savePhotoForRequest=async requestId=>{
@@ -286,7 +301,13 @@ async function api(req,res,path,method) {
       throw e;
     }
     await savePhotoForRequest(q.rows[0].id);
-    return json(res,201,{id:q.rows[0].id,ok:true});
+    const receipt=await queueReceipt({
+      key:d.kind+':'+q.rows[0].id,kind:d.kind,to:user.email,locale:d.locale,
+      payload:{contactName:limit(d.contactName,70)||user.displayName,
+        jobTitle:title,businessName:business,city:limit(d.city,80),
+        scheduleText:limit(d.scheduleText,120)}
+    });
+    return json(res,201,{id:q.rows[0].id,ok:true,emailQueued:receipt.queued});
   }
   if(path==='/api/recruiter-requests' && method==='GET') {
     requireRole(user,['recruiter','admin']);
@@ -408,7 +429,12 @@ async function api(req,res,path,method) {
       }
       throw e;
     }
-    return json(res,201,{ok:true,item:present(created.rows[0],user)});
+    const receipt=await queueReceipt({
+      key:'candidate:'+created.rows[0].id,kind:'candidate',to:user.email,
+      locale:d.locale||profile?.preferredLanguage,
+      payload:{firstName,jobTitle:limit(job.title,140)}
+    });
+    return json(res,201,{ok:true,item:present(created.rows[0],user),emailQueued:receipt.queued});
   }
   if(path==='/api/applications' && method==='GET') {
     requireRole(user,['candidate','recruiter','admin']);
@@ -487,4 +513,5 @@ const server=http.createServer(async(req,res)=>{
     else res.end();
   }
 });
+mailer.start().catch(e=>console.error('HORENOVA notification system initialization failed',e.code||e.name||'error'));
 server.listen(PORT,'0.0.0.0',()=>console.log('HORENOVA API ready on port '+PORT));
