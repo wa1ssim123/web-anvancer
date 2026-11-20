@@ -10,3 +10,6 @@
 .hn-support-admin-latest{display:grid;gap:9px}.hn-support-admin-latest a{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(0,2fr) auto;align-items:center;gap:12px;padding:12px 15px;border-radius:13px;background:#ffffffef;color:#244139;text-decoration:none}
 .hn-support-admin-latest strong{font-size:13px}.hn-support-admin-latest small{font-size:11px;color:#596c64;overflow-wrap:anywhere}.hn-support-admin-latest b{font-size:11px;color:#946236}
 @media(max-width:700px){.hn-support-admin-metrics{grid-template-columns:1fr}.hn-support-admin-latest a{grid-template-columns:1fr;gap:5px}}
+
+/* Prevent support shortcuts from covering the mobile member navigation. */
+@media(max-width:760px){body:has(.hn12-dock) .hs-launcher{bottom:calc(95px + env(safe-area-inset-bottom,0px))}body:has(.hn12-dock) .hs-update-banner{bottom:calc(102px + env(safe-area-inset-bottom,0px))}}
