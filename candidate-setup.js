@@ -1,7 +1,7 @@
 import { requireRole, getDemoSession, currentLang } from "/mihna-global.js";
 import { queryItems, insertItem, patchItemFields } from "/js/wix/items.js";
 import { wixRequest } from "/js/wix/client.js";
-import { hubUploadPhoto } from "/hn-api.js";
+import { hubUploadPhoto,hub } from "/hn-api.js";
 const auth=await requireRole(['candidate']); if(!auth) throw new Error('auth');
 const f=document.getElementById('candidateForm'), preview=document.getElementById('videoPreview'), status=document.getElementById('uploadStatus');
 const langs=['Arabic','French','English'];document.getElementById('languageGrid').innerHTML=langs.map((l,i)=>`<article class="language-card"><b>${l==='Arabic'?'العربية':l==='French'?'Français':'English'}</b><div class="yesno"><label><input type="radio" name="${l.toLowerCase()}" value="yes" required> Oui</label><label><input type="radio" name="${l.toLowerCase()}" value="no" required> Non</label></div><label class="level-control">Niveau <input name="${l.toLowerCase()}Level" type="range" min="1" max="5" value="3"><output>3/5</output></label></article>`).join('');
@@ -13,7 +13,30 @@ if(f.elements.photo)f.elements.photo.onchange=()=>{
  img.src=URL.createObjectURL(file);img.hidden=false;
 };
 f.video.onchange=()=>{const file=f.video.files[0];if(!file)return;preview.src=URL.createObjectURL(file);preview.hidden=false;status.textContent=`${file.name} · ${(file.size/1024/1024).toFixed(1)} MB`};
-let existing=null; if(!auth.demo){try{existing=(await queryItems('CandidateProfiles',{filters:[{field:'_owner',op:'eq',value:auth.member.id}],limit:1})).items[0]||null;if(existing){for(const k of ['firstName','lastName','age','city','jobFamily','bio','otherLanguage','otherLanguageLevel'])if(f.elements[k]&&existing[k]!=null)f.elements[k].value=existing[k];f.video.required=!existing.videoFileId}}catch{}}
+let existing=null,hasPortrait=false;
+try{
+ const results=await Promise.allSettled([
+  queryItems('CandidateProfiles',{filters:[{field:'_owner',op:'eq',value:auth.member.id}],limit:1}),
+  queryItems('CandidatePublicProfiles',{filters:[{field:'_owner',op:'eq',value:auth.member.id}],limit:1}),
+  hub('/api/profile/photo/status')
+ ]);
+ if(results[0].status==='fulfilled')existing=results[0].value.items?.[0]||null;
+ if(results[1].status==='fulfilled'&&f.elements.publicIdentityConsent)f.elements.publicIdentityConsent.checked=results[1].value.items?.[0]?.publicIdentityConsent===true;
+ if(results[2].status==='fulfilled')hasPortrait=!!results[2].value.hasPhoto;
+ if(existing){
+  for(const key of ['firstName','lastName','age','city','jobFamily','bio','otherLanguage','otherLanguageLevel'])if(f.elements[key]&&existing[key]!=null)f.elements[key].value=existing[key];
+  for(const language of ['arabic','french','english']){
+   const yes=Boolean(existing[language]);
+   const radio=f.querySelector('input[name="'+language+'"][value="'+(yes?'yes':'no')+'"]');if(radio)radio.checked=true;
+   const slider=f.elements[language+'Level'];if(slider&&existing[language+'Level']!=null){slider.value=existing[language+'Level'];slider.dispatchEvent(new Event('input'));}
+  }
+  f.video.required=!existing.videoFileId;
+ }
+}catch(error){console.warn('HORENOVA profile prefilling temporarily unavailable',error?.message||'network');}
+f.elements.photo.required=!hasPortrait;
+const photoLabel=f.elements.photo.closest('label')?.querySelector('small');
+if(photoLabel)photoLabel.textContent=hasPortrait?'PHOTO PROFESSIONNELLE · OPTIONNELLE (déjà enregistrée)':'PHOTO PROFESSIONNELLE · OBLIGATOIRE';
+
 const MAX_PRIVATE_VIDEO_BYTES=500*1024*1024;
 const DIRECT_VIDEO_LIMIT=10*1024*1024;
 const extension=file=>String(file?.name||'').split('.').pop()?.toLowerCase();
@@ -121,16 +144,20 @@ async function uploadPrivateVideo(file){
 f.onsubmit=async e=>{e.preventDefault();if(!f.reportValidity())return;const btn=f.querySelector('button[type=submit]'),err=f.querySelector('[data-error]');err.textContent='';btn.disabled=true;try{const fd=new FormData(f);const bool=n=>fd.get(n)==='yes',num=n=>Number(fd.get(n)||0);let videoFileId=existing?.videoFileId||'';const file=f.video.files[0];if(auth.demo){videoFileId='demo-private-video';localStorage.setItem('mihna-demo-candidate',JSON.stringify(Object.fromEntries(fd.entries())))}else if(file){videoFileId=await uploadPrivateVideo(file)}if(!videoFileId)throw new Error('La vidéo de présentation est obligatoire.');const privateData={firstName:fd.get('firstName'),lastName:fd.get('lastName'),age:num('age'),city:fd.get('city'),jobFamily:fd.get('jobFamily'),bio:fd.get('bio')||'',arabic:bool('arabic'),arabicLevel:num('arabicLevel'),french:bool('french'),frenchLevel:num('frenchLevel'),english:bool('english'),englishLevel:num('englishLevel'),otherLanguage:fd.get('otherLanguage')||'',otherLanguageLevel:num('otherLanguageLevel'),videoFileId,videoConsent:true,preferredLanguage:currentLang(),profileComplete:true};if(!auth.demo){if(existing)await patchItemFields('CandidateProfiles',existing._id,privateData);else existing=await insertItem('CandidateProfiles',privateData);const l=[];if(privateData.arabic)l.push('AR '+privateData.arabicLevel+'/5');if(privateData.french)l.push('FR '+privateData.frenchLevel+'/5');if(privateData.english)l.push('EN '+privateData.englishLevel+'/5');if(privateData.otherLanguage)l.push(privateData.otherLanguage+' '+privateData.otherLanguageLevel+'/5');const publicItems=(await queryItems('CandidatePublicProfiles',{filters:[{field:'_owner',op:'eq',value:auth.member.id}],limit:1})).items;const showIdentity=fd.get('publicIdentityConsent')==='yes';
 const displayName=showIdentity?String(privateData.firstName||'').trim()+' '+String(privateData.lastName||'').trim().slice(0,1).toUpperCase()+'.':'Profil confidentiel';
 const publicBio=showIdentity?String(privateData.bio||'').trim().slice(0,450):'Professionnel disponible via HORENOVA. Identité et coordonnées confidentielles.';
-const pub={displayName,city:privateData.city,jobFamily:privateData.jobFamily,bio:publicBio,languageSummary:l.join(' · '),rating:0,reviewCount:0,sponsored:false,publicIdentityConsent:showIdentity};if(publicItems[0])await patchItemFields('CandidatePublicProfiles',publicItems[0]._id,pub);else await insertItem('CandidatePublicProfiles',pub)}const photoFile=f.elements.photo?.files?.[0];
+const pub={displayName,city:privateData.city,jobFamily:privateData.jobFamily,bio:publicBio,languageSummary:l.join(' · '),rating:0,reviewCount:0,sponsored:false,publicIdentityConsent:showIdentity};if(publicItems[0])await patchItemFields('CandidatePublicProfiles',publicItems[0]._id,pub);else await insertItem('CandidatePublicProfiles',pub)}const photoFile=f.elements.photo?.files?.[0];if(!photoFile&&!hasPortrait)throw Error('Ajoutez une photo professionnelle pour compléter votre inscription.');
 if(photoFile){
   if(photoFile.size>8*1024*1024)throw new Error('Photo trop volumineuse : maximum 8 Mo.');
   status.textContent='Traitement de la photo privée…';
-  const bitmap=await createImageBitmap(photoFile);
+  let source=null,objectUrl='';
+  try{if(typeof createImageBitmap==='function')source=await createImageBitmap(photoFile);}catch{}
+  if(!source){objectUrl=URL.createObjectURL(photoFile);source=await new Promise((resolve,reject)=>{const image=new Image();image.onload=()=>resolve(image);image.onerror=()=>reject(Error('Cette photo n’est pas lisible sur cet appareil. Essayez JPEG ou PNG.'));image.src=objectUrl;});}
   const size=500,canvas=document.createElement('canvas'),ctx=canvas.getContext('2d');
   canvas.width=size;canvas.height=size;
-  const side=Math.min(bitmap.width,bitmap.height),sx=(bitmap.width-side)/2,sy=(bitmap.height-side)/2;
-  ctx.drawImage(bitmap,sx,sy,side,side,0,0,size,size);
-  bitmap.close?.();
+  const width=source.width||source.naturalWidth,height=source.height||source.naturalHeight;
+  if(!width||!height)throw Error('La photo possède des dimensions invalides.');
+  const side=Math.min(width,height),sx=(width-side)/2,sy=(height-side)/2;
+  ctx.drawImage(source,sx,sy,side,side,0,0,size,size);
+  source.close?.();if(objectUrl)URL.revokeObjectURL(objectUrl);
   const compressed=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',.78));
   if(!compressed)throw new Error('Impossible de convertir la photo en JPEG.');
   if(compressed.size>450000)throw new Error('Photo trop volumineuse après compression.');
