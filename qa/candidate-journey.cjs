@@ -68,11 +68,12 @@ async function one(browser,scenario){
   const journey=await page.evaluate(()=>JSON.parse(sessionStorage.getItem('hn-candidate-journey-v3')));
   assert.equal(journey.returnTo,'/apply.html?id=offer-001&role=Serveur');
   assert.equal(journey.role,'candidate');
+  assert.equal(await page.evaluate(()=>window.__registerCount),1,'One registration attempt only');
   await page.locator('#verifyForm [name=code]').fill('123456');
   await page.locator('#verifyForm button[type=submit]').click();
   await page.waitForURL(/candidate-setup\.html/, {timeout:5500});
   assert.ok(decodeURIComponent(new URL(page.url()).searchParams.get('returnTo')).includes('offer-001'),'Offer ID must survive verification');
-  assert.equal(await page.evaluate(()=>window.__registerCount),1,'Successful verification must never register a second account');
+  assert.equal(new URL(page.url()).pathname,'/candidate-setup.html','Verification should open the candidate profile without another signup');
  }
  assert.deepEqual(errors,[],'Browser JS exceptions: '+errors);
  console.log('PASS candidate registration scenario '+scenario);
