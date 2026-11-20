@@ -164,5 +164,5 @@ try{showError('');const [a,r]=await Promise.all([hub('/api/applications'),hub('/
 catch(e){showError(e.message+' Les dossiers privés restent accessibles dans le CMS administrateur Wix.');$('hubCases').innerHTML='<div class="hub-detail hub-muted">Service des dossiers non disponible.</div>';}
 }
 $('hubSearch').oninput=list;$('hubRefresh').onclick=refresh;await refresh();
-try{const {mountAdminOverview}=await import('/admin-overview.js?v=mobile-20261120-r1');await mountAdminOverview();}catch(error){console.error('Contrôle des publications indisponible',error);}
+try{const {mountAdminOverview}=await import('/admin-overview.js?v=mail-stats-20261120-r1');await mountAdminOverview();}catch(error){console.error('Contrôle des publications indisponible',error);}
 }
