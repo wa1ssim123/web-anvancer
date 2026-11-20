@@ -37,7 +37,7 @@
  */
 (function(){
   'use strict';
-  const BUILD='2026.11.20.support-r1';
+  const BUILD='2026.11.20.support-r2';
   const RECHECK_MS=90000;
   let running=false;
   function addLauncher(){
@@ -53,7 +53,7 @@
     document.body.append(menu);
     if(!document.querySelector('link[data-horenova-support-css]')){
       const style=document.createElement('link');style.rel='stylesheet';
-      style.href='/support.css?v=hn-support-20261120-r1';
+      style.href='/support.css?v=hn-support-20261120-r2';
       style.dataset.horenovaSupportCss='yes';document.head.append(style);
     }
   }
@@ -72,7 +72,7 @@
     };
     box.append(content,button);document.body.append(box);
     if(!document.querySelector('link[data-horenova-support-css]')){
-      const css=document.createElement('link');css.rel='stylesheet';css.href='/support.css?v=hn-support-20261120-r1';
+      const css=document.createElement('link');css.rel='stylesheet';css.href='/support.css?v=hn-support-20261120-r2';
       css.dataset.horenovaSupportCss='yes';document.head.append(css);
     }
   }
