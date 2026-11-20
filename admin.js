@@ -110,7 +110,7 @@ async function detail(id,scrollToDetail=false){
   requests.filter(r=>r.status==='VALIDEE'&&(!r.job_role||r.job_role===a.jobRole)).map(r=>'<option value="'+esc(r.id)+'">'+esc(r.business_name+' · '+r.job_title)+'</option>').join('');
  const personFields=field('E-mail',a.candidateEmail,true)+field('Âge',p.age)+field('Ville',p.city);
  const workFields=field('Métier',p.jobFamily)+field('Langues',languages,true)+field('Années d’expérience',d.experienceYears)+field('Dernier poste',d.lastPosition)+field('Compétences',Array.isArray(d.skills)?d.skills.join(' · '):d.skills,true)+field('Disponibilité',d.availability)+field('Date souhaitée',d.earliestStart)+field('Ville souhaitée',d.desiredCity)+field('Contrat préféré',d.contractPreference);
- const candidateFields=field('Quiz',p.quizPassed?String(p.quizScore)+' %':'Non validé')+field('Vidéo privée',p.videoFileId?'Enregistrée':'Absente')+field('Présentation',p.bio,true)+field('Motivation détaillée',d.motivation,true);
+ const candidateFields=field('Quiz (facultatif)',p.quizPassed?String(p.quizScore)+' %':'Non fourni')+field('Vidéo (facultative)',p.videoFileId?'Enregistrée':'Non fournie')+field('Présentation',p.bio,true)+field('Motivation détaillée',d.motivation,true);
  const privateFields=field('Téléphone privé du candidat',d.phone,true)+field('Consentement candidat',a.consentToIntro?'Oui':'Non');
  const group=(title,subtitle,fields,icon)=>'<section class="hn-case-section"><div class="hn-case-section-head"><span class="hn-case-section-icon" aria-hidden="true">'+icon+'</span><div><h4>'+title+'</h4><p>'+subtitle+'</p></div></div><div class="hub-grid hn-case-fields">'+fields+'</div></section>';
  const markup='<div class="hub-detail hn-case-detail">'+
@@ -120,7 +120,7 @@ async function detail(id,scrollToDetail=false){
   '<div class="hn-case-profile-copy"><h3>'+esc(fullname)+'</h3><p>'+esc(a.jobTitle||'Candidature')+'</p><span class="hub-tag">'+esc(names[a.status]||a.status)+'</span></div></div></div>'+
   group('Identité et contact','Informations transmises par le candidat',personFields,'01')+
   group('Profil professionnel','Métier, expérience et disponibilité',workFields,'02')+
-  group('Évaluation et motivation','Quiz, vidéo et présentation de la candidature',candidateFields,'03')+
+  group('Informations complémentaires','Quiz et vidéo facultatifs · la candidature reste valide sans eux',candidateFields,'03')+
   '<details class="hn-case-private"><summary>Informations confidentielles · accès administrateur</summary>'+
   '<div class="hub-grid hn-case-fields">'+privateFields+'</div></details>'+
   '<section class="hn-case-section hn-case-decisions"><div class="hn-case-section-head"><span class="hn-case-section-icon" aria-hidden="true">04</span><div><h4>Décision administrative</h4><p>Vérifiez le dossier avant toute mise en relation</p></div></div>'+
