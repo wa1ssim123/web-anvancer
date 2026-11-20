@@ -1,6 +1,6 @@
 import {requireRole} from '/mihna-global.js';
 import {hub,hubPhoto} from '/hn-api.js';
-import {printCandidate,printRecruiter,printSupportThread} from '/admin-print.js';
+import {printCandidate,printRecruiter,printSupportThread} from '/admin-print.js?v=spv7-20261120';
 const auth=await requireRole(['admin'],false);
 const root=document.getElementById('adminGate');
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));

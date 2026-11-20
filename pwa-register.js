@@ -38,9 +38,9 @@
  */
 (function(){
   'use strict';
-  const BUILD='2026.11.20.candidate-v4';
+  const BUILD='2026.11.20.support-print-v7';
   const CHECK_EVERY_MS=90000;
-  const SUPPORT_CSS='/support.css?v=support-direct-20261120-v1';
+  const SUPPORT_CSS='/support.css?v=spv7-20261120';
   const tr={
     fr:{button:'Assistance',heading:'Besoin d’aide ?',description:'Notre équipe HORENOVA vous accompagne.',chat:'Écrire au support',chatDetail:'Conversation privée',phone:'Appeler HORENOVA',phoneDetail:'06 48 37 70 09',update:'Nouvelle version HORENOVA disponible.',draft:'Enregistrez vos modifications avant de mettre à jour.',reload:'Mettre à jour'},
     en:{button:'Support',heading:'Need help?',description:'HORENOVA is here to assist you.',chat:'Chat with support',chatDetail:'Private conversation',phone:'Call HORENOVA',phoneDetail:'06 48 37 70 09',update:'A newer HORENOVA version is available.',draft:'Save your current changes before refreshing.',reload:'Update'},
