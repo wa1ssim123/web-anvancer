@@ -37,7 +37,7 @@ assert.doesNotMatch(authPage,/signin\.querySelector\('button\[type="submit"\]'\)
 assert.match(authPage,/Votre navigateur limite le stockage de session/);
 assert.match(tokenStore,/if \(typeof localStorage === "undefined"\) return null/);
 assert.match(tokenStore,/if \(typeof localStorage === "undefined"\) return;/);
-assert.match(authShell,/login-page\\.js\\?v=/);
+assert.ok(authShell.includes('/login-page.js?v='),'Entry must load versioned authentication');
 assert.match(authPage,/ADMIN_MEMBER_IDS/);
 console.log('PASS Android Chrome sign-in stays enabled; token storage is exception-safe and four admin identities are recognized');
 const recruiter=source('recruit-live.js');
