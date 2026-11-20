@@ -52,3 +52,5 @@ jobs:
         run: node qa/candidate-i18n-quiz.cjs
       - name: Test Shop and Academy gateways and Morocco–Canada story on mobile in FR EN AR
         run: node qa/home-brand-story.cjs
+      - name: Test HORENOVA A-to-Z matching guide, navigation and RTL on phones and PC
+        run: node qa/matching-guide.cjs
