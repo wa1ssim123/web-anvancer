@@ -26,7 +26,7 @@ for(const file of files.filter(x=>/\.(?:js|cjs)$/.test(x))){
 for(const file of files.filter(x=>x.endsWith('.html'))){
   pages++;
   const html=own(file);
-  if(file!=='offline.html'&&!html.includes('horenova-i18n.js'))fail(file,'missing FR/EN/AR locale loader');
+  if(file!=='offline.html'&&!file.startsWith('email-templates/')&&!html.includes('horenova-i18n.js'))fail(file,'missing FR/EN/AR locale loader');
   for(const match of html.matchAll(/(?:src|href)\s*=\s*["'](\/[^"'\s]+)["']/gi)){
     let url=match[1];if(url.startsWith('//'))continue;
     const local=url.split(/[?#]/,1)[0].slice(1);
