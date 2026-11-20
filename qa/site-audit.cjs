@@ -59,7 +59,7 @@ for(const page of ['index.html','academy.html','business.html','explore.html','s
 for(const page of ['academy.html','explore.html']){
  if(!own(page).includes('/horenova-entry.js'))fail(page,'missing fullscreen intro recovery script');
 }
-if(!own('shop.html').includes('/horenova-wardrobe-clean-20261113.js') || !own('shop.html').includes('/horenova-shop-clean-20261113.css'))fail('shop.html','new wardrobe assets not linked');
+if(!own('shop.html').includes('/horenova-wardrobe-atelier-20261113.js') || !own('shop.html').includes('/horenova-shop-atelier-20261113.css'))fail('shop.html','new wardrobe assets not linked');
 if(!own('horenova-shop-clean-20261113.css').includes('hx26-wind'))fail('shop.html','animated wardrobe must be present');
 const protectedModules={
   'admin.js':/requireRole\(\['admin'\]/,
