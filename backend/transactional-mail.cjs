@@ -27,7 +27,7 @@ const index=`CREATE INDEX IF NOT EXISTS hr_email_outbox_pending_idx
 const emailOk = email => typeof email==='string' && email.length<=220 &&
  /^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(email);
 const safeKey=key=>typeof key==='string'&&/^(candidate|job|shift):[0-9a-f-]{36}$/.test(key);
-function createTransactionalMailer({pool,env=process.env,fetcher=globalThis.fetch,log=console}){
+function createTransactionalMailer({pool,env=process.env,fetcher=globalThis.fetch,log=console,schedule=setImmediate}){
  let initialized=null, draining=false, timer=null;
  const configured=()=>Boolean(env.RESEND_API_KEY&&env.MAIL_FROM&&
     /<[^<>\s]+@[^<>\s]+\.[^<>\s]+>/.test(env.MAIL_FROM));
@@ -53,7 +53,7 @@ function createTransactionalMailer({pool,env=process.env,fetcher=globalThis.fetc
      RETURNING event_key`,[key,kind,to,localeOf(locale),JSON.stringify(data)]);
    if(result.rows?.length){
      // Attempt delivery soon, never rely on the browser remaining open.
-     setImmediate(()=>drain().catch(e=>log.warn('HORENOVA notification drain unavailable',e.code||e.name||'error')));
+     schedule(()=>drain().catch(e=>log.warn('HORENOVA notification drain unavailable',e.code||e.name||'error')));
    }
    return {queued:true,alreadyQueued:!result.rows?.length};
  }
