@@ -147,7 +147,7 @@ async function run(){
     !JSON.stringify(r.data.items).includes('+212612345678'));
   r=await call('GET','/api/jobs/public/'+requestId+'/workplace-photo');
   mark('Approved workplace photo becomes public',r.status===200&&r.data.photo===true);
-  r=await call('POST','/api/applications','cand-token',{jobId:requestId,consentToIntro:true,application:{experienceYears:3,lastPosition:'Serveur',skills:['Service client','Hygiène'],availability:'Immédiatement',desiredCity:'Casablanca',contractPreference:'CDI',earliestStart:'2026-12-01',phone:'+212612345678',motivation:'Je possède une expérience de plusieurs années en service et je souhaite rejoindre une nouvelle équipe.'}});
+  r=await call('POST','/api/applications','cand-token',{jobId:requestId,consentToIntro:true,application:{firstName:'Samira',lastName:'Candidate',experienceYears:3,lastPosition:'Serveur',skills:['Service client','Hygiène'],availability:'Immédiatement',desiredCity:'Casablanca',contractPreference:'CDI',earliestStart:'2026-12-01',phone:'+212612345678',motivation:'Je possède une expérience de plusieurs années en service et je souhaite rejoindre une nouvelle équipe.'}});
   mark('Candidate application with professional dossier recorded',r.status===201&&r.data.item.id===applicationId&&r.data.item.profile.application.skills.length===2);
   r=await call('GET','/api/applications','adm-token');
   mark('Admin sees application',r.status===200&&r.data.items.length===1);
