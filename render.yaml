@@ -10,15 +10,13 @@ services:
     domains:
       - horenova.com
     headers:
-      - path: /shop.html
+      # All HTML/JS/CSS must be revalidated; long-lived copies caused role-specific stale dashboards.
+      - path: /*
         name: Cache-Control
-        value: "no-cache, no-store, must-revalidate"
-      - path: /horenova-wardrobe-atelier-20261113.js
-        name: Cache-Control
-        value: "no-cache, must-revalidate"
-      - path: /shop-products-atelier-20261113.js
-        name: Cache-Control
-        value: "no-cache, must-revalidate"
-      - path: /horenova-shop-atelier-20261113.css
-        name: Cache-Control
-        value: "no-cache, must-revalidate"
+        value: "no-store, max-age=0, must-revalidate"
+      - path: /*
+        name: X-Content-Type-Options
+        value: "nosniff"
+      - path: /*
+        name: Referrer-Policy
+        value: "strict-origin-when-cross-origin"
