@@ -8,7 +8,21 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 let prof=null;
 if(!auth.demo&&auth.role==='recruiter')prof=(await queryItems('RecruiterProfiles',{filters:[{field:'_owner',op:'eq',value:auth.member.id}],limit:1})).items[0]||null;
 if(auth.role==='recruiter'&&!prof){location.replace('/recruiter-setup.html');throw new Error('Profil à compléter');}
-root.innerHTML=`<div class='recruit-page'><form class='recruit-form' id='liveRecruitForm'>
+root.innerHTML=`<section class='hn-rec-command' aria-label='Tableau de bord recruteur'>
+  <div class='hn-rec-head'><div><span class='hn-rec-eyebrow'>HORENOVA · ESPACE RECRUTEUR</span><h2>Votre équipe commence ici.</h2><p>Bienvenue ${esc(prof?.businessName||'dans votre espace professionnel')} · Toutes vos demandes, leurs véritables statuts et vos candidatures au même endroit.</p></div><a class='hn-rec-create' href='#liveRecruitForm'>＋ Nouvelle annonce</a></div>
+  <div class='hn-rec-kpis' id='hnRecruitKpis' role='status'><div class='hn-rec-kpi'><span>Annonces en ligne</span><strong>—</strong></div><div class='hn-rec-kpi'><span>En attente</span><strong>—</strong></div><div class='hn-rec-kpi'><span>À synchroniser</span><strong>—</strong></div><div class='hn-rec-kpi'><span>Refusées</span><strong>—</strong></div></div>
+ </section>
+ <section class='hn-rec-board' aria-label='Suivi de mes annonces'><div class='hn-rec-board-head'><div><h3>Mes annonces et shifts</h3><p>Statuts vérifiés auprès de HORENOVA. Une annonce en ligne est accessible au public.</p></div><button class='soft-btn' id='hnRecruitReload' type='button'>Actualiser ↻</button></div>
+ <div class='hn-rec-tabs' id='hnRecruitTabs' role='tablist' aria-label='Filtrer les annonces'>
+ <button type='button' data-recruit-filter='all' aria-selected='true'>Toutes</button>
+ <button type='button' data-recruit-filter='live' aria-selected='false'>En ligne</button>
+ <button type='button' data-recruit-filter='pending' aria-selected='false'>En attente</button>
+ <button type='button' data-recruit-filter='sync' aria-selected='false'>À synchroniser</button>
+ <button type='button' data-recruit-filter='rejected' aria-selected='false'>Refusées</button>
+ <button type='button' data-recruit-filter='issue' aria-selected='false'>À vérifier</button></div>
+ <div class='jobs-grid-page' id='liveRecruitJobs' aria-live='polite'></div><p class='hn-rec-empty' id='hnRecruitFilterEmpty' hidden>Aucune annonce dans cette catégorie.</p></section>
+ <div class='hn-rec-helper'>Les nouvelles offres sont examinées par HORENOVA avant publication. Aucun contact privé n’est publié automatiquement.</div>
+<div class='recruit-page'><form class='recruit-form' id='liveRecruitForm'>
 <span class='small-title'>DEMANDE DE RECRUTEMENT CONFIDENTIELLE</span>
 <p>Votre demande arrive à Horenova. Notre équipe valide les conditions, publie une annonce anonyme et organise les mises en relation.</p>
 <div class='form-grid'>
@@ -47,7 +61,7 @@ root.innerHTML=`<div class='recruit-page'><form class='recruit-form' id='liveRec
 </div><p id='recruitStatus' role='status'></p><p class='form-error' data-error></p>
 <button class='cta-main' type='submit'>Envoyer ma demande à Horenova ↗</button></form>
 <aside class='recruit-aside'><span class='small-title'>INTERMÉDIATION</span><h2>Un contact unique : Horenova.</h2><p>Nous recevons les candidatures et coordonnons les échanges. Aucun candidat ne reçoit directement vos coordonnées. Tout partage de données privées nécessite un accord.</p><a class='soft-btn' href='/talents.html'>Voir les profils anonymes →</a></aside></div>
-<section class='listing-page compact'><div class='listing-toolbar'><div><span class='small-title'>MES DEMANDES</span><h2>Suivi de mes recrutements.</h2></div></div><div class='jobs-grid-page' id='liveRecruitJobs'></div>
+<section class='listing-page compact'>
 <div class='listing-toolbar'><div><span class='small-title'>CANDIDATURES VALIDÉES</span><h2>Les candidats de votre établissement.</h2><p>Une candidature apparaît après accord du candidat et affectation par HORENOVA.</p></div><div style='display:flex;flex-wrap:wrap;gap:10px'><button type='button' class='soft-btn' id='refreshRecruitApplications'>Actualiser les candidatures ↻</button><a href='/conversations.html' class='soft-btn'>Toutes mes conversations ↗</a></div></div><div class='recruit-inbox' id='liveRecruitApplications' aria-live='polite'><div class='empty-state'>Chargement de vos candidatures…</div></div></section>`;
 const form=document.getElementById('liveRecruitForm');
 if(prof?.businessType)form.elements.businessType.value=prof.businessType;
@@ -119,22 +133,47 @@ function updateShiftFields(){
 }
 form.elements.kind.addEventListener('change',updateShiftFields);
 updateShiftFields();
+let activeRecruitFilter='all';
+function filterRecruitCards(){const grid=document.getElementById('liveRecruitJobs');if(!grid)return;let visible=0;grid.querySelectorAll('[data-hn-job-status]').forEach(card=>{const show=activeRecruitFilter==='all'||card.dataset.hnJobStatus===activeRecruitFilter;card.hidden=!show;if(show)visible++;});const empty=document.getElementById('hnRecruitFilterEmpty');if(empty)empty.hidden=visible>0||!!grid.querySelector('.empty-state');document.querySelectorAll('#hnRecruitTabs [data-recruit-filter]').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.recruitFilter===activeRecruitFilter)));}
+document.getElementById('hnRecruitTabs')?.addEventListener('click',event=>{const btn=event.target.closest('[data-recruit-filter]');if(!btn)return;activeRecruitFilter=btn.dataset.recruitFilter;filterRecruitCards();});
+document.getElementById('hnRecruitReload')?.addEventListener('click',async event=>{const btn=event.currentTarget;btn.disabled=true;try{await render();await renderRecruiterApplications();}finally{btn.disabled=false;}});
 async function render(){
  const grid=document.getElementById('liveRecruitJobs');
  if(!grid)return;
  const results=await Promise.allSettled([
   hub('/api/recruiter-requests'),
-  queryItems('JobRequests',{filters:[{field:'_owner',op:'eq',value:auth.member.id}],limit:50,sort:[{field:'_createdDate',direction:'desc'}]})
+  queryItems('JobRequests',{filters:[{field:'_owner',op:'eq',value:auth.member.id}],limit:50,sort:[{field:'_createdDate',direction:'desc'}]}),
+  hub('/api/jobs/public')
  ]);
  const central=results[0].status==='fulfilled'?(results[0].value.items||[]):null;
  const saved=results[1].status==='fulfilled'?(results[1].value.items||[]):[];
  const mine=saved.filter(j=>!auth.member?.id||!j._owner||j._owner===auth.member.id);
  const delivered=new Set((central||[]).map(j=>j.wix_request_id).filter(Boolean));
- const centralCards=(central||[]).map(j=>'<article class="job-card-page"><div class="job-card-content"><small>'+esc(j.kind||'Emploi')+' · '+esc(j.job_role||'')+'</small><h3>'+esc(j.job_title||'Demande')+'</h3><p>'+esc(j.city||'')+' · '+esc(j.business_name||'')+'</p><strong>'+esc({A_EXAMINER:'✓ Reçue · à examiner',VALIDEE:'✓ Publiée · visible pour les candidats',REFUSEE:'Refusée par HORENOVA'}[j.status]||'✓ Reçue par HORENOVA')+'</strong></div></article>').join('');
+ const publicJobs=results[2].status==='fulfilled'?(results[2].value.items||[]):null;
+ const publicIds=new Set((publicJobs||[]).map(x=>x.id));
+ const statusFor=j=>{
+  if(j.status==='REFUSEE')return 'rejected';
+  if(j.status==='A_EXAMINER')return 'pending';
+  if(j.status==='VALIDEE')return publicJobs===null?'issue':publicIds.has(j.id)?'live':'issue';
+  return 'issue';
+ };
+ const textFor=j=>{
+  const status=statusFor(j);
+  return {live:'En ligne · visible publiquement',pending:'En attente de validation',rejected:'Refusée par HORENOVA',issue:j.status==='VALIDEE'?'Validée · visibilité à vérifier':'Statut à vérifier'}[status];
+ };
+ const centralCards=(central||[]).map(j=>{
+  const state=statusFor(j),url='/job.html?id='+encodeURIComponent(j.id);
+  const publicActions=state==='live'?'<div class="hn-rec-card-actions"><a href="'+url+'">Voir l’annonce</a><button type="button" data-share-link="'+esc(j.id)+'">Copier le lien</button><a href="https://wa.me/?text='+encodeURIComponent('Offre HORENOVA · '+(j.job_title||'Emploi')+' · '+(j.city||'Maroc')+' — '+new URL(url,location.origin).href)+'" target="_blank" rel="noopener noreferrer">WhatsApp</a></div>':'';
+  return '<article class="job-card-page hn-rec-listing" data-hn-job-status="'+state+'"><div class="job-card-content"><small>'+esc(j.kind==='shift'?'SHIFT':'EMPLOI')+' · '+esc(j.job_role||'')+'</small><h3>'+esc(j.job_title||'Demande')+'</h3><p>'+esc(j.city||'')+' · '+esc(j.business_name||'')+'</p><strong class="hn-rec-status '+(state==='rejected'?'rejected':state==='pending'?'pending':state==='issue'?'issue':'')+'">'+esc(textFor(j))+'</strong>'+publicActions+'</div></article>';
+ }).join('');
  const legacy=mine.filter(j=>!central||!delivered.has(j._id));
- const legacyCards=legacy.map(j=>'<article class="job-card-page"><div class="job-card-content"><small>'+esc(j.kind||'Emploi')+' · '+esc(j.role||'')+'</small><h3>'+esc(j.title||'Demande')+'</h3><p>'+esc(j.city||'')+' · '+esc(j.businessName||'')+'</p><strong>'+(central?'Enregistrée dans Wix · suivi à synchroniser':'Enregistrée dans Wix · vérification du suivi indisponible')+'</strong>'+(central&&auth.role==='recruiter'?'<p><button type="button" class="soft-btn" data-sync="'+esc(j._id)+'">Synchroniser cette demande</button></p>':'')+'</div></article>').join('');
+ const legacyCards=legacy.map(j=>'<article class="job-card-page hn-rec-listing" data-hn-job-status="sync"><div class="job-card-content"><small>'+esc(j.kind||'Emploi')+' · '+esc(j.role||'')+'</small><h3>'+esc(j.title||'Demande')+'</h3><p>'+esc(j.city||'')+' · '+esc(j.businessName||'')+'</p><strong class="hn-rec-status pending">'+(central?'Enregistrée · synchronisation requise':'Enregistrée · suivi central indisponible')+'</strong>'+(central&&auth.role==='recruiter'?'<div class="hn-rec-card-actions"><button type="button" data-sync="'+esc(j._id)+'">Synchroniser cette demande</button></div>':'')+'</div></article>').join('');
  const warning=central===null?'<div class="empty-state">La connexion au suivi central est momentanément indisponible. Aucune synchronisation ne peut être confirmée.</div>':'';
- grid.innerHTML=warning+centralCards+legacyCards || '<div class="empty-state"><h3>Aucune demande envoyée.</h3><p>Votre première demande apparaîtra ici.</p></div>';
+ grid.innerHTML=(warning+centralCards+legacyCards)||'<div class="empty-state"><h3>Aucune demande envoyée.</h3><p>Votre première demande apparaîtra ici.</p></div>';
+ const stats=document.getElementById('hnRecruitKpis');
+ if(stats){const kpis=[['Annonces en ligne',central===null||publicJobs===null?'—':central.filter(j=>statusFor(j)==='live').length],['En attente',central===null?'—':central.filter(j=>statusFor(j)==='pending').length],['À synchroniser',legacy.length],['Refusées',central===null?'—':central.filter(j=>statusFor(j)==='rejected').length]];stats.innerHTML=kpis.map(([name,value])=>'<div class="hn-rec-kpi"><span>'+esc(name)+'</span><strong>'+esc(value)+'</strong></div>').join('');}
+ filterRecruitCards();
+ grid.querySelectorAll('[data-share-link]').forEach(btn=>btn.addEventListener('click',async()=>{const url=new URL('/job.html?id='+encodeURIComponent(btn.dataset.shareLink),location.origin).href;try{await navigator.clipboard.writeText(url);btn.textContent='✓ Lien copié';setTimeout(()=>{if(btn.isConnected)btn.textContent='Copier le lien';},2000);}catch{window.prompt('Copier le lien de l’annonce',url);}}));
  grid.querySelectorAll('[data-sync]').forEach(button=>button.addEventListener('click',async()=>{
   const request=legacy.find(j=>j._id===button.dataset.sync);
   if(!request)return;
