@@ -88,11 +88,27 @@ else if(auth.role==='recruiter'){
  const info=await Promise.allSettled([
   queryItems('RecruiterProfiles',{filters:[{field:'_owner',op:'eq',value:auth.member.id}],limit:1}),
   hub('/api/recruiter-requests'),
-  hub('/api/applications')
+  hub('/api/applications'),
+  hub('/api/jobs/public')
  ]);
  const p=info[0].status==='fulfilled'?info[0].value.items?.[0]||null:null;
  const requests=info[1].status==='fulfilled'?info[1].value.items||[]:null;
  const candidates=info[2].status==='fulfilled'?info[2].value.items||[]:null;
+ const approvedPublic=info[3].status==='fulfilled'?info[3].value.items||[]:null;
+ const publicIds=new Set((approvedPublic||[]).map(x=>x.id));
+ const liveCount=requests===null||approvedPublic===null?'—':requests.filter(x=>x.status==='VALIDEE'&&publicIds.has(x.id)).length;
+ const pendingCount=requests===null?'—':requests.filter(x=>x.status==='A_EXAMINER').length;
+ const needsReview=requests===null||approvedPublic===null?'—':requests.filter(x=>x.status==='VALIDEE'&&!publicIds.has(x.id)).length;
+ const refusedCount=requests===null?'—':requests.filter(x=>x.status==='REFUSEE').length;
+ const translations={
+ fr:['ESPACE RECRUTEUR · HORENOVA','Votre équipe commence ici.','Suivez vos vraies annonces et préparez votre prochain recrutement.','En ligne','En attente','À vérifier','Refusées','＋ Nouvelle annonce','Toutes mes annonces'],
+ en:['HORENOVA · EMPLOYER HUB','Build your next team.','Track verified listings and your next recruitment campaign.','Live','Pending','Check status','Rejected','＋ New job post','All my listings'],
+ ar:['هورينوفا · فضاء المشغّل','ابنِ فريقك القادم.','تابع إعلاناتك المؤكدة وجهّز فرص العمل القادمة.','منشورة','قيد المراجعة','تحتاج إلى تحقق','مرفوضة','＋ إعلان جديد','جميع إعلاناتي']
+ };
+ const tx=translations[currentLang()]||translations.fr;
+ const overview='<section class="hn-rec-command" id="recruiterCockpit"><div class="hn-rec-head"><div><span class="hn-rec-eyebrow">'+esc(tx[0])+'</span><h2>'+esc(tx[1])+'</h2><p>'+esc(tx[2])+'</p></div><a href="/recruit.html#liveRecruitForm" class="hn-rec-create">'+esc(tx[7])+'</a></div>'+
+ '<div class="hn-rec-kpis">'+[[tx[3],liveCount],[tx[4],pendingCount],[tx[5],needsReview],[tx[6],refusedCount]].map(([name,num])=>'<div class="hn-rec-kpi"><span>'+esc(name)+'</span><strong>'+esc(num)+'</strong></div>').join('')+'</div><p><a href="/recruit.html" style="color:#fff;text-decoration:underline;font-weight:800">'+esc(tx[8])+' ↗</a></p></section>';
+
  const pending=requests?.filter(x=>x.status==='A_EXAMINER').length??null;
  const approved=requests?.filter(x=>x.status==='VALIDEE').length??null;
  const declined=requests?.filter(x=>x.status==='REFUSEE').length??null;
@@ -102,7 +118,7 @@ else if(auth.role==='recruiter'){
    'Votre espace professionnel · '+(p.businessName||'Établissement')+' · '+(p.city||'Maroc'):
    'Commencez par présenter votre établissement pour diffuser vos besoins en recrutement.';
  const countOrUnavailable=x=>x===null?'Indisponible':String(x);
- dash.innerHTML=
+ dash.innerHTML=overview+
  '<div class="hn-role-welcome"><span>ESPACE PROFESSIONNEL / HORENOVA</span><h3>Recruter, simplement.<br>Avec un vrai suivi.</h3><p>Vous décrivez votre besoin. HORENOVA vérifie l’annonce avant publication et organise les mises en relation avec les candidats consentants.</p><a href="/recruit.html" class="hn-role-primary">+ Déposer une offre ou un shift ↗</a></div>'+
  card('01 · MON ÉTABLISSEMENT',p?.businessName||'À compléter',
    p?(p.businessType||'')+' · '+(p.city||''):'Renseignez votre établissement, sa ville et ses coordonnées professionnelles.',
@@ -124,7 +140,7 @@ else if(auth.role==='recruiter'){
    [['Ouvrir le chat','/conversations.html']])+
  '<div id="recruitment" class="dash-card wide"><span>ÉTAT RÉEL DE MES ANNONCES</span><h3>Votre suivi HORENOVA.</h3>'+
  (requests===null?'<p>Le serveur des demandes est temporairement inaccessible. Aucun statut n’est présumé.</p>':
- '<div class="hn-recruit-stats"><span>En attente <b>'+pending+'</b></span><span>Publiées <b>'+approved+'</b></span><span>Refusées <b>'+declined+'</b></span></div>'+
+ '<div class="hn-recruit-stats"><span>'+esc(tx[4])+' <b>'+pending+'</b></span><span>'+esc(tx[3])+' <b>'+liveCount+'</b></span><span>'+esc(tx[6])+' <b>'+declined+'</b></span></div>'+
  (requests.length?requests.slice(0,12).map(r=>'<p class="hn-recruit-record"><b>'+esc(r.job_title||'Demande')+'</b><span>'+esc(r.kind==='shift'?'Shift':'Emploi')+' · '+esc(r.city||'')+'</span><em>'+esc(r.status==='VALIDEE'?'Publiée':r.status==='REFUSEE'?'Refusée':'À examiner')+'</em></p>').join(''):
  '<p>Aucune demande pour le moment. Commencez par publier votre première annonce.</p>'))+
  '<a href="/recruit.html">Gérer toutes mes annonces ↗</a></div>';
