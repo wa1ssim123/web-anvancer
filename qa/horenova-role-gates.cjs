@@ -48,7 +48,7 @@ async function checkOnboarding(role){
 async function checkAccount(role){
  const markup=source('account.js');
  const nodes=Object.fromEntries(['accountDashboard','accountIdentity','accountTitle','accountSubtitle']
-   .map(id=>[id,{innerHTML:'',textContent:'',replaceChildren(){}}]));
+   .map(id=>[id,{innerHTML:'',textContent:'',replaceChildren(){},insertAdjacentHTML(_pos,markup){this.innerHTML+=markup;},addEventListener(){}}]));
  const hero={title:{},text:{},kicker:{}};
  const d={
    body:{dataset:{}},
@@ -69,21 +69,22 @@ async function checkAccount(role){
     d,{replace(){}}
    );
  const html=nodes.accountDashboard.innerHTML;
+ assert.match(html,/\/support\.html/,'Each signed-in account has access to customer support');
  if(role==='recruiter'){
    assert.match(html,/Déposer une offre ou un shift/);
    assert.match(html,/TALENTS AU MAROC/);
    assert.match(html,/CONVERSATIONS/);
-   assert.doesNotMatch(html,/Ouvrir le quiz/);
+   assert.doesNotMatch(html,/Passer le quiz métier|Ouvrir le quiz/);
    assert.doesNotMatch(html,/candidate-setup/);
    assert.equal(d.body.dataset.accountRole,'recruiter');
  } else if(role==='candidate'){
-   assert.match(html,/Ouvrir le quiz/);
+   assert.match(html,/Quiz du métier|Passer le quiz métier|QUIZ/);
    assert.match(html,/candidate-setup/);
    assert.doesNotMatch(html,/Déposer une offre ou un shift/);
  } else {
    assert.match(html,/Ouvrir l’administration/);
    assert.match(html,/Supervision nationale|CENTRE DE CONTRÔLE/);
-   assert.doesNotMatch(html,/Ouvrir le quiz/);
+   assert.doesNotMatch(html,/Passer le quiz métier|Ouvrir le quiz/);
  }
 }
 async function run(){
