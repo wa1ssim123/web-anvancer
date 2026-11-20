@@ -26,7 +26,8 @@ function readJourney(){
  // Never put the Wix state token, password or member tokens in localStorage.
  try{
   const saved=JSON.parse(localStorage.getItem(SAFE_RETURN_KEY)||'null');
-  if(saved?.at&&Date.now()-saved.at<24*60*60*1000&&validReturn(saved.returnTo||''))return saved;
+  if(saved?.at&&Date.now()-saved.at<(saved.status==='verification'?15:24*60)*60*1000
+      &&(validReturn(saved.returnTo||'')||saved.status==='verification'))return saved;
   localStorage.removeItem(SAFE_RETURN_KEY);
  }catch{}
  return null;
@@ -41,7 +42,13 @@ function rememberJourney(change){
   const prev=readJourney()||{};
   const current={...prev,...change,returnTo:safeReturn||prev.returnTo||'',at:Date.now()};
   sessionStorage.setItem(PENDING_INTENT_KEY,JSON.stringify(current));
-  try{if(validReturn(current.returnTo))localStorage.setItem(SAFE_RETURN_KEY,JSON.stringify({role:current.role,returnTo:current.returnTo,at:Date.now()}));}catch{}
+  try{
+    const returnTo=validReturn(current.returnTo);
+    // The pending step is non-secret and can be recovered by a mail link opening
+    // a new tab. Store NO Wix state token or password in persistent storage.
+    if(returnTo||current.status==='verification')
+      localStorage.setItem(SAFE_RETURN_KEY,JSON.stringify({role:current.role,returnTo,status:current.status,at:Date.now()}));
+   }catch{}
  }catch{}
 }
 function verifiedJourneyRole(){
