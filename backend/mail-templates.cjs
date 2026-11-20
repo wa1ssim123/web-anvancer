@@ -93,6 +93,7 @@ function renderMail(kind,input={},requestedLocale='fr'){
  const heroColor=candidate?'#c5e8cb':'#f5d2a5';
  const borderColor=candidate?'#608b6f':'#ac8050';
  const check=candidate?'✓':'✦';
+ const animationUrl='https://horenova-site-officiel.onrender.com/assets/horenova-email-'+(candidate?'candidate':'recruiter')+'.gif';
  const rows=[
    [t.role,title],
    ...(!candidate?[[t.type,kind==='shift'?t.shift:t.job],[t.business,business]]:[]),
@@ -119,7 +120,7 @@ function renderMail(kind,input={},requestedLocale='fr'){
  <tr><td class="hn-mail-accent" height="5" style="height:5px;font-size:0;line-height:0;background:${borderColor}">&nbsp;</td></tr>
  <tr><td class="hn-email-pad" style="padding:43px 46px 40px;text-align:${rtl?'right':'left'}">
   <div style="font:800 11px/1.5 Arial,Helvetica,sans-serif;letter-spacing:1.6px;color:#a5754c;margin-bottom:19px">${escapeHtml(t.tag)}</div>
-  <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;margin-bottom:21px"><tr><td class="hn-success-mark" width="62" height="62" align="center" valign="middle" style="width:62px;height:62px;background:#24493a;color:${heroColor};border:2px solid ${borderColor};border-radius:50%;font:800 35px/1 Arial,Helvetica,sans-serif">${check}</td><td style="width:15px"></td><td style="font:800 12px/1.45 Arial,Helvetica,sans-serif;color:#33684e">${escapeHtml(status)}</td></tr></table>
+  <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;margin-bottom:21px"><tr><td class="hn-success-mark" width="98" height="98" align="center" valign="middle" style="width:98px;height:98px;background:#142820;color:${heroColor};border:1px solid ${borderColor};border-radius:15px;font:800 35px/1 Arial,Helvetica,sans-serif"><img src="${animationUrl}" width="96" height="96" alt="${check}" style="display:block;width:96px;height:96px;max-width:96px;border:0;border-radius:14px;color:#d5eac9;font:700 38px Arial,Helvetica,sans-serif"></td><td style="width:15px"></td><td style="font:800 12px/1.45 Arial,Helvetica,sans-serif;color:#33684e">${escapeHtml(status)}</td></tr></table>
   <h1 class="hn-email-headline" style="margin:0 0 24px;color:#173329;font:500 39px/1.18 Georgia,serif;letter-spacing:-.8px">${escapeHtml(headline)}</h1>
   <p style="font:700 16px/1.6 Arial,Helvetica,sans-serif;color:#25483a;margin:0 0 15px">${escapeHtml(t.hello(name))}</p>
   <p class="hn-email-body" style="font:400 16px/1.85 Arial,Helvetica,sans-serif;color:#45574e;margin:0 0 28px">${escapeHtml(explanation)}</p>
