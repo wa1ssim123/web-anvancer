@@ -24,7 +24,8 @@ async function main(){
    const context=await browser.newContext({viewport:{width,height:840},serviceWorkers:'block'});
    const page=await context.newPage();
    const errors=[];page.on('pageerror',e=>errors.push(String(e)));
-   await page.setContent(fixture());
+   await page.route('https://horenova.test/**',route=>route.fulfill({status:200,contentType:'text/html',body:fixture()}));
+   await page.goto('https://horenova.test/job.html?id=qa-shared-link-1');
    for(const name of ['styles.css','horenova-v12.css','support.css','horenova-opportunities-v1.css'])
     await page.addStyleTag({path:path.join(root,name)});
    await page.evaluate(item=>{window.HORENOVA_LIVE_JOBS=[item]}, {...mock,kind});
