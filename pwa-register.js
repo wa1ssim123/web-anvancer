@@ -32,66 +32,139 @@
   });
 })();
 
-/* HORENOVA 2026-11-20: release freshness guard + universal customer support entry point.
- * Never erase local form data or log users out when an update is available.
+/* HORENOVA · Support FAB v3 + safe release checks.
+ * One trigger replaces the intrusive two-pill launcher.
+ * A user's draft is never reloaded automatically.
  */
 (function(){
   'use strict';
-  const BUILD='2026.11.20.mobile-r1';
-  const RECHECK_MS=90000;
-  let running=false;
+  const BUILD='2026.11.20.help-fab-r3';
+  const CHECK_EVERY_MS=90000;
+  const SUPPORT_CSS='/support.css?v=20261120-fab-r3';
+  const tr={
+    fr:{button:'Assistance',heading:'Besoin d’aide ?',description:'Notre équipe HORENOVA vous accompagne.',chat:'Écrire au support',chatDetail:'Conversation privée',phone:'Appeler HORENOVA',phoneDetail:'06 48 37 70 09',update:'Nouvelle version HORENOVA disponible.',draft:'Enregistrez vos modifications avant de mettre à jour.',reload:'Mettre à jour'},
+    en:{button:'Support',heading:'Need help?',description:'HORENOVA is here to assist you.',chat:'Chat with support',chatDetail:'Private conversation',phone:'Call HORENOVA',phoneDetail:'06 48 37 70 09',update:'A newer HORENOVA version is available.',draft:'Save your current changes before refreshing.',reload:'Update'},
+    ar:{button:'المساعدة',heading:'هل تحتاج إلى مساعدة؟',description:'فريق هورينوفا هنا لمساعدتك.',chat:'محادثة الدعم',chatDetail:'محادثة خاصة',phone:'اتصل بهورينوفا',phoneDetail:'06 48 37 70 09',update:'يتوفر إصدار جديد من هورينوفا.',draft:'احفظ تعديلاتك قبل التحديث.',reload:'تحديث'}
+  };
+  let lang='fr';try{lang=localStorage.getItem('mihna-lang')||document.documentElement.lang||'fr';}catch{}
+  const words=tr[lang]||tr.fr;
+  let checking=false,launcher=null,updateBanner=null;
+  const svg=(name)=>{
+    const paths={
+      chat:'<path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8A8.5 8.5 0 0 1 12.5 20a8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7A8.4 8.4 0 0 1 4 11.5a8.5 8.5 0 0 1 8.5-8.5 8.5 8.5 0 0 1 8.5 8.5Z"/><path d="M8.5 11.5h.01M12.5 11.5h.01M16.5 11.5h.01"/>',
+      phone:'<path d="M22 16.9v3a2 2 0 0 1-2.2 2A19.7 19.7 0 0 1 3.1 5.2 2 2 0 0 1 5.1 3h3a2 2 0 0 1 2 1.7c.12.95.35 1.89.68 2.78a2 2 0 0 1-.45 2.1L9 10.9a16 16 0 0 0 4.1 4.1l1.33-1.33a2 2 0 0 1 2.1-.45c.89.33 1.83.56 2.78.68A2 2 0 0 1 22 16.9Z"/>',
+      close:'<path d="M18 6 6 18M6 6l12 12"/>',
+      arrow:'<path d="M7 17 17 7M8 7h9v9"/>'
+    };
+    return '<svg xmlns="http://www.w3.org/2000/svg" width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+paths[name]+'</svg>';
+  };
+  function ensureCSS(){
+    if(document.querySelector('link[data-horenova-support-css]'))return;
+    const css=document.createElement('link');
+    css.rel='stylesheet';css.href=SUPPORT_CSS;
+    css.dataset.horenovaSupportCss='true';document.head.append(css);
+  }
+  function makeAction(kind,href,title,detail){
+    const link=document.createElement('a');
+    link.className='hs-fab-action hs-fab-'+kind;link.href=href;
+    const ic=document.createElement('span');ic.className='hs-fab-action-icon';ic.innerHTML=svg(kind);
+    const copy=document.createElement('span');copy.className='hs-fab-action-copy';
+    const strong=document.createElement('strong');strong.textContent=title;
+    const small=document.createElement('small');small.textContent=detail;
+    copy.append(strong,small);link.append(ic,copy);
+    if(kind==='chat'){const arrow=document.createElement('span');arrow.className='hs-fab-arrow';arrow.innerHTML=svg('arrow');link.append(arrow);}
+    return link;
+  }
+  function placeLauncher(){
+    if(!launcher||document.hidden)return;
+    const dock=document.querySelector('.hn12-dock');
+    const activeDock=dock&&getComputedStyle(dock).display!=='none';
+    const top=activeDock?dock.getBoundingClientRect().top:innerHeight;
+    const navHeight=activeDock?Math.max(0,innerHeight-top):0;
+    const bottom=Math.max(20,Math.min(innerHeight-78,Math.ceil(navHeight+14)));
+    launcher.style.setProperty('--hs-fab-bottom',bottom+'px');
+  }
   function addLauncher(){
-    if(document.querySelector('.hs-launcher')||location.pathname==='/support.html')return;
-    const menu=document.createElement('nav');
-    menu.className='hs-launcher';
-    menu.setAttribute('aria-label','Assistance HORENOVA');
-    const support=document.createElement('a');
-    support.href='/support.html';support.textContent='✉ Assistance';support.setAttribute('aria-label','Chat avec le support HORENOVA');
-    const call=document.createElement('a');
-    call.href='tel:+212648377009';call.textContent='☎ Appeler';call.setAttribute('aria-label','Appeler le support au 06 48 37 70 09');
-    menu.append(support,call);
-    document.body.append(menu);
-    if(!document.querySelector('link[data-horenova-support-css]')){
-      const style=document.createElement('link');style.rel='stylesheet';
-      style.href='/support.css?v=hn-support-20261120-r2';
-      style.dataset.horenovaSupportCss='yes';document.head.append(style);
+    if(location.pathname==='/support.html'||document.querySelector('.hs-launcher'))return;
+    ensureCSS();
+    const root=document.createElement('div');
+    root.className='hs-launcher hs-fab-v3';
+    root.setAttribute('aria-label','HORENOVA · '+words.button);
+    const panel=document.createElement('section');
+    panel.className='hs-fab-panel';panel.id='hnSupportFabMenu';panel.hidden=true;
+    panel.setAttribute('aria-label',words.heading);
+    const head=document.createElement('div');head.className='hs-fab-head';
+    const intro=document.createElement('div');intro.className='hs-fab-intro';
+    const eyebrow=document.createElement('small');eyebrow.textContent='HORENOVA · SUPPORT';
+    const title=document.createElement('h2');title.textContent=words.heading;
+    const desc=document.createElement('p');desc.textContent=words.description;
+    intro.append(eyebrow,title,desc);head.append(intro);
+    const actions=document.createElement('div');actions.className='hs-fab-actions';
+    actions.append(makeAction('chat','/support.html',words.chat,words.chatDetail));
+    actions.append(makeAction('phone','tel:+212648377009',words.phone,words.phoneDetail));
+    panel.append(head,actions);
+    const button=document.createElement('button');button.className='hs-fab-trigger';
+    button.type='button';button.setAttribute('aria-controls',panel.id);
+    button.setAttribute('aria-expanded','false');
+    button.setAttribute('aria-label',words.button);
+    const mark=document.createElement('span');mark.className='hs-fab-icon';mark.innerHTML=svg('chat');
+    const text=document.createElement('span');text.className='hs-fab-caption';text.textContent=words.button;
+    button.append(mark,text);
+    root.append(panel,button);document.body.append(root);
+    launcher=root;placeLauncher();
+    function setOpen(open){
+      panel.hidden=!open;button.setAttribute('aria-expanded',String(open));
+      root.classList.toggle('hs-fab-open',open);
+      mark.innerHTML=svg(open?'close':'chat');
+      if(open){placeLauncher();panel.querySelector('a')?.focus({preventScroll:true});}
     }
+    button.addEventListener('click',()=>setOpen(panel.hidden));
+    document.addEventListener('pointerdown',event=>{if(!panel.hidden&&!root.contains(event.target))setOpen(false);});
+    document.addEventListener('keydown',event=>{if(event.key==='Escape'&&!panel.hidden){setOpen(false);button.focus({preventScroll:true});}});
+    window.addEventListener('resize',placeLauncher,{passive:true});
+    window.addEventListener('orientationchange',placeLauncher,{passive:true});
+    document.addEventListener('hn-dock-updated',placeLauncher);
+    if('ResizeObserver' in window){
+      const dock=document.querySelector('.hn12-dock');
+      if(dock)new ResizeObserver(placeLauncher).observe(dock);
+    }
+    // Dock contents can arrive after the user session is resolved.
+    requestAnimationFrame(placeLauncher);
   }
   function showUpdate(){
-    if(document.querySelector('.hs-update-banner'))return;
+    if(updateBanner)return;
+    ensureCSS();
     const box=document.createElement('aside');box.className='hs-update-banner';
     box.setAttribute('role','status');
     const content=document.createElement('div');
-    const heading=document.createElement('strong');heading.textContent='Une nouvelle version HORENOVA est disponible.';
-    const sub=document.createElement('span');sub.textContent='Enregistrez les formulaires ouverts avant d’actualiser.';
-    content.append(heading,document.createElement('br'),sub);
-    const button=document.createElement('button');button.type='button';button.textContent='Mettre à jour ↻';
-    button.onclick=()=>{
-      const url=new URL(location.href);url.searchParams.set('hn_version',Date.now().toString());
+    const title=document.createElement('strong');title.textContent=words.update;
+    const text=document.createElement('span');text.textContent=words.draft;
+    content.append(title,document.createElement('br'),text);
+    const button=document.createElement('button');button.type='button';
+    button.textContent=words.reload;
+    button.addEventListener('click',()=>{
+      const url=new URL(location.href);
+      url.searchParams.set('hn_version',String(Date.now()));
       location.replace(url.href);
-    };
-    box.append(content,button);document.body.append(box);
-    if(!document.querySelector('link[data-horenova-support-css]')){
-      const css=document.createElement('link');css.rel='stylesheet';css.href='/support.css?v=hn-support-20261120-r2';
-      css.dataset.horenovaSupportCss='yes';document.head.append(css);
-    }
+    });
+    box.append(content,button);document.body.append(box);updateBanner=box;
   }
   async function check(){
-    if(running||document.hidden||!navigator.onLine)return;
-    running=true;
+    if(checking||document.hidden||!navigator.onLine)return;
+    checking=true;
     try{
       const response=await fetch('/version.json?check='+Date.now(),{cache:'no-store',credentials:'same-origin'});
       if(!response.ok)return;
-      const info=await response.json();
-      if(info && typeof info.version==='string' && info.version!==BUILD)showUpdate();
-    }catch{}finally{running=false;}
+      const manifest=await response.json();
+      if(manifest&&typeof manifest.version==='string'&&manifest.version!==BUILD)showUpdate();
+    }catch{}finally{checking=false;}
   }
   function start(){
-    addLauncher();
-    void check();
-    setInterval(()=>{void check();},RECHECK_MS);
-    document.addEventListener('visibilitychange',()=>{if(!document.hidden)void check();});
+    addLauncher();void check();
+    setInterval(()=>{void check();},CHECK_EVERY_MS);
+    document.addEventListener('visibilitychange',()=>{if(!document.hidden){placeLauncher();void check();}});
     window.addEventListener('online',()=>{void check();});
   }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});
+  else start();
 })();
