@@ -29,7 +29,7 @@ async function main(){
     };
    });
    assert.equal(state.fabCount,1,'Exactly one support launcher, not two large pills');
-   assert.equal(state.actionCount,2,'Popover must contain chat and phone');
+   assert.equal(state.actionCount,0,'Direct support link must not open an intermediate menu');
    assert.equal(state.legacyPills,0,'Legacy floating support links must be gone');
    assert.ok(state.scrollWidth<=width+2,'Horizontal overflow at '+width+': '+JSON.stringify(state));
    if(width<=960){
@@ -41,16 +41,10 @@ async function main(){
    } else{
     assert.ok(state.fabHeight<=52,'Desktop floating support is oversized');
    }
-   await page.locator('.hs-fab-trigger').click();
-   assert.equal(await page.locator('.hs-fab-trigger').getAttribute('aria-expanded'),'true');
-   assert.equal(await page.locator('.hs-fab-panel').isVisible(),true,'Help menu must open');
-   assert.equal(await page.locator('.hs-fab-action.hs-fab-chat').getAttribute('href'),'/support.html');
-   assert.equal(await page.locator('.hs-fab-action.hs-fab-phone').getAttribute('href'),'tel:+212648377009');
-   const panel=await page.locator('.hs-fab-panel').boundingBox();
-   assert.ok(panel&&panel.x>=0&&panel.x+panel.width<=width+2&&panel.y>=5,'Help menu must stay within the viewport: '+JSON.stringify(panel));
-   await page.keyboard.press('Escape');
-   assert.equal(await page.locator('.hs-fab-panel').isVisible(),false,'Escape must close support menu');
-   assert.equal(await page.locator('.hs-fab-trigger').getAttribute('aria-expanded'),'false');
+   assert.equal(await page.locator('a.hs-fab-trigger.hs-fab-direct').count(),1,'Support should be a direct link');
+   assert.equal(await page.locator('a.hs-fab-trigger.hs-fab-direct').getAttribute('href'),'/support.html');
+   assert.equal(await page.locator('.hs-fab-panel').count(),0,'No intermediate support panel');
+   assert.equal(await page.locator('a.hs-fab-trigger.hs-fab-direct').isVisible(),true);
    await context.close();
    console.log('PASS compact HORENOVA help FAB + five-link single-row dock at '+width+'px');
   }
