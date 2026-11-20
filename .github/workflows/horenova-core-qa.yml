@@ -5,6 +5,9 @@ on:
       - horenova-free-deploy-2026
     paths:
       - 'qa/horenova-release-gates.cjs'
+      - 'qa/transactional-email.cjs'
+      - 'backend/mail-templates.cjs'
+      - 'backend/transactional-mail.cjs'
       - 'qa/horenova-support-gates.cjs'
       - 'backend/support.cjs'
       - 'support.js'
@@ -58,3 +61,4 @@ jobs:
           node qa/horenova-talents-gates.cjs
           node qa/horenova-role-gates.cjs
           node qa/horenova-support-gates.cjs
+          node qa/transactional-email.cjs
