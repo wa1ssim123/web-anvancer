@@ -15,11 +15,19 @@ function validReturn(value){
   }catch{return ''}
 }
 const PENDING_INTENT_KEY='hn-candidate-journey-v3';
+const SAFE_RETURN_KEY='hn-public-application-return-v1';
 function readJourney(){
  try{
   const value=JSON.parse(sessionStorage.getItem(PENDING_INTENT_KEY)||'null');
   if(value?.at&&Date.now()-value.at<24*60*60*1000)return value;
   sessionStorage.removeItem(PENDING_INTENT_KEY);
+ }catch{}
+ // Non-secret destination may survive a separate tab opened by an email app.
+ // Never put the Wix state token, password or member tokens in localStorage.
+ try{
+  const saved=JSON.parse(localStorage.getItem(SAFE_RETURN_KEY)||'null');
+  if(saved?.at&&Date.now()-saved.at<24*60*60*1000&&validReturn(saved.returnTo||''))return saved;
+  localStorage.removeItem(SAFE_RETURN_KEY);
  }catch{}
  return null;
 }
@@ -31,9 +39,9 @@ const safeReturn=validReturn(requestedReturn)||validReturn(existingJourney?.retu
 function rememberJourney(change){
  try{
   const prev=readJourney()||{};
-  sessionStorage.setItem(PENDING_INTENT_KEY,JSON.stringify({
-   ...prev,...change,returnTo:safeReturn||prev.returnTo||'',at:Date.now()
-  }));
+  const current={...prev,...change,returnTo:safeReturn||prev.returnTo||'',at:Date.now()};
+  sessionStorage.setItem(PENDING_INTENT_KEY,JSON.stringify(current));
+  try{if(validReturn(current.returnTo))localStorage.setItem(SAFE_RETURN_KEY,JSON.stringify({role:current.role,returnTo:current.returnTo,at:Date.now()}));}catch{}
  }catch{}
 }
 function verifiedJourneyRole(){
