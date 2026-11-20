@@ -4,9 +4,9 @@ const $=id=>document.getElementById(id);
 const gate=$('hsAuthGate'),consoleEl=$('hsConsole'),notice=$('hsNotice');
 const threadsEl=$('hsThreads'),messagesEl=$('hsMessages');
 const labels={
- fr:{mine:'Mes conversations',admin:'Boîte de réception nationale',myDesc:'Vos questions et réponses HORENOVA.',adminDesc:'Demandes des candidats et recruteurs, actualisées automatiquement.',online:'Un superviseur est en ligne',offline:'Aucun superviseur actuellement connecté',hintOnline:'Vous pouvez écrire dans votre conversation privée.',hintOffline:'Laissez votre message : un superviseur le verra dès sa connexion.',empty:'Aucune demande pour le moment.',select:'Sélectionnez une conversation.',open:'Ouverte',progress:'En traitement',resolved:'Résolue',closed:'Clôturée',you:'Vous',team:'Équipe HORENOVA',candidate:'Candidat',recruiter:'Recruteur',error:'Le support est momentanément indisponible. Vous pouvez appeler le 0648377009.',new:'Nouvelle demande',send:'Envoyer ↗'},
- en:{mine:'My conversations',admin:'National support inbox',myDesc:'Your requests and replies.',adminDesc:'Candidate and recruiter requests, updated automatically.',online:'A supervisor is online',offline:'No supervisor currently online',hintOnline:'You can send a message in your private conversation.',hintOffline:'Leave a message. A supervisor will see it when available.',empty:'No requests yet.',select:'Choose a conversation.',open:'Open',progress:'In progress',resolved:'Resolved',closed:'Closed',you:'You',team:'HORENOVA team',candidate:'Candidate',recruiter:'Recruiter',error:'Support is temporarily unavailable. Call 0648377009.',new:'New request',send:'Send ↗'},
- ar:{mine:'محادثاتي',admin:'صندوق الدعم الوطني',myDesc:'طلباتك وردود الفريق.',adminDesc:'طلبات المرشحين والمشغّلين تتجدد تلقائياً.',online:'مشرف متصل الآن',offline:'لا يوجد مشرف متصل حالياً',hintOnline:'يمكنك إرسال رسالة في المحادثة الخاصة.',hintOffline:'اترك رسالتك وسيطلع عليها المشرف عند اتصاله.',empty:'لا توجد طلبات حالياً.',select:'اختر محادثة.',open:'مفتوحة',progress:'قيد المعالجة',resolved:'تم الحل',closed:'مغلقة',you:'أنت',team:'فريق هورينوفا',candidate:'مرشح',recruiter:'مشغّل',error:'خدمة الدعم غير متاحة مؤقتاً. اتصل على 0648377009.',new:'طلب جديد',send:'إرسال ↗'}
+ fr:{mine:'Mes conversations',admin:'Boîte de réception nationale',myDesc:'Vos questions et réponses HORENOVA.',adminDesc:'Demandes des candidats et recruteurs, actualisées automatiquement.',online:'Un superviseur est en ligne',offline:'Messagerie disponible 24 h/24',hintOnline:'Vous pouvez écrire dans votre conversation privée.',hintOffline:'Déposez votre demande à tout moment. L’équipe vous répondra dès qu’elle pourra la prendre en charge.',empty:'Aucune demande pour le moment.',select:'Sélectionnez une conversation.',open:'Ouverte',progress:'En traitement',resolved:'Résolue',closed:'Clôturée',you:'Vous',team:'Équipe HORENOVA',candidate:'Candidat',recruiter:'Recruteur',error:'Impossible de charger les conversations pour le moment. Réessayez ou appelez le 0648377009.',new:'Nouvelle demande',send:'Envoyer ↗'},
+ en:{mine:'My conversations',admin:'National support inbox',myDesc:'Your requests and replies.',adminDesc:'Candidate and recruiter requests, updated automatically.',online:'A supervisor is online',offline:'Messaging open 24/7',hintOnline:'You can send a message in your private conversation.',hintOffline:'Send your request any time. Our team will respond as soon as it can review it.',empty:'No requests yet.',select:'Choose a conversation.',open:'Open',progress:'In progress',resolved:'Resolved',closed:'Closed',you:'You',team:'HORENOVA team',candidate:'Candidate',recruiter:'Recruiter',error:'Unable to load conversations right now. Please try again or call 0648377009.',new:'New request',send:'Send ↗'},
+ ar:{mine:'محادثاتي',admin:'صندوق الدعم الوطني',myDesc:'طلباتك وردود الفريق.',adminDesc:'طلبات المرشحين والمشغّلين تتجدد تلقائياً.',online:'مشرف متصل الآن',offline:'المراسلة متاحة على مدار الساعة',hintOnline:'يمكنك إرسال رسالة في المحادثة الخاصة.',hintOffline:'يمكنك إرسال طلبك في أي وقت، وسيرد عليك فريقنا فور التمكن من معالجته.',empty:'لا توجد طلبات حالياً.',select:'اختر محادثة.',open:'مفتوحة',progress:'قيد المعالجة',resolved:'تم الحل',closed:'مغلقة',you:'أنت',team:'فريق هورينوفا',candidate:'مرشح',recruiter:'مشغّل',error:'تعذّر تحميل المحادثات الآن. حاول مرة أخرى أو اتصل على 0648377009.',new:'طلب جديد',send:'إرسال ↗'}
 };
 const lang=currentLang();const copy=labels[lang]||labels.fr;
 let user=null,admin=false,threads=[],chosen='',lastSignature='',syncBusy=false,sendBusy=false,heartbeatLast=0;
@@ -31,7 +31,7 @@ async function updatePresence(){
   $('hsPresenceLabel').textContent=response.online?copy.online:copy.offline;
   $('hsPresenceHint').textContent=response.online?copy.hintOnline:copy.hintOffline;
   $('hsPresenceDot').classList.toggle('online',!!response.online);
- }catch{$('hsPresenceLabel').textContent=copy.offline;$('hsPresenceHint').textContent=copy.hintOffline;}
+ }catch{$('hsPresenceLabel').textContent=copy.offline;$('hsPresenceHint').textContent=copy.hintOffline;$('hsPresenceDot').classList.remove('online');}
 }
 async function beat(){
  if(!admin||document.hidden)return;
@@ -125,6 +125,11 @@ function showDialog(show){
  $('hsNewDialog').hidden=!show;
  if(show){$('hsNewDialog').scrollIntoView({behavior:'smooth',block:'center'});$('hsCreateForm').querySelector('select').focus();}
 }
+$('hsQuickDemand')?.addEventListener('click',()=>{
+ if(!user){gate.hidden=false;gate.scrollIntoView({block:'center',behavior:'smooth'});gate.querySelector('a')?.focus({preventScroll:true});}
+ else if(admin)consoleEl.scrollIntoView({block:'start',behavior:'smooth'});
+ else showDialog(true);
+});
 $('hsNewThread').addEventListener('click',()=>showDialog(true));
 $('hsCloseDialog').addEventListener('click',()=>showDialog(false));
 $('hsCancelDialog').addEventListener('click',()=>showDialog(false));
