@@ -31,7 +31,7 @@ async function scenario(browser,lang,width,height){
  const context=await browser.newContext({viewport:{width,height},reducedMotion:'reduce',serviceWorkers:'block'});
  const page=await context.newPage(),errors=[];
  page.on('pageerror',e=>errors.push(e.message));
- await page.addInitScript(lang=>localStorage.setItem('mihna-lang',lang),lang);
+ await page.addInitScript(lang=>{if(!sessionStorage.getItem('mg-qa-initialized')){localStorage.setItem('mihna-lang',lang);sessionStorage.setItem('mg-qa-initialized','1')}},lang);
  await page.route('**/*',route=>{
   const url=new URL(route.request().url());
   if(url.hostname!=='horenova.test')return route.fulfill({status:204,body:''});
