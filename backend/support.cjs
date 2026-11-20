@@ -45,8 +45,8 @@ function createSupportHandler({pool,json,read,rate,auth,error,limit,uuid}) {
   return thread;
  }
  async function handler(req,res,path,method){
-  await ensureSchema();
   const user=await auth(req);
+  await ensureSchema();
   if(!['candidate','recruiter','admin'].includes(user.role))throw error(403,'Connectez un compte candidat ou recruteur pour contacter HORENOVA.');
   if(path==='/api/support/presence'&&method==='GET'){
    const r=await pool.query("SELECT COUNT(*)::integer AS count FROM hr_support_presence WHERE last_seen_at > NOW()-INTERVAL '80 seconds'");
@@ -99,10 +99,10 @@ function createSupportHandler({pool,json,read,rate,auth,error,limit,uuid}) {
    const thread=await getThread(id,user);
    if(!action&&method==='GET')return json(res,200,{item:publicThread(thread)});
    if(action==='messages'&&method==='GET'){
-    const data=await pool.query('SELECT id,sender_role,body,created_at FROM hr_support_messages WHERE thread_id=$1 ORDER BY created_at ASC,id ASC LIMIT 500',[id]);
+    const data=await pool.query('SELECT id,sender_role,body,created_at FROM hr_support_messages WHERE thread_id=$1 ORDER BY created_at DESC,id DESC LIMIT 500',[id]);
     const column=user.role==='admin'?'admin_last_read_at':'member_last_read_at';
     await pool.query('UPDATE hr_support_threads SET '+column+'=NOW() WHERE id=$1',[id]);
-    return json(res,200,{items:data.rows.map(m=>({id:m.id,senderRole:m.sender_role,body:m.body,createdAt:m.created_at}))});
+    return json(res,200,{items:data.rows.reverse().map(m=>({id:m.id,senderRole:m.sender_role,body:m.body,createdAt:m.created_at}))});
    }
    if(action==='messages'&&method==='POST'){
     rate(user.id+':support-message',30,60);
