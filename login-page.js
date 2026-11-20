@@ -26,7 +26,7 @@ function readJourney(){
  // Never put the Wix state token, password or member tokens in localStorage.
  try{
   const saved=JSON.parse(localStorage.getItem(SAFE_RETURN_KEY)||'null');
-  if(saved?.at&&Date.now()-saved.at<(saved.status==='verification'?15:24*60)*60*1000
+  if(saved?.at&&Date.now()-saved.at<24*60*60*1000
       &&(validReturn(saved.returnTo||'')||saved.status==='verification'))return saved;
   localStorage.removeItem(SAFE_RETURN_KEY);
  }catch{}
