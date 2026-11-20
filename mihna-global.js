@@ -77,6 +77,7 @@ async function installMemberRoleNavigation(session){
   if(dock){dock.innerHTML=roleNavMarkup(links,'dock');dock.dataset.roleNavigation=role;}
   if(mobile){mobile.innerHTML=roleNavMarkup(links,'mobile');mobile.dataset.roleNavigation=role;}
   document.body.dataset.memberRole=role;
+   document.dispatchEvent(new Event('hn-role-navigation-ready'));
 }
 function renderSession(s){void installMemberRoleNavigation(s).catch(e=>console.warn('Navigation du rôle momentanément indisponible.',e));const d=getDemoSession();document.querySelectorAll('[data-session-link]').forEach(el=>{if(d){el.href='/account.html';if(el.classList.contains('space-btn'))el.textContent=d.role==='admin'?'Admin Horenova':d.role==='recruiter'?'Espace recruteur':'Mon espace'}else if(s.loading){if(el.classList.contains('space-btn'))el.textContent='…'}else if(s.loggedIn){el.href='/account.html';if(el.classList.contains('space-btn'))el.textContent=s.member?.displayName||s.member?.firstName||'Mon espace'}else{el.href='/login.html';if(el.classList.contains('space-btn'))el.setAttribute('data-i18n','nav.login')}});applyLanguage()}
 
