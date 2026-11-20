@@ -249,3 +249,6 @@ background:radial-gradient(ellipse 48% 47% at 50% 50%,rgba(5,9,12,.60),rgba(5,9,
  .hn-home-hero{padding-top:195px!important}
  .hn-intro-inner .hn-intro-explore{margin-top:13px;padding:12px 15px}
 }
+
+/* The expanded support/contact footer must wrap instead of stretching tablet layouts. */
+@media(max-width:1000px){.hn-home-footer{display:flex;flex-wrap:wrap;justify-content:flex-start;column-gap:19px;row-gap:14px;max-width:100%;min-width:0;box-sizing:border-box}.hn-home-footer>a,.hn-home-footer>p,.hn-home-footer>div{min-width:0;max-width:100%;flex:0 1 auto}}
