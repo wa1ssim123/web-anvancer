@@ -102,6 +102,7 @@ const dependencies=name=>{
   if(name==='node:http')return {createServer:()=>({listen(){}})};
   if(name==='node:crypto')return require('node:crypto');
   if(name==='./support.cjs')return {createSupportHandler:()=>async()=>{throw Error('Support has its own QA mock tests.')}};
+  if(name==='./transactional-mail.cjs')return {createTransactionalMailer:()=>({start:async()=>{},enqueue:async()=>({queued:true}),stats:async()=>({enabled:false,states:[]})})};
   throw Error('Unexpected dependency '+name);
 };
 const {api}=new Function('require','process','fetch','AbortSignal','Buffer','console',
