@@ -6,24 +6,8 @@
  */
 const {renderMail,localeOf}=require('./mail-templates.cjs');
 const EVENT_TYPES=new Set(['candidate','job','shift']);
-const schema=`CREATE TABLE IF NOT EXISTS hr_email_outbox (
- event_key TEXT PRIMARY KEY,
- event_kind TEXT NOT NULL CHECK (event_kind IN ('candidate','job','shift')),
- recipient_email TEXT NOT NULL,
- locale TEXT NOT NULL DEFAULT 'fr',
- payload JSONB NOT NULL,
- state TEXT NOT NULL DEFAULT 'queued' CHECK (state IN ('queued','sending','sent','failed')),
- attempts INTEGER NOT NULL DEFAULT 0,
- next_attempt_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
- lease_until TIMESTAMPTZ,
- sent_at TIMESTAMPTZ,
- provider_id TEXT,
- last_error TEXT,
- created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-)`;
-const index=`CREATE INDEX IF NOT EXISTS hr_email_outbox_pending_idx
- ON hr_email_outbox (next_attempt_at,created_at)
- WHERE state IN ('queued','sending')`;
+// Schema is created by the database owner (see email-outbox.sql).
+// The limited API role only needs SELECT, INSERT and UPDATE.
 const emailOk = email => typeof email==='string' && email.length<=220 &&
  /^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(email);
 const safeKey=key=>typeof key==='string'&&/^(candidate|job|shift):[0-9a-f-]{36}$/.test(key);
@@ -33,7 +17,7 @@ function createTransactionalMailer({pool,env=process.env,fetcher=globalThis.fetc
     /<[^<>\s]+@[^<>\s]+\.[^<>\s]+>/.test(env.MAIL_FROM));
  async function init(){
    if(!initialized){
-     initialized=(async()=>{await pool.query(schema);await pool.query(index);return true;})()
+     initialized=pool.query('SELECT 1 FROM hr_email_outbox LIMIT 0').then(()=>true)
        .catch(err=>{initialized=null;throw err});
    }
    return initialized;
