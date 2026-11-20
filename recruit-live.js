@@ -1,4 +1,4 @@
-import { requireRole } from '/mihna-global.js';
+import { requireRole,currentLang } from '/mihna-global.js';
 import { queryItems, insertItem } from '/js/wix/items.js';
 import { hub, hubUploadWorkplacePhoto, hubPhoto } from '/hn-api.js?v=professional-20261119-r1';
 const auth=await requireRole(['recruiter'],false);
@@ -182,7 +182,7 @@ async function render(){
   status.textContent='Synchronisation de votre ancienne demande…';
   try{
    await hub('/api/recruiter-requests',{method:'POST',body:{
-    ...request,jobTitle:request.title,wixRequestId:request._id
+    ...request,jobTitle:request.title,wixRequestId:request._id,locale:currentLang()
    }});
    status.className='recruit-status-ok';
    status.textContent='✓ Ancienne demande synchronisée avec HORENOVA.';
@@ -289,7 +289,7 @@ form.addEventListener('submit',async event=>{
   }
   status.textContent='Transmission au suivi central HORENOVA…';
   await hub('/api/recruiter-requests',{method:'POST',body:{
-   ...pendingSync.data,jobTitle:pendingSync.data.title,wixRequestId:pendingSync.id
+   ...pendingSync.data,jobTitle:pendingSync.data.title,wixRequestId:pendingSync.id,locale:currentLang()
   }});
   pendingSync=null;
   status.className='recruit-status-ok';
