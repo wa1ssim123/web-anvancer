@@ -11,6 +11,7 @@ const requestId='11111111-1111-4111-8111-111111111111';
 const accounts={
  'candidate-token':{id:'candidate-1',role:'candidate'},
  'candidate-noquiz-token':{id:'candidate-2',role:'candidate'},
+ 'candidate-no-photo-token':{id:'candidate-3',role:'candidate'},
  'recruiter-token':{id:'recruiter-1',role:'recruiter'},
  'admin-token':{id:'admin-verified',role:'admin'}
 };
@@ -20,7 +21,7 @@ function harness(){
  class Pool{
   async query(sql,args=[]){
    log.db.push({sql,args});
-   if(sql.startsWith('SELECT 1 FROM hr_candidate_photos WHERE candidate_wix_id=$1'))return {rows:[{ok:1}],rowCount:1};
+   if(sql.startsWith('SELECT 1 FROM hr_candidate_photos WHERE candidate_wix_id=$1'))return args[0]==='candidate-3'?{rows:[],rowCount:0}:{rows:[{ok:1}],rowCount:1};
     if(sql.startsWith('SELECT 1'))return {rows:[{ok:1}],rowCount:1};
    if(sql.startsWith('SELECT * FROM hr_applications WHERE id=$1'))return {rows:[{id:requestId,candidate_wix_id:'candidate-1',recruiter_wix_id:'recruiter-1',consent_to_intro:true}],rowCount:1};
    if(sql.startsWith('UPDATE hr_recruiter_requests'))return {rows:[{id:requestId,status:args[0]}],rowCount:1};
@@ -48,7 +49,7 @@ function harness(){
     let items=[];
     if(body.dataCollectionId==='AccountRoles' && identity.role!=='admin')
       items=[{_owner:owner,role:identity.role}];
-    if(body.dataCollectionId==='CandidateProfiles' && identity.role==='candidate')
+    if(body.dataCollectionId==='CandidateProfiles' && identity.role==='candidate' && identity.id==='candidate-1')
       items=[{_owner:owner,profileComplete:true,videoFileId:'video-1',videoConsent:true,firstName:'Test'}];
     if(body.dataCollectionId==='QuizAttempts' && token==='candidate-token')
       items=[{_owner:owner,jobFamily:'Serveur',passed:true,score:100}];
@@ -114,20 +115,32 @@ test('Verified administrator can moderate recruitment requests',async()=>{
  assert.equal((await h.request('PATCH','/api/recruiter-requests/'+requestId+'/status','admin-token',{status:'VALIDEE'})).status,200);
  assert.ok(h.log.db.some(x=>x.sql.startsWith('UPDATE hr_recruiter_requests')&&x.args[0]==='VALIDEE'));
 });
-test('Candidate application checks their own profile and their own passed quiz',async()=>{
+test('Candidate application preserves optional existing profile and quiz but does not require them',async()=>{
  const h=harness();
- const response=await h.request('POST','/api/applications','candidate-token',{jobId:'job-1',consentToIntro:true,application:{experienceYears:2,motivation:'I am motivated to provide excellent hospitality and attentive service.',skills:['Service en salle'],phone:'+212648377009',desiredCity:'Casablanca'}});
+ const response=await h.request('POST','/api/applications','candidate-token',{jobId:'job-1',consentToIntro:true,application:{firstName:'Samira',lastName:'Candidate',experienceYears:2,motivation:'I am motivated to provide excellent hospitality and attentive service.',skills:['Service en salle'],phone:'+212648377009',desiredCity:'Casablanca'}});
  assert.equal(response.status,201);
  assert.equal(response.data?.item?.candidateWixId,'candidate-1');
  for(const collection of ['AccountRoles','CandidateProfiles','QuizAttempts']){
   assert.ok(h.log.wix.some(x=>x.collection===collection&&x.owner==='candidate-1'));
  }
 });
-test('Passing quiz belonging to a different user never authorizes application',async()=>{
+test('No quiz, no video, no pre-existing profile: candidate may apply with required private photo',async()=>{
  const h=harness();
- const response=await h.request('POST','/api/applications','candidate-noquiz-token',{jobId:'job-1',consentToIntro:true});
+ const response=await h.request('POST','/api/applications','candidate-noquiz-token',{jobId:'job-1',consentToIntro:true,application:{firstName:'Omar',lastName:'Candidate',desiredCity:'Rabat',phone:'+212648377009'}});
+ assert.equal(response.status,201);
+ assert.ok(h.log.db.some(x=>x.sql.startsWith('INSERT INTO hr_applications')&&x.args[0]==='candidate-2'));
+ assert.ok(!h.log.wix.some(x=>x.collection==='QuizAttempts'&&x.owner!=='candidate-2'));
+});
+test('No photo is still a protected rejection',async()=>{
+ const h=harness();
+ const response=await h.request('POST','/api/applications','candidate-no-photo-token',{jobId:'job-1',consentToIntro:true,application:{firstName:'Omar',lastName:'Candidate',desiredCity:'Rabat',phone:'+212648377009'}});
  assert.equal(response.status,422);
  assert.ok(!h.log.db.some(x=>x.sql.startsWith('INSERT INTO hr_applications')));
+});
+test('Consent remains mandatory even with complete candidate information',async()=>{
+ const h=harness();
+ const response=await h.request('POST','/api/applications','candidate-noquiz-token',{jobId:'job-1',consentToIntro:false,application:{firstName:'Omar',lastName:'Candidate',desiredCity:'Rabat',phone:'+212648377009'}});
+ assert.equal(response.status,422);
 });
 
 
