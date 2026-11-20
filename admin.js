@@ -38,7 +38,8 @@ const $=id=>document.getElementById(id);
 const names={EN_ETUDE:'En étude',PRESELECTION:'Présélection',ENTRETIEN:'Entretien',MISE_EN_RELATION:'Mise en relation',RETENUE:'Retenue',REFUSEE:'Refusée',CLOTURE:'Clôturée'};
 const statuses=['EN_ETUDE','PRESELECTION','ENTRETIEN','MISE_EN_RELATION','RETENUE','REFUSEE','CLOTURE'];
 let applications=[],requests=[],selected='',objectUrl=null;
-const field=(n,v,w=false)=>'<div class="hub-field '+(w?'wide':'')+'"><small>'+esc(n)+'</small><strong>'+esc(v??'Non renseigné')+'</strong></div>';
+const field=(n,v,w=false)=>'<div class="hub-field hn-case-field '+(w?'wide':'')+'"><small>'+esc(n)+'</small><strong>'+esc(v===null||v===undefined||v===''?'Non renseigné':v)+'</strong></div>';
+const caseGroup=(title,subtitle,fields,tag)=>'<section class="hn-case-section"><div class="hn-case-section-head"><span class="hn-case-section-icon" aria-hidden="true">'+tag+'</span><div><h4>'+title+'</h4><p>'+subtitle+'</p></div></div><div class="hub-grid hn-case-fields">'+fields+'</div></section>';
 const showError=msg=>{$('hubError').textContent=msg||'';};
 const requestStatuses={A_EXAMINER:'À examiner',VALIDEE:'Validée · visible publiquement',REFUSEE:'Refusée'};
 function listRequests(){
@@ -94,32 +95,72 @@ const term=$('hubSearch').value.toLowerCase().trim();
 const shown=applications.filter(a=>[a.jobTitle,a.candidateEmail,a.profile?.firstName,a.profile?.lastName,a.profile?.city].join(' ').toLowerCase().includes(term));
 $('hubCount').textContent=applications.length+' dossier(s)';
 $('hubCases').innerHTML=shown.map(a=>'<button type="button" class="hub-case '+(a.id===selected?'active':'')+'" data-id="'+esc(a.id)+'"><span>'+esc(new Date(a.createdAt).toLocaleDateString('fr-MA'))+'</span><strong>'+esc([a.profile?.firstName,a.profile?.lastName].filter(Boolean).join(' ')||a.candidateEmail)+'</strong><span>'+esc(a.jobTitle)+' · '+esc(a.profile?.city||'')+'</span><p class="hub-tag">'+esc(names[a.status]||a.status)+'</p></button>').join('')||'<div class="hub-detail hub-muted">Aucune candidature.</div>';
-$('hubCases').querySelectorAll('[data-id]').forEach(b=>b.onclick=()=>detail(b.dataset.id));
+$('hubCases').querySelectorAll('[data-id]').forEach(b=>b.onclick=()=>detail(b.dataset.id,true));
 }
-async function detail(id){
-selected=id;list();
-const a=applications.find(x=>x.id===id);if(!a)return;
-const p=a.profile||{},languages=[['Arabe',p.arabic,p.arabicLevel],['Français',p.french,p.frenchLevel],['Anglais',p.english,p.englishLevel]].filter(z=>z[1]).map(z=>z[0]+' '+z[2]+'/5').join(' · ');
-const select=statuses.map(s=>'<option value="'+s+'" '+(a.status===s?'selected':'')+'>'+esc(names[s])+'</option>').join('');
-const reqOptions='<option value="">Sélectionner un recruteur…</option>'+requests.filter(r=>r.status==='VALIDEE'&&(!r.job_role||r.job_role===a.jobRole)).map(r=>'<option value="'+esc(r.id)+'">'+esc(r.business_name+' · '+r.job_title)+'</option>').join('');
-$('hubDetail').innerHTML='<div class="hub-detail"><span class="hub-small">DOSSIER PRIVÉ · '+esc(id.slice(0,8))+'</span><div class="hub-profile"><div id="hubPortrait" class="hub-photo hub-photo-placeholder">◉</div><div><h3>'+esc(p.firstName||'')+' '+esc(p.lastName||'')+'</h3><p class="hub-muted">'+esc(a.jobTitle)+'</p><span class="hub-tag">'+esc(names[a.status]||a.status)+'</span></div></div><div class="hub-grid">'+field('E-mail',a.candidateEmail)+field('Âge',p.age)+field('Ville',p.city)+field('Métier',p.jobFamily)+field('Langues',languages,true)+field('Quiz',p.quizPassed?p.quizScore+' %':'Non validé')+field('Vidéo privée',p.videoFileId?'Enregistrée':'Absente')+field('Présentation',p.bio,true)+
-field('Années d’expérience',p.application?.experienceYears)+
-field('Dernier poste',p.application?.lastPosition)+
-field('Compétences',Array.isArray(p.application?.skills)?p.application.skills.join(' · '):'Non renseignées',true)+
-field('Disponibilité',p.application?.availability)+
-field('Date souhaitée',p.application?.earliestStart)+
-field('Ville souhaitée',p.application?.desiredCity)+
-field('Contrat préféré',p.application?.contractPreference)+
-field('Téléphone privé du candidat (admin uniquement)',p.application?.phone,true)+
-field('Motivation détaillée',p.application?.motivation,true)+
-field('Consentement candidat',a.consentToIntro?'Oui':'Non',true)+'</div><div class="hub-controls"><label>Statut<select class="hub-select" id="hubStatus">'+select+'</select></label><button class="hub-action" type="button" id="saveStatus">Enregistrer le statut</button><label>Associer une demande d’établissement<select class="hub-select" id="recruitRequest">'+reqOptions+'</select></label><button class="hub-action secondary" type="button" id="assignRequest" '+(a.recruiterWixId?'disabled':'')+'>Autoriser la mise en relation</button><a class="hub-action secondary" href="/conversations.html?id='+encodeURIComponent(id)+'">Ouvrir la conversation à trois ↗</a><p class="hub-error" id="caseError"></p></div></div>';
-$('saveStatus').onclick=async()=>{try{await hub('/api/applications/'+id+'/status',{method:'PATCH',body:{status:$('hubStatus').value}});await refresh();}catch(e){$('caseError').textContent=e.message;}};
-$('assignRequest').onclick=async()=>{try{const requestId=$('recruitRequest').value;if(!requestId)throw Error('Sélectionnez une demande.');if(!a.consentToIntro)throw Error('Consentement candidat requis.');await hub('/api/applications/'+id+'/assign',{method:'PATCH',body:{requestId}});await refresh();}catch(e){$('caseError').textContent=e.message;}};
-if(objectUrl){URL.revokeObjectURL(objectUrl);objectUrl=null;}
-try{objectUrl=await hubPhoto('/api/applications/'+id+'/photo');if(objectUrl&&id===selected){const img=document.createElement('img');img.className='hub-photo';img.src=objectUrl;img.alt='Photo du candidat';$('hubPortrait')?.replaceWith(img);}}catch{}
+async function detail(id,scrollToDetail=false){
+ selected=id;list();
+ const a=applications.find(x=>x.id===id);
+ if(!a)return;
+ const p=a.profile||{},d=p.application||{};
+ const languages=[['Arabe',p.arabic,p.arabicLevel],['Français',p.french,p.frenchLevel],['Anglais',p.english,p.englishLevel]]
+  .filter(x=>x[1]).map(x=>x[0]+(x[2]?' · '+x[2]+'/5':'')).join(' · ')||'Non renseignées';
+ const fullname=[p.firstName,p.lastName].filter(Boolean).join(' ').trim()||'Candidat HORENOVA';
+ const select=statuses.map(k=>'<option value="'+k+'"'+(a.status===k?' selected':'')+'>'+esc(names[k])+'</option>').join('');
+ const reqOptions='<option value="">Sélectionner une demande validée…</option>'+
+  requests.filter(r=>r.status==='VALIDEE'&&(!r.job_role||r.job_role===a.jobRole)).map(r=>'<option value="'+esc(r.id)+'">'+esc(r.business_name+' · '+r.job_title)+'</option>').join('');
+ const personFields=field('E-mail',a.candidateEmail,true)+field('Âge',p.age)+field('Ville',p.city);
+ const workFields=field('Métier',p.jobFamily)+field('Langues',languages,true)+field('Années d’expérience',d.experienceYears)+field('Dernier poste',d.lastPosition)+field('Compétences',Array.isArray(d.skills)?d.skills.join(' · '):d.skills,true)+field('Disponibilité',d.availability)+field('Date souhaitée',d.earliestStart)+field('Ville souhaitée',d.desiredCity)+field('Contrat préféré',d.contractPreference);
+ const candidateFields=field('Quiz',p.quizPassed?String(p.quizScore)+' %':'Non validé')+field('Vidéo privée',p.videoFileId?'Enregistrée':'Absente')+field('Présentation',p.bio,true)+field('Motivation détaillée',d.motivation,true);
+ const privateFields=field('Téléphone privé du candidat',d.phone,true)+field('Consentement candidat',a.consentToIntro?'Oui':'Non');
+ const group=(title,subtitle,fields,icon)=>'<section class="hn-case-section"><div class="hn-case-section-head"><span class="hn-case-section-icon" aria-hidden="true">'+icon+'</span><div><h4>'+title+'</h4><p>'+subtitle+'</p></div></div><div class="hub-grid hn-case-fields">'+fields+'</div></section>';
+ const markup='<div class="hub-detail hn-case-detail">'+
+  '<button type="button" class="hn-case-back" id="hnBackToCases">← Retour aux candidatures</button>'+
+  '<div class="hn-case-heading"><span class="hub-small">DOSSIER PRIVÉ · '+esc(id.slice(0,8))+'</span><div class="hn-case-profile">'+
+  '<div class="hn-case-portrait-wrap"><div id="hubPortrait" class="hub-photo hub-photo-placeholder" aria-label="Photo du candidat">◉</div></div>'+
+  '<div class="hn-case-profile-copy"><h3>'+esc(fullname)+'</h3><p>'+esc(a.jobTitle||'Candidature')+'</p><span class="hub-tag">'+esc(names[a.status]||a.status)+'</span></div></div></div>'+
+  group('Identité et contact','Informations transmises par le candidat',personFields,'01')+
+  group('Profil professionnel','Métier, expérience et disponibilité',workFields,'02')+
+  group('Évaluation et motivation','Quiz, vidéo et présentation de la candidature',candidateFields,'03')+
+  '<details class="hn-case-private"><summary>Informations confidentielles · accès administrateur</summary>'+
+  '<div class="hub-grid hn-case-fields">'+privateFields+'</div></details>'+
+  '<section class="hn-case-section hn-case-decisions"><div class="hn-case-section-head"><span class="hn-case-section-icon" aria-hidden="true">04</span><div><h4>Décision administrative</h4><p>Vérifiez le dossier avant toute mise en relation</p></div></div>'+
+  '<div class="hub-controls hn-case-controls"><label>Statut du dossier<select class="hub-select" id="hubStatus">'+select+'</select></label>'+
+  '<button class="hub-action" type="button" id="saveStatus">Enregistrer le statut</button>'+
+  '<label>Associer une demande d’établissement<select class="hub-select" id="recruitRequest">'+reqOptions+'</select></label>'+
+  '<button class="hub-action secondary" type="button" id="assignRequest" '+(a.recruiterWixId?'disabled':'')+'>Autoriser la mise en relation</button>'+
+  '<a class="hub-action secondary" href="/conversations.html?id='+encodeURIComponent(id)+'">Ouvrir la conversation à trois ↗</a>'+
+  '<p class="hub-error" id="caseError" role="alert"></p></div></section></div>';
+ const target=$('hubDetail');
+ target.innerHTML=markup;
+ root.classList.add('hn-case-open');
+ $('hnBackToCases').onclick=()=>{
+  root.classList.remove('hn-case-open');selected='';list();
+  const listBox=$('adminApplications');if(listBox){listBox.scrollIntoView({block:'start',behavior:'smooth'});}
+ };
+ $('saveStatus').onclick=async()=>{
+  const button=$('saveStatus'),error=$('caseError');button.disabled=true;
+  try{await hub('/api/applications/'+encodeURIComponent(id)+'/status',{method:'PATCH',body:{status:$('hubStatus').value}});await refresh();}
+  catch(e){error.textContent=e?.message||String(e);}
+  finally{button.disabled=false;}
+ };
+ $('assignRequest').onclick=async()=>{
+  const button=$('assignRequest'),error=$('caseError');button.disabled=true;
+  try{const requestId=$('recruitRequest').value;if(!requestId)throw Error('Sélectionnez une demande.');if(!a.consentToIntro)throw Error('Consentement candidat requis.');await hub('/api/applications/'+encodeURIComponent(id)+'/assign',{method:'PATCH',body:{requestId}});await refresh();}
+  catch(e){error.textContent=e?.message||String(e);}
+  finally{button.disabled=false;}
+ };
+ if(scrollToDetail){
+  requestAnimationFrame(()=>{target.scrollIntoView({block:'start',behavior:'smooth'});});
+ }
+ if(objectUrl){URL.revokeObjectURL(objectUrl);objectUrl=null;}
+ try{
+  objectUrl=await hubPhoto('/api/applications/'+encodeURIComponent(id)+'/photo');
+  if(objectUrl&&id===selected){const img=document.createElement('img');img.className='hub-photo';img.src=objectUrl;img.alt='Photo du candidat';$('hubPortrait')?.replaceWith(img);}
+ }catch{}
 }
+
 async function refresh(){
-try{showError('');const [a,r]=await Promise.all([hub('/api/applications'),hub('/api/recruiter-requests')]);applications=a.items||[];requests=r.items||[];list();listRequests();if(selected&&applications.some(a=>a.id===selected))await detail(selected);}
+try{showError('');const [a,r]=await Promise.all([hub('/api/applications'),hub('/api/recruiter-requests')]);applications=a.items||[];requests=r.items||[];list();listRequests();if(selected&&applications.some(a=>a.id===selected))await detail(selected,false);else root.classList.remove('hn-case-open');}
 catch(e){showError(e.message+' Les dossiers privés restent accessibles dans le CMS administrateur Wix.');$('hubCases').innerHTML='<div class="hub-detail hub-muted">Service des dossiers non disponible.</div>';}
 }
 $('hubSearch').oninput=list;$('hubRefresh').onclick=refresh;await refresh();
