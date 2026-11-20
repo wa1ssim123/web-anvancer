@@ -36,3 +36,5 @@ jobs:
         run: npx playwright install --with-deps chromium
       - name: Exercise FR, AR and EN on public pages
         run: node qa/browser-smoke.cjs
+      - name: Verify mobile layout, readability, support and role dashboards
+        run: node qa/adaptive-layout.cjs
