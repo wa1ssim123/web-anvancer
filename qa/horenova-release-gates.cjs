@@ -64,7 +64,7 @@ const dossier=source('apply.js');
 assert.match(dossier,/hubUploadPhoto/);
 assert.match(dossier,/experienceYears/);
 assert.match(dossier,/motivation/);
-assert.match(dossier,/consentToIntro:true,application/);
+assert.match(dossier,/consentToIntro:true,locale:currentLang\(\),application/);
 assert.match(recruiter,/hubUploadWorkplacePhoto/);
 assert.match(recruiter,/workplacePhoto/);
 assert.match(backend,/hr_workplace_photos/);
