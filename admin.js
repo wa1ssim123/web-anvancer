@@ -1,5 +1,6 @@
 import {requireRole} from '/mihna-global.js';
 import {hub,hubPhoto} from '/hn-api.js';
+import {printCandidate,printRecruiter,printSupportThread} from '/admin-print.js';
 const auth=await requireRole(['admin'],false);
 const root=document.getElementById('adminGate');
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -28,7 +29,12 @@ async function refreshSupportInbox(){
    const title=document.createElement('strong');title.textContent=item.subject||'Demande de support';
    const meta=document.createElement('small');meta.textContent=[item.memberEmail,item.category,item.status].filter(Boolean).join(' · ');
    const badge=document.createElement('b');badge.textContent=Number(item.unread)>0?item.unread+' nouveau(x)':'Répondre ↗';
-   link.append(title,meta,badge);list.append(link);
+   link.append(title,meta,badge);
+   const row=document.createElement('div');row.className='hn-support-admin-row';
+   const print=document.createElement('button');print.className='hn-admin-print-btn hn-support-print';print.type='button';
+   print.textContent='⎙ Imprimer';
+   print.addEventListener('click',()=>void printSupportThread(item,()=>hub('/api/support/threads/'+encodeURIComponent(item.id)+'/messages')));
+   row.append(link,print);list.append(row);
   }
  }catch(error){count.textContent='Suivi du support momentanément indisponible. Appelez le 0648377009.';}
 }
@@ -63,9 +69,14 @@ function listRequests(){
       '<p class="hub-muted">Assurez-vous qu’aucune coordonnée personnelle n’est incluse dans le titre ou la description publique.</p>'+
       '</div></details>'+
       '<div class="hub-request-actions"><label>Décision administrative <select class="hub-select" data-request-status>'+options+'</select></label>'+
-      '<button type="button" class="hub-action secondary" data-request-save>Enregistrer</button></div>'+
+      '<button type="button" class="hub-action secondary" data-request-save>Enregistrer</button>'+
+      '<button type="button" class="hn-admin-print-btn" data-request-print>⎙ Imprimer la demande</button></div>'+
       '<p class="hub-muted" data-request-feedback role="status"></p></article>';
   }).join(''):'<div class="hub-detail hub-muted">Aucune demande de recrutement dans le suivi central.</div>';
+  target.querySelectorAll('[data-request-print]').forEach(button=>button.addEventListener('click',()=>{
+    const card=button.closest('[data-request-id]'),record=requests.find(r=>r.id===card?.dataset.requestId);
+    if(record)void printRecruiter(record,record.has_workplace_photo?()=>hubPhoto('/api/recruiter-requests/'+encodeURIComponent(record.id)+'/workplace-photo'):null);
+  }));
   target.querySelectorAll('[data-request-save]').forEach(button=>button.addEventListener('click',async()=>{
     const card=button.closest('[data-request-id]');
     if(!card)return;
@@ -115,6 +126,7 @@ async function detail(id,scrollToDetail=false){
  const group=(title,subtitle,fields,icon)=>'<section class="hn-case-section"><div class="hn-case-section-head"><span class="hn-case-section-icon" aria-hidden="true">'+icon+'</span><div><h4>'+title+'</h4><p>'+subtitle+'</p></div></div><div class="hub-grid hn-case-fields">'+fields+'</div></section>';
  const markup='<div class="hub-detail hn-case-detail">'+
   '<button type="button" class="hn-case-back" id="hnBackToCases">← Retour aux candidatures</button>'+
+  '<div class="hn-case-printbar"><button type="button" class="hn-admin-print-btn" id="hnCasePrint">⎙ Imprimer le dossier complet avec photo</button><span>Fiche A4 · accès administrateur</span></div>'+
   '<div class="hn-case-heading"><span class="hub-small">DOSSIER PRIVÉ · '+esc(id.slice(0,8))+'</span><div class="hn-case-profile">'+
   '<div class="hn-case-portrait-wrap"><div id="hubPortrait" class="hub-photo hub-photo-placeholder" aria-label="Photo du candidat">◉</div></div>'+
   '<div class="hn-case-profile-copy"><h3>'+esc(fullname)+'</h3><p>'+esc(a.jobTitle||'Candidature')+'</p><span class="hub-tag">'+esc(names[a.status]||a.status)+'</span></div></div></div>'+
@@ -133,7 +145,8 @@ async function detail(id,scrollToDetail=false){
  const target=$('hubDetail');
  target.innerHTML=markup;
  root.classList.add('hn-case-open');
- $('hnBackToCases').onclick=()=>{
+ $('hnCasePrint').onclick=()=>void printCandidate(a,()=>hubPhoto('/api/applications/'+encodeURIComponent(id)+'/photo'));
+  $('hnBackToCases').onclick=()=>{
   root.classList.remove('hn-case-open');selected='';list();
   const listBox=$('adminApplications');if(listBox){listBox.scrollIntoView({block:'start',behavior:'smooth'});}
  };
