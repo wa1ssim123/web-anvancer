@@ -5,6 +5,12 @@ on:
       - horenova-free-deploy-2026
     paths:
       - 'qa/horenova-release-gates.cjs'
+      - 'qa/horenova-support-gates.cjs'
+      - 'backend/support.cjs'
+      - 'support.js'
+      - 'support.html'
+      - 'support.css'
+      - 'pwa-register.js'
       - 'qa/horenova-runtime-gates.cjs'
       - 'qa/horenova-talents-gates.cjs'
       - 'qa/horenova-role-gates.cjs'
@@ -51,3 +57,4 @@ jobs:
           node qa/horenova-runtime-gates.cjs
           node qa/horenova-talents-gates.cjs
           node qa/horenova-role-gates.cjs
+          node qa/horenova-support-gates.cjs
