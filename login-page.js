@@ -109,7 +109,8 @@ function go(destination){
 }
 function roleDestination(role,firstTime=false){
   if(safeReturn)return safeReturn;
-  if(firstTime && supportedRoles.includes(role))return '/onboarding.html?role='+encodeURIComponent(role);
+  if(firstTime && role==='candidate')return '/candidate-setup.html';
+  if(firstTime && role==='recruiter')return '/recruiter-setup.html';
   return '/account.html';
 }
 async function existingRole(){
