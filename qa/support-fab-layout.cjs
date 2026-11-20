@@ -30,7 +30,7 @@ async function main(){
    });
    assert.equal(state.fabCount,1,'Exactly one support launcher, not two large pills');
    assert.equal(state.actionCount,0,'Direct support link must not open an intermediate menu');
-   assert.equal(state.legacyPills,0,'Legacy floating support links must be gone');
+   assert.equal(state.legacyPills,1,'Exactly one direct support link, without old phone and chat pills');
    assert.ok(state.scrollWidth<=width+2,'Horizontal overflow at '+width+': '+JSON.stringify(state));
    if(width<=960){
     assert.equal(state.visible,5,'Bottom dock must show five shortcuts only: '+JSON.stringify(state));
