@@ -152,6 +152,8 @@ function updateButton(form,text){
 function go(destination){
   if(navigating)return;
   navigating=true;
+  // Clear the consumed job destination after login; never affect another member.
+  try{sessionStorage.removeItem(PENDING_INTENT_KEY);localStorage.removeItem(SAFE_RETURN_KEY);}catch{}
   location.replace(destination);
 }
 function roleDestination(role,firstTime=false){
@@ -416,10 +418,30 @@ function init(){
  });
  const pending=readJourney();
 
- if(pending?.status==='verification'||arrivedFromEmail){
+ // Return to the code screen after checking email if this same browser tab
+ // still has the short-lived Wix challenge. A user must never sign up twice.
+ const pendingChallenge=(()=>{
+   try{
+     const value=JSON.parse(sessionStorage.getItem('hn-wix-email-challenge-v2')||'null');
+     return Boolean(value?.token&&Number.isFinite(value.at)&&Date.now()-value.at<15*60*1000);
+   }catch{return false;}
+ })();
+ if(pendingChallenge&&(pending?.status==='verification'||arrivedFromEmail)){
+   changeMode('signin');
+   signin.hidden=true;signup.hidden=true;verify.hidden=false;
+   info(verify,'Saisissez les 6 chiffres de votre e-mail. Votre compte existe déjà : ne recommencez pas l’inscription.');
+   const code=String(params.get('verificationCode')||'').trim();
+   if(/^\d{6}$/.test(code)){
+     verify.elements.code.value=code;
+     const clean=new URL(location.href);
+     clean.searchParams.delete('verificationCode');
+     history.replaceState(null,'',clean.pathname+clean.search+clean.hash);
+     queueMicrotask(()=>verify.requestSubmit());
+   }else verify.elements.code.focus();
+ }else if(pending?.status==='verification'||arrivedFromEmail){
    changeMode('signin');
    if(pending?.email)signin.elements.email.value=pending.email;
-   info(signin,'Votre compte existe déjà. Connectez-vous avec l’e-mail et le mot de passe choisis. Il est inutile de recommencer l’inscription.');
+   info(signin,'Votre compte est déjà créé. Connectez-vous avec le même e-mail et mot de passe pour accéder à votre offre. Ne créez pas de second compte.');
  }else changeMode(requestedMode);
  const off=subscribeMember(s=>{
     if(!initialCheckComplete && !s.loading){
