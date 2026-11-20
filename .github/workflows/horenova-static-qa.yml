@@ -44,3 +44,5 @@ jobs:
         run: node qa/opportunity-detail-layout.cjs
       - name: Check admin dossier details and moderation buttons on mobile
         run: node qa/admin-case-layout.cjs
+      - name: Check email verification, existing-account recovery, and shared-offer continuation
+        run: node qa/candidate-journey.cjs
