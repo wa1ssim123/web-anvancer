@@ -13,10 +13,11 @@ assert.match(home,/href="\/matching-guide.html"/,'Homepage must link directly to
 assert.match(html,/href="\/enter\.html\?mode=signup&amp;returnTo=%2Fjobs\.html"/,'Signup must preserve jobs destination');
 assert.match(html,/href="\/jobs\.html"/,'Job links must go to public vacancies');
 assert.match(html,/href="\/shifts\.html"/,'Shift links must go to public shifts');
+assert.match(html,/href="\/matches\.html"/,'Matching guide must link to personalized matching deck');
 assert.match(html,/href="\/account\.html"/,'Track applications via member account');
 assert.equal((html.match(/class="mg-step(?: mg-step-featured)?"/g)||[]).length,6,'Exactly 6 candidate steps');
 const translations=JSON.parse(script.slice(script.indexOf('const messages =')+'const messages ='.length,script.indexOf(';\n  const locales')).trim());
-const required=[...new Set([...html.matchAll(/data-msg(?:-html)?="([^"]+)"/g)].map(x=>x[1]))];
+const required=[...new Set([...html.matchAll(/data-msg(?:-html|-aria)?="([^"]+)"/g)].map(x=>x[1]))];
 for(const key of required){
  assert.ok(translations[key],'Missing key '+key);
  for(const lang of ['fr','en','ar'])assert.ok(translations[key][lang]?.trim(),'Empty translation '+key+':'+lang);
