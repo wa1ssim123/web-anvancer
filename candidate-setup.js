@@ -12,6 +12,7 @@ if(f.elements.photo)f.elements.photo.onchange=()=>{
  if(file.size>8*1024*1024){status.textContent='Photo trop volumineuse (max. 8 Mo).';return;}
  img.src=URL.createObjectURL(file);img.hidden=false;
 };
+f.video.required=false;
 f.video.onchange=()=>{const file=f.video.files[0];if(!file)return;preview.src=URL.createObjectURL(file);preview.hidden=false;status.textContent=`${file.name} · ${(file.size/1024/1024).toFixed(1)} MB`};
 let existing=null,hasPortrait=false;
 try{
@@ -30,7 +31,7 @@ try{
    const radio=f.querySelector('input[name="'+language+'"][value="'+(yes?'yes':'no')+'"]');if(radio)radio.checked=true;
    const slider=f.elements[language+'Level'];if(slider&&existing[language+'Level']!=null){slider.value=existing[language+'Level'];slider.dispatchEvent(new Event('input'));}
   }
-  f.video.required=!existing.videoFileId;
+  f.video.required=false;
  }
 }catch(error){console.warn('HORENOVA profile prefilling temporarily unavailable',error?.message||'network');}
 f.elements.photo.required=!hasPortrait;
@@ -141,7 +142,7 @@ async function uploadPrivateVideo(file){
   return fileId;
 }
 
-f.onsubmit=async e=>{e.preventDefault();if(!f.reportValidity())return;const btn=f.querySelector('button[type=submit]'),err=f.querySelector('[data-error]');err.textContent='';btn.disabled=true;try{const fd=new FormData(f);const bool=n=>fd.get(n)==='yes',num=n=>Number(fd.get(n)||0);let videoFileId=existing?.videoFileId||'';const file=f.video.files[0];if(auth.demo){videoFileId='demo-private-video';localStorage.setItem('mihna-demo-candidate',JSON.stringify(Object.fromEntries(fd.entries())))}else if(file){videoFileId=await uploadPrivateVideo(file)}if(!videoFileId)throw new Error('La vidéo de présentation est obligatoire.');const privateData={firstName:fd.get('firstName'),lastName:fd.get('lastName'),age:num('age'),city:fd.get('city'),jobFamily:fd.get('jobFamily'),bio:fd.get('bio')||'',arabic:bool('arabic'),arabicLevel:num('arabicLevel'),french:bool('french'),frenchLevel:num('frenchLevel'),english:bool('english'),englishLevel:num('englishLevel'),otherLanguage:fd.get('otherLanguage')||'',otherLanguageLevel:num('otherLanguageLevel'),videoFileId,videoConsent:true,preferredLanguage:currentLang(),profileComplete:true};if(!auth.demo){if(existing)await patchItemFields('CandidateProfiles',existing._id,privateData);else existing=await insertItem('CandidateProfiles',privateData);const l=[];if(privateData.arabic)l.push('AR '+privateData.arabicLevel+'/5');if(privateData.french)l.push('FR '+privateData.frenchLevel+'/5');if(privateData.english)l.push('EN '+privateData.englishLevel+'/5');if(privateData.otherLanguage)l.push(privateData.otherLanguage+' '+privateData.otherLanguageLevel+'/5');const publicItems=(await queryItems('CandidatePublicProfiles',{filters:[{field:'_owner',op:'eq',value:auth.member.id}],limit:1})).items;const showIdentity=fd.get('publicIdentityConsent')==='yes';
+f.onsubmit=async e=>{e.preventDefault();if(!f.reportValidity())return;const btn=f.querySelector('button[type=submit]'),err=f.querySelector('[data-error]');err.textContent='';btn.disabled=true;try{const fd=new FormData(f);const bool=n=>fd.get(n)==='yes',num=n=>Number(fd.get(n)||0);let videoFileId=existing?.videoFileId||'';const file=f.video.files[0];if(auth.demo){videoFileId='demo-private-video';localStorage.setItem('mihna-demo-candidate',JSON.stringify(Object.fromEntries(fd.entries())))}else if(file){videoFileId=await uploadPrivateVideo(file)}const privateData={firstName:fd.get('firstName'),lastName:fd.get('lastName'),age:num('age'),city:fd.get('city'),jobFamily:fd.get('jobFamily'),bio:fd.get('bio')||'',arabic:bool('arabic'),arabicLevel:num('arabicLevel'),french:bool('french'),frenchLevel:num('frenchLevel'),english:bool('english'),englishLevel:num('englishLevel'),otherLanguage:fd.get('otherLanguage')||'',otherLanguageLevel:num('otherLanguageLevel'),videoFileId,videoConsent:!!videoFileId,preferredLanguage:currentLang(),profileComplete:true};if(!auth.demo){if(existing)await patchItemFields('CandidateProfiles',existing._id,privateData);else existing=await insertItem('CandidateProfiles',privateData);const l=[];if(privateData.arabic)l.push('AR '+privateData.arabicLevel+'/5');if(privateData.french)l.push('FR '+privateData.frenchLevel+'/5');if(privateData.english)l.push('EN '+privateData.englishLevel+'/5');if(privateData.otherLanguage)l.push(privateData.otherLanguage+' '+privateData.otherLanguageLevel+'/5');const publicItems=(await queryItems('CandidatePublicProfiles',{filters:[{field:'_owner',op:'eq',value:auth.member.id}],limit:1})).items;const showIdentity=fd.get('publicIdentityConsent')==='yes';
 const displayName=showIdentity?String(privateData.firstName||'').trim()+' '+String(privateData.lastName||'').trim().slice(0,1).toUpperCase()+'.':'Profil confidentiel';
 const publicBio=showIdentity?String(privateData.bio||'').trim().slice(0,450):'Professionnel disponible via HORENOVA. Identité et coordonnées confidentielles.';
 const pub={displayName,city:privateData.city,jobFamily:privateData.jobFamily,bio:publicBio,languageSummary:l.join(' · ')};if(publicItems[0])await patchItemFields('CandidatePublicProfiles',publicItems[0]._id,pub);else await insertItem('CandidatePublicProfiles',{...pub,rating:0,reviewCount:0,sponsored:false})}const photoFile=f.elements.photo?.files?.[0];if(!photoFile&&!hasPortrait)throw Error('Ajoutez une photo professionnelle pour compléter votre inscription.');
@@ -166,4 +167,4 @@ if(photoFile){
 }
 const target=new URLSearchParams(location.search).get('returnTo')||'';
 const safeTarget=target.startsWith('/')&&!target.startsWith('//')&&!target.includes('\\')?target:'';
-location.assign('/quiz.html?role='+encodeURIComponent(privateData.jobFamily)+'&setup=1'+(safeTarget?'&returnTo='+encodeURIComponent(safeTarget):''))}catch(x){err.textContent=x.message||String(x)}finally{btn.disabled=false}};
+location.assign(safeTarget||'/account.html')}catch(x){err.textContent=x.message||String(x)}finally{btn.disabled=false}};
