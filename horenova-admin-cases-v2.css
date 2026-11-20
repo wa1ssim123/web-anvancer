@@ -254,3 +254,38 @@ body[data-hn12="admin"] #hubRecruiterRequests .hub-request-actions{min-width:0}
 @media(prefers-reduced-motion:reduce){
  body[data-hn12="admin"] .hn-case-detail *{scroll-behavior:auto!important}
 }
+
+
+/* Admin private print actions, aligned with HORENOVA forest & copper. */
+body[data-hn12="admin"] .hn-admin-print-btn{
+ display:inline-flex;align-items:center;justify-content:center;text-align:center;gap:8px;
+ min-height:42px;padding:10px 15px;border:1px solid #c79d6b;border-radius:11px;
+ background:linear-gradient(135deg,#174c3c,#235f4d);color:#fff8ed;
+ font:800 12px/1.4 Inter,system-ui,sans-serif;cursor:pointer;
+ box-shadow:0 4px 13px #163a2720;transition:transform .18s ease,box-shadow .18s ease
+}
+body[data-hn12="admin"] .hn-admin-print-btn:hover{transform:translateY(-2px);box-shadow:0 9px 19px #163a2733}
+body[data-hn12="admin"] .hn-admin-print-btn:focus-visible{outline:3px solid #eab27a;outline-offset:3px}
+body[data-hn12="admin"] .hn-case-printbar{
+ display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:11px;
+ padding:13px 19px;background:#f4f8f2;border-bottom:1px solid #dae8dd
+}
+body[data-hn12="admin"] .hn-case-printbar span{color:#637d71;font:650 11px/1.4 Inter,system-ui,sans-serif}
+body[data-hn12="admin"] .hub-request-actions [data-request-print]{width:auto;min-width:162px}
+body[data-hn12="admin"] .hn-support-admin-row{
+ display:flex;align-items:center;gap:9px;min-width:0;background:#fffffff5;border-radius:13px;padding-right:10px
+}
+body[data-hn12="admin"] .hn-support-admin-row>a{flex:1 1 auto;min-width:0;background:transparent;box-shadow:none}
+body[data-hn12="admin"] .hn-support-admin-row>.hn-support-print{flex:none;min-width:96px}
+@media(max-width:650px){
+ body[data-hn12="admin"] .hn-support-admin-row{padding:10px;display:grid;grid-template-columns:minmax(0,1fr)}
+ body[data-hn12="admin"] .hn-support-admin-row>a{padding:7px}
+ body[data-hn12="admin"] .hn-support-admin-row>.hn-support-print{width:100%}
+ body[data-hn12="admin"] .hn-case-printbar{padding:12px}
+ body[data-hn12="admin"] .hn-case-printbar>.hn-admin-print-btn{width:100%}
+ body[data-hn12="admin"] .hub-request-actions [data-request-print]{width:100%}
+}
+@media(prefers-reduced-motion:reduce){
+ body[data-hn12="admin"] .hn-admin-print-btn{transition:none!important}
+ body[data-hn12="admin"] .hn-admin-print-btn:hover{transform:none!important}
+}
