@@ -20,7 +20,8 @@ function harness(){
  class Pool{
   async query(sql,args=[]){
    log.db.push({sql,args});
-   if(sql.startsWith('SELECT 1'))return {rows:[{ok:1}],rowCount:1};
+   if(sql.startsWith('SELECT 1 FROM hr_candidate_photos WHERE candidate_wix_id=$1'))return {rows:[{ok:1}],rowCount:1};
+    if(sql.startsWith('SELECT 1'))return {rows:[{ok:1}],rowCount:1};
    if(sql.startsWith('SELECT * FROM hr_applications WHERE id=$1'))return {rows:[{id:requestId,candidate_wix_id:'candidate-1',recruiter_wix_id:'recruiter-1',consent_to_intro:true}],rowCount:1};
    if(sql.startsWith('UPDATE hr_recruiter_requests'))return {rows:[{id:requestId,status:args[0]}],rowCount:1};
    if(sql.startsWith('INSERT INTO hr_applications'))return {rows:[{
@@ -105,7 +106,7 @@ test('Recruiter can see own requests but not moderate candidates',async()=>{
  assert.equal((await h.request('GET','/api/recruiter-requests','recruiter-token')).status,200);
  assert.equal((await h.request('PATCH','/api/applications/'+requestId+'/status','recruiter-token',{status:'ENTRETIEN'})).status,403);
  assert.equal((await h.request('GET','/api/reviews/moderation','recruiter-token')).status,403);
- assert.ok(h.log.db.some(x=>x.sql.includes('WHERE recruiter_wix_id=$1')&&x.args[0]==='recruiter-1'));
+ assert.ok(h.log.db.some(x=>x.sql.includes('WHERE r.recruiter_wix_id=$1')&&x.args[0]==='recruiter-1'));
 });
 test('Verified administrator can moderate recruitment requests',async()=>{
  const h=harness();
@@ -115,7 +116,7 @@ test('Verified administrator can moderate recruitment requests',async()=>{
 });
 test('Candidate application checks their own profile and their own passed quiz',async()=>{
  const h=harness();
- const response=await h.request('POST','/api/applications','candidate-token',{jobId:'job-1',consentToIntro:true});
+ const response=await h.request('POST','/api/applications','candidate-token',{jobId:'job-1',consentToIntro:true,application:{experienceYears:2,motivation:'I am motivated to provide excellent hospitality and attentive service.',skills:['Service en salle'],phone:'+212648377009',desiredCity:'Casablanca'}});
  assert.equal(response.status,201);
  assert.equal(response.data?.item?.candidateWixId,'candidate-1');
  for(const collection of ['AccountRoles','CandidateProfiles','QuizAttempts']){
