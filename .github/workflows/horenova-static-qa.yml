@@ -42,3 +42,5 @@ jobs:
         run: node qa/support-fab-layout.cjs
       - name: Verify professional shared jobs and shift pages on mobile
         run: node qa/opportunity-detail-layout.cjs
+      - name: Check admin dossier details and moderation buttons on mobile
+        run: node qa/admin-case-layout.cjs
