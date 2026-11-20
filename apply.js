@@ -30,6 +30,14 @@ try{
  const response=await queryItems('CandidateProfiles',{filters:[{field:'_owner',op:'eq',value:auth.member.id}],limit:1});
  profile=response.items?.[0]||null;
 }catch(error){console.warn('Optional profile prefilling failed',error?.message||'network');}
+let previousApplication=null;
+try{
+ // Use only the signed-in candidate's own applications. No public exposure,
+ // and no need to ask for the same phone, city or experience on every offer.
+ const r=await hub('/api/applications');
+ previousApplication=r.items?.[0]?.profile||null;
+}catch(error){console.warn('Optional prior application prefill unavailable',error?.message||'network');}
+const previousDetails=previousApplication?.application||{};
 try{const r=await hub('/api/profile/photo/status');hasPhoto=!!r.hasPhoto;}catch{}
 if(hasPhoto){
  try{
@@ -39,8 +47,10 @@ if(hasPhoto){
 }
 const member=auth.member||{};
 const contact=member.contact||{};
-const firstName=profile?.firstName||contact.firstName||'';
-const lastName=profile?.lastName||contact.lastName||'';
+const firstName=profile?.firstName||previousApplication?.firstName||contact.firstName||'';
+const lastName=profile?.lastName||previousApplication?.lastName||contact.lastName||'';
+const savedCity=profile?.city||previousDetails.desiredCity||previousApplication?.city||'';
+const savedPhone=previousDetails.phone||'';
 document.getElementById('applyCandidateName').textContent=[firstName,lastName].filter(Boolean).join(' ')||'Votre dossier, simplement.';
 document.getElementById('applyCandidateMeta').textContent='Informations et photo privées · HORENOVA';
 const fields=[
@@ -59,8 +69,8 @@ box.innerHTML=!jobId?
  '<section class="hn-easy-section"><h3>01 · Vos coordonnées</h3><p>Ces informations restent confidentielles.</p><div class="hn-app-grid">'+
  '<label>Prénom *<input name="firstName" autocomplete="given-name" maxlength="80" minlength="2" required value="'+esc(firstName)+'" placeholder="Votre prénom"></label>'+
  '<label>Nom *<input name="lastName" autocomplete="family-name" maxlength="80" minlength="2" required value="'+esc(lastName)+'" placeholder="Votre nom"></label>'+
- '<label>Ville *<input name="desiredCity" autocomplete="address-level2" maxlength="80" minlength="2" required value="'+esc(profile?.city||'')+'" placeholder="Ex. Casablanca"></label>'+
- '<label>Téléphone *<input name="phone" type="tel" autocomplete="tel" inputmode="tel" maxlength="25" required placeholder="+212 6 XX XX XX XX"></label>'+
+ '<label>Ville *<input name="desiredCity" autocomplete="address-level2" maxlength="80" minlength="2" required value="'+esc(savedCity)+'" placeholder="Ex. Casablanca"></label>'+
+ '<label>Téléphone *<input name="phone" type="tel" autocomplete="tel" inputmode="tel" maxlength="25" required value="'+esc(savedPhone)+'" placeholder="+212 6 XX XX XX XX"></label>'+
  '</div></section>'+
  '<section class="hn-easy-section"><h3>02 · Votre photo</h3><p>Ajoutez une photo claire. Elle reste privée et accessible uniquement à HORENOVA et aux recruteurs autorisés.</p>'+
  '<div class="hn-app-photo-upload"><input type="file" name="candidatePhoto" id="applyPhotoFile" accept="image/*" '+(hasPhoto?'':'required')+'>'+
@@ -77,6 +87,17 @@ box.innerHTML=!jobId?
  '<button type="submit" class="hn-app-submit" id="applySubmit">Envoyer ma candidature ↗</button>'+
  '<p class="hn-easy-secure">✓ Photo confidentielle · ✓ Aucun quiz requis · ✓ Aucun enregistrement vidéo requis</p></form>';
 const form=document.getElementById('applyDossierForm');
+// Pre-fill optional details from a previous application, never change the
+// consent checkbox or upload a photo without this candidate's interaction.
+if(form&&previousDetails){
+ for(const name of ['experienceYears','lastPosition','availability','contractPreference','motivation']){
+  const input=form.elements.namedItem(name);
+  const value=previousDetails[name];
+  if(input&&value!==null&&value!==undefined&&String(value)!=='')input.value=String(value);
+ }
+ const skills=Array.isArray(previousDetails.skills)?previousDetails.skills:[];
+ form.querySelectorAll('input[name="skill"]').forEach(input=>{input.checked=skills.includes(input.value)});
+}
 let localPreviewUrl='';
 if(form){
  const photoInput=document.getElementById('applyPhotoFile');
