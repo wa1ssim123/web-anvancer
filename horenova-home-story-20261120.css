@@ -80,3 +80,45 @@ html[dir=rtl] .hn-intro-shortcut{align-items:flex-start}
 @media(max-width:360px){.hn-intro .hn-intro-inner>p{font-size:12px!important}.hn-intro-shortcut{padding:12px 10px;min-height:112px}.hn-intro-shortcut strong{font-size:23px}.hn-intro-shortcut-description{font-size:9px}.hn-origin-flags{gap:5px}.hn-origin-flags .hn-flag-icon{width:27px!important;height:19px!important;min-width:27px;max-width:27px;max-height:19px}.hn-origin-flags span:not([role=img]){font-size:9px}}
 @media(max-height:690px) and (max-width:900px){.hn-intro .hn-intro-inner>img{width:50px!important}.hn-intro .hn-intro-inner>small{margin:6px 0 4px!important}.hn-intro .hn-intro-inner>h1{font-size:clamp(31px,9vw,52px)!important}.hn-intro .hn-intro-inner>p{margin:7px auto!important}.hn-intro-shortcuts{margin-top:10px}.hn-intro-shortcut{min-height:94px;padding:10px 12px}.hn-intro-shortcut strong{margin:4px 0;font-size:clamp(22px,5vw,30px)}.hn-intro .hn-intro-enter{margin-top:9px!important;min-height:43px!important}.hn-intro .hn-intro-explore{margin-top:8px!important;min-height:42px!important}}
 @media(prefers-reduced-motion:reduce){.hn-intro-shortcut,.hn-origin-actions a{transition:none!important;transform:none!important}}
+
+
+/* MATCHING: the third gateway belongs to the same deliberate 3-column grid. */
+.hn-intro .hn-intro-inner{max-width:min(1010px,100vw)!important}
+.hn-intro-shortcuts{max-width:850px;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:24px}
+.hn-intro-shortcut{min-height:139px;padding:19px 17px;min-width:0}
+.hn-intro-shortcut strong{font-size:clamp(25px,2.6vw,35px);letter-spacing:-.048em;white-space:normal}
+.hn-intro-shortcut-description{max-width:240px;min-height:2.8em;font-size:11px}
+.hn-intro-shortcut-matching{border-color:rgba(204,229,194,.62);background:linear-gradient(138deg,rgba(14,39,32,.88),rgba(40,56,39,.69))}
+.hn-intro-shortcut-matching::before{background:radial-gradient(circle at 95% 0%,rgba(161,221,155,.34),transparent 65%)}
+.hn-intro-shortcut-matching .hn-intro-shortcut-overline{color:#c6e9c5}
+.hn-intro-shortcut-matching .hn-intro-shortcut-arrow{color:#d3f1d6}
+.hn-intro-shortcut-matching:hover,.hn-intro-shortcut-matching:focus-visible{border-color:#d3efc8;background:rgba(31,67,52,.95)}
+@media(max-width:650px){
+ .hn-intro-shortcuts{max-width:min(570px,100%);grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:17px}
+ .hn-intro-shortcut{min-height:113px;padding:13px 12px}
+ .hn-intro-shortcut strong{font-size:clamp(22px,5.4vw,31px);margin:6px 0 5px}
+ .hn-intro-shortcut-description{min-height:0;font-size:10px;line-height:1.42}
+ .hn-intro-shortcut-matching{grid-column:1/-1;min-height:82px;padding:14px 18px;display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:15px;align-items:center;justify-items:start}
+ .hn-intro-shortcut-matching .hn-intro-shortcut-overline{grid-column:1/-1;font-size:8px;letter-spacing:.14em}
+ .hn-intro-shortcut-matching strong{grid-column:1;grid-row:2;margin:3px 0;max-width:none;font-size:clamp(25px,6.4vw,34px)}
+ .hn-intro-shortcut-matching .hn-intro-shortcut-description{grid-column:2;grid-row:2;max-width:155px;font-size:10px}
+}
+@media(max-width:360px){
+ .hn-intro-shortcuts{gap:7px}
+ .hn-intro-shortcut{min-height:103px;padding:11px 9px}
+ .hn-intro-shortcut strong{font-size:clamp(21px,6vw,25px)}
+ .hn-intro-shortcut-description{font-size:9px}
+ .hn-intro-shortcut-matching{min-height:72px;padding:10px 12px}
+ .hn-intro-shortcut-matching strong{font-size:24px}
+}
+@media(max-height:740px) and (max-width:900px){
+ .hn-intro .hn-intro-inner>img{width:50px!important}
+ .hn-intro .hn-intro-inner>small{margin:7px 0 4px!important}
+ .hn-intro .hn-intro-inner>p{margin:8px auto!important}
+ .hn-intro-shortcuts{margin-top:9px}
+ .hn-intro-shortcut{min-height:87px;padding:10px}
+ .hn-intro-shortcut strong{margin:4px 0;font-size:clamp(20px,5vw,27px)}
+ .hn-intro-shortcut-matching{min-height:67px}
+ .hn-intro .hn-intro-enter{margin-top:9px!important}
+ .hn-intro .hn-intro-explore{margin-top:8px!important}
+}
