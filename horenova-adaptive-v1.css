@@ -49,6 +49,7 @@ body[data-hn12="account"] [hidden]{display:none!important}
 /* Legible private support card on cream: overrides unrelated global panel rules. */
 body[data-hn12="admin"] #adminSupportInbox{
  background:linear-gradient(128deg,#fffefb,#f8f3eb)!important;
+ background-color:#fffefb!important;
  color:#193442!important;border:1px solid #e2dcd0!important;
  box-shadow:var(--hna-shadow);isolation:isolate
 }
