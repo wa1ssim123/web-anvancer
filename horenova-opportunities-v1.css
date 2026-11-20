@@ -3,6 +3,7 @@
  * Keeps existing job.html?id=... permalink and public API sources.
  */
 :root{--ho-ink:#17332e;--ho-muted:#596c63;--ho-paper:#fffdf8;--ho-background:#f5f0e7;--ho-soft:#f1f4ed;--ho-line:#e1e6dc;--ho-green:#16493e;--ho-orange:#eb6532;--ho-gold:#de9f69}
+html:has(body[data-hn12="job"]){-webkit-text-size-adjust:100%;text-size-adjust:100%}
 body[data-hn12="job"]{background:var(--ho-background)!important;color:var(--ho-ink)}
 body[data-hn12="job"] .hn12-page{
   padding:18px clamp(12px,3.5vw,38px) 65px!important;
