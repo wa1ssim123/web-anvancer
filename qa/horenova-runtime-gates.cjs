@@ -101,6 +101,7 @@ const dependencies=name=>{
   if(name==='pg')return pg;
   if(name==='node:http')return {createServer:()=>({listen(){}})};
   if(name==='node:crypto')return require('node:crypto');
+  if(name==='./support.cjs')return {createSupportHandler:()=>async()=>{throw Error('Support has its own QA mock tests.')}};
   throw Error('Unexpected dependency '+name);
 };
 const {api}=new Function('require','process','fetch','AbortSignal','Buffer','console',
