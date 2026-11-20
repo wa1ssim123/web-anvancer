@@ -12,7 +12,7 @@ const quiz=fs.readFileSync(path.join(root,'quiz.js'),'utf8');
 const i18n=fs.readFileSync(path.join(root,'horenova-i18n.js'),'utf8');
 assert.match(transport,/sessionStorage\.setItem\(PENDING_EMAIL_KEY/,'Wix challenge must survive a mail-app transition within the tab');
 assert.match(transport,/savedPendingEmail\(\)/,'Email verification must reload its short-lived state token');
-assert.match(setup,/&returnTo=/,'Candidate setup must forward the original job link to quiz');
+assert.match(setup,/location\.assign\(safeTarget\|\|'\/account\.html'\)/,'Optional profile must not force a quiz');
 assert.match(quiz,/QUIZ_DRAFT_KEY/,'Quiz responses need to survive language switching');
 assert.match(i18n,/location\.pathname\)/,'i18n must check the current page');
 const formHtml=`<!doctype html><html lang="fr"><head><meta name="viewport" content="width=device-width,initial-scale=1"></head><body><section>
@@ -71,9 +71,9 @@ async function one(browser,scenario){
   assert.equal(await page.evaluate(()=>window.__registerCount),1,'One registration attempt only');
   await page.locator('#verifyForm [name=code]').fill('123456');
   await page.locator('#verifyForm button[type=submit]').click();
-  await page.waitForURL(/candidate-setup\.html/, {timeout:5500});
-  assert.ok(decodeURIComponent(new URL(page.url()).searchParams.get('returnTo')).includes('offer-001'),'Offer ID must survive verification');
-  assert.equal(new URL(page.url()).pathname,'/candidate-setup.html','Verification should open the candidate profile without another signup');
+  await page.waitForURL(/apply\.html\?id=offer-001/, {timeout:5500});
+  assert.equal(new URL(page.url()).searchParams.get('id'),'offer-001','Offer ID must survive email verification');
+  assert.equal(new URL(page.url()).pathname,'/apply.html','Email verification should resume the selected application, without any setup or quiz redirect');
  }
  assert.deepEqual(errors,[],'Browser JS exceptions: '+errors);
  console.log('PASS candidate registration scenario '+scenario);
