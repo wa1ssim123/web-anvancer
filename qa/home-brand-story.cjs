@@ -59,12 +59,29 @@ async function scenario(browser,lang,width,height){
   return {documentWidth:document.documentElement.scrollWidth,windowWidth:innerWidth,
    tilesLeft:rect.left,tilesRight:rect.right,originWidth:originRect.width,
    scrollableIntro:document.querySelector('.hn-intro').scrollHeight>=document.querySelector('.hn-intro').clientHeight,
-   images:[...document.querySelectorAll('.hn-origin-flags [role=img]')].map(n=>n.textContent.trim())
+   flags:[...document.querySelectorAll('.hn-origin-flags svg[role="img"]')].map(n=>{
+     const rect=n.getBoundingClientRect();
+     const css=getComputedStyle(n);
+     const shapes=[...n.querySelectorAll('rect,path')];
+     return {label:n.getAttribute('aria-label'),width:rect.width,height:rect.height,
+       display:css.display,visibility:css.visibility,opacity:css.opacity,
+       shapes:shapes.length,svgNamespace:n.namespaceURI,
+       drawn:shapes.every(shape=>getComputedStyle(shape).visibility!=='hidden')};
+   })
   };
  });
  assert.ok(layout.tilesLeft>=-1&&layout.tilesRight<=width+1,'Intro quick links overflow '+JSON.stringify(layout));
  assert.ok(layout.originWidth<=width+1,'Origin section exceeds viewport '+JSON.stringify(layout));
- assert.deepEqual(layout.images,['🇲🇦','🇨🇦']);
+ assert.equal(layout.flags.length,2,'Two standalone SVG flags must be available without emoji fonts');
+ assert.deepEqual(layout.flags.map(x=>x.label),lang==='en'?['Flag of Morocco','Flag of Canada']:lang==='ar'?['علم المغرب','علم كندا']:['Drapeau du Maroc','Drapeau du Canada']);
+ for(const flag of layout.flags){
+  assert.ok(flag.width>=26&&flag.height>=18,'Flag not visible on screen: '+JSON.stringify(flag));
+  assert.equal(flag.display,'block');
+  assert.equal(flag.visibility,'visible');
+  assert.ok(Number(flag.opacity)>.8,'Flag is transparent');
+  assert.ok(flag.shapes>=2&&flag.drawn,'Flag SVG shapes are missing');
+  assert.equal(flag.svgNamespace,'http://www.w3.org/2000/svg');
+ }
  assert.equal(await page.locator('.hn-origin-values .hn-origin-value').count(),3);
  await page.locator('button.hn-intro-enter').click();
  await page.locator('.hn-intro.gone').waitFor({timeout:4000});
