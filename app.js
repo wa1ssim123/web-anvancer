@@ -1,15 +1,15 @@
 // Live HORENOVA data is loaded from the Wix CMS; no sample applications or ratings are displayed.
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
-const state=JSON.parse(localStorage.getItem('mihna-v3-temp')||'{}');
-state.intent=state.intent||'job'; state.role=state.role||'Barista'; state.city=state.city||'Casablanca'; state.saved=state.saved||[]; state.trip=state.trip||[]; state.customJobs=state.customJobs||[];
-const persist=()=>localStorage.setItem('mihna-v3-temp',JSON.stringify(state));
+const state=(()=>{try{const value=JSON.parse(localStorage.getItem('mihna-v3-temp')||'{}');return value&&typeof value==='object'&&!Array.isArray(value)?value:{}}catch{return {}}})();
+state.intent=state.intent||'job'; state.role=state.role||'Barista'; state.city=state.city||'Casablanca'; state.saved=Array.isArray(state.saved)?state.saved:[]; state.trip=Array.isArray(state.trip)?state.trip:[]; state.customJobs=Array.isArray(state.customJobs)?state.customJobs:[];
+const persist=()=>{try{localStorage.setItem('mihna-v3-temp',JSON.stringify(state))}catch{/* Allow session use when storage is restricted. */}};
 const jobs=()=>[...(window.HORENOVA_LIVE_JOBS||[])];
 function formatJobStartDate(value){
   const match=String(value||'').match(/^(\d{4})-(\d{2})-(\d{2})/);
   if(!match)return String(value||'');
   const date=new Date(Number(match[1]),Number(match[2])-1,Number(match[3]),12);
   if(Number.isNaN(date.getTime()))return String(value||'');
-  const lang=localStorage.getItem('mihna-lang')||'fr';
+  let lang='fr';try{lang=localStorage.getItem('mihna-lang')||'fr'}catch{}
   return new Intl.DateTimeFormat(lang==='ar'?'ar-MA':lang==='en'?'en-GB':'fr-MA',{day:'numeric',month:'long',year:'numeric'}).format(date);
 }
 const publicJobLink=id=>new URL('/job.html?id='+encodeURIComponent(id),location.origin).href;
