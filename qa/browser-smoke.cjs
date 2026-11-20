@@ -151,7 +151,7 @@ async function run(){
     assert.ok(layout.brand.width>=110,'Brand squeezed at '+width+': '+JSON.stringify(layout));
     if(width<=700)assert.ok(layout.cta.y>=layout.brand.bottom-1,'CTA must have separate mobile row at '+width);
     if(layout.scrollWidth>layout.innerWidth+2){
-      const offenders=await page.evaluate(()=>[...document.querySelectorAll('body *')].map(el=>({tag:el.tagName,classes:typeof el.className==='string'?el.className.slice(0,90):'',width:Math.round(el.getBoundingClientRect().width),right:Math.round(el.getBoundingClientRect().right)})).filter(x=>x.right>innerWidth+2).sort((a,b)=>b.right-a.right).slice(0,12));
+      const offenders=await page.evaluate(()=>[...document.querySelectorAll('body *')].map(el=>({tag:el.tagName,classes:typeof el.className==='string'?el.className.slice(0,90):'',html:el.outerHTML.slice(0,280),parent:el.parentElement?.className||'',width:Math.round(el.getBoundingClientRect().width),right:Math.round(el.getBoundingClientRect().right)})).filter(x=>x.right>innerWidth+2).sort((a,b)=>b.right-a.right).slice(0,12));
       console.error('OVERFLOW_DIAGNOSTICS '+width+': '+JSON.stringify(offenders));
     }
     assert.ok(layout.scrollWidth<=layout.innerWidth+2,'Page overflow at '+width+': '+JSON.stringify(layout));
