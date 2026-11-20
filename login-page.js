@@ -23,8 +23,11 @@ function readJourney(){
  }catch{}
  return null;
 }
+const arrivedFromEmail=params.has('verified')||params.has('emailVerified')||params.get('flow')==='verify'||params.has('verificationCode');
 const existingJourney=readJourney();
 const safeReturn=validReturn(requestedReturn)||validReturn(existingJourney?.returnTo||'');
+// Keeping a return link does not require storing any password or Wix security token.
+
 function rememberJourney(change){
  try{
   const prev=readJourney()||{};
@@ -144,10 +147,8 @@ function go(destination){
   location.replace(destination);
 }
 function roleDestination(role,firstTime=false){
-  if(firstTime&&role==='candidate'){
-    return '/candidate-setup.html'+(safeReturn?'?returnTo='+encodeURIComponent(safeReturn):'');
-  }
   if(safeReturn)return safeReturn;
+  if(firstTime&&role==='candidate')return '/account.html';
   if(firstTime && role==='recruiter')return '/recruiter-setup.html';
   return '/account.html';
 }
@@ -213,11 +214,9 @@ async function checkSession(){
     const role=await existingRole();
     if(working||navigating)return;
     if(role){
-      if(activeMode==='signup'){
+      if(activeMode==='signup'&&!safeReturn&&!arrivedFromEmail){
         showRegisteredAccount();
-      } else {
-        go(roleDestination(role));
-      }
+      }else go(roleDestination(role));
     } else {
       const resumed=resumeRole();
       if(resumed){
@@ -248,9 +247,16 @@ function init(){
  const guide=document.createElement('div');guide.className='hn-auth-guide';
  guide.innerHTML='<span class="hn-auth-guide-kicker">INSCRIPTION EN 3 ÉTAPES</span><div class="hn-auth-stepper"><span><b>1</b> Mon compte</span><span><b>2</b> Vérification</span><span><b>3</b> Mon profil</span></div><p>Une seule adresse e-mail, un seul mot de passe. Après vérification, continuez directement votre candidature.</p>';
  signup.insertBefore(guide,signup.querySelector('h2').nextSibling);
+ if(requestedCandidateApplication()){
+  guide.querySelector('p').textContent='Votre compte donne accès immédiatement à la candidature. Aucune vidéo ni quiz obligatoire.';
+  const step=guide.querySelector('.hn-auth-stepper span:last-child');if(step)step.innerHTML='<b>3</b> Postuler';
+ }
  const verificationInfo=document.createElement('div');verificationInfo.className='hn-verify-guide';
  verificationInfo.innerHTML='<strong>Votre compte est déjà créé.</strong><p>Ouvrez l’e-mail de Wix, récupérez le code de vérification et saisissez-le ici. Ne créez pas un deuxième compte. Si votre messagerie ouvre un nouvel onglet, revenez sur cette page.</p>';
  verify.insertBefore(verificationInfo,verify.querySelector('h2').nextSibling);
+ // The Wix email contains a six-digit code. A new browser tab cannot re-use
+ // the prior tab's ephemeral security token: sign-in starts a fresh trusted challenge.
+ info(verify,'Utilisez les 6 chiffres reçus par e-mail. Restez sur cette page pendant la vérification.');
  const returnButton=document.createElement('button');returnButton.type='button';returnButton.className='hn-auth-return';returnButton.textContent='Déjà vérifié ? Se connecter à mon compte →';
  returnButton.addEventListener('click',()=>{
    changeMode('signin');
@@ -315,7 +321,7 @@ function init(){
      if(r.state==='EMAIL_VERIFICATION_REQUIRED'){
        pendingRole=resumeRole();
        rememberJourney({email,role:pendingRole||readJourney()?.role||'candidate',status:'verification'});
-       signin.hidden=true;signup.hidden=true;verify.hidden=false;verify.querySelector('input[name="code"]').focus();
+       signin.hidden=true;signup.hidden=true;verify.hidden=false;verify.querySelector('input[name="code"]').setAttribute('autocomplete','one-time-code');verify.querySelector('input[name="code"]').focus();
        return;
      }
      if(r.state==='OWNER_APPROVAL_REQUIRED')throw Error('Compte en attente d’approbation.');
@@ -364,7 +370,7 @@ function init(){
      if(r.state==='EMAIL_VERIFICATION_REQUIRED'){
        pendingRole=selectedRole;rememberJourney({role:selectedRole,email:f.email.value.trim().toLowerCase(),status:'verification'});
        signin.hidden=true;signup.hidden=true;verify.hidden=false;
-       verify.querySelector('input[name="code"]').focus();return;
+       verify.querySelector('input[name="code"]').setAttribute('autocomplete','one-time-code');verify.querySelector('input[name="code"]').focus();return;
      }
      if(r.state==='OWNER_APPROVAL_REQUIRED')throw Error('Compte enregistré, en attente d’approbation. N’essayez pas de créer un second compte.');
      if(r.state!=='SUCCESS'){
@@ -401,11 +407,11 @@ function init(){
    finally{working=false;btn.disabled=false;}
  });
  const pending=readJourney();
- const arrivedFromEmail=params.has('verified')||params.has('emailVerified')||params.get('flow')==='verify';
+
  if(pending?.status==='verification'||arrivedFromEmail){
    changeMode('signin');
    if(pending?.email)signin.elements.email.value=pending.email;
-   info(signin,'Compte déjà créé ? Connectez-vous avec le mot de passe choisi. Si un code e-mail est demandé, nous vous guiderons. Ne recréez pas le compte.');
+   info(signin,'Votre compte existe déjà. Connectez-vous avec l’e-mail et le mot de passe choisis. Il est inutile de recommencer l’inscription.');
  }else changeMode(requestedMode);
  const off=subscribeMember(s=>{
     if(!initialCheckComplete && !s.loading){
