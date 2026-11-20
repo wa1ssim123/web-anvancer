@@ -10,10 +10,38 @@ export async function mountAdminOverview(){
  const section=document.createElement('section');
  section.className='hn-admin-publication';
  section.id='hnAdminPublication';
- section.innerHTML='<div class="hn-admin-publication-head"><div><span>HORENOVA · SUPERVISION NATIONALE</span><h2>Publication & visibilité.</h2><p>Contrôle réel des emplois, shifts, talents et candidatures. Les informations privées ne sont pas exposées.</p></div><button id="hnPublicationRefresh" type="button">Vérifier en ligne ↻</button></div><div class="hn-admin-publication-stats" id="hnPublicationStats" role="status">Vérification de la publication…</div><div class="hn-admin-publication-rows" id="hnPublicationRows"></div>';
+ section.innerHTML='<div class="hn-admin-publication-head"><div><span>HORENOVA · SUPERVISION NATIONALE</span><h2>Publication & visibilité.</h2><p>Contrôle réel des emplois, shifts, talents et candidatures. Les informations privées ne sont pas exposées.</p></div><button id="hnPublicationRefresh" type="button">Vérifier en ligne ↻</button></div><div class="hn-admin-publication-stats" id="hnPublicationStats" role="status">Vérification de la publication…</div><div class="hn-pub-filter-toolbar" id="hnPublicationFilters" role="group" aria-label="Afficher les annonces par statut"><button type="button" data-publication-filter="all" aria-pressed="true">Toutes</button><button type="button" data-publication-filter="live" aria-pressed="false">En ligne</button><button type="button" data-publication-filter="pending" aria-pressed="false">En attente</button><button type="button" data-publication-filter="issue" aria-pressed="false">À vérifier</button><button type="button" data-publication-filter="rejected" aria-pressed="false">Refusées</button></div><div class="hn-admin-publication-rows" id="hnPublicationRows"></div><p class="hn-pub-noresults" id="hnPublicationEmpty" hidden>Aucune annonce dans cette catégorie.</p><button class="hn-pub-show-more" id="hnPublicationMore" type="button" hidden>Afficher plus d’annonces ↓</button>';
  root.insertAdjacentElement('afterbegin',section);
  const stats=section.querySelector('#hnPublicationStats'),list=section.querySelector('#hnPublicationRows');
  let previews=new Map(),checking=false;
+ let activeFilter='all',visibleLimit=window.matchMedia('(max-width:700px)').matches?4:8;
+ const filterBar=section.querySelector('#hnPublicationFilters');
+ const showMore=section.querySelector('#hnPublicationMore');
+ const empty=section.querySelector('#hnPublicationEmpty');
+ const pageSize=()=>window.matchMedia('(max-width:700px)').matches?4:8;
+ function applyFilters(){
+  let matches=0,displayed=0;
+  for(const row of list.querySelectorAll('.hn-pub-row')){
+    const matchesStatus=activeFilter==='all'||row.dataset.publicState===activeFilter;
+    if(matchesStatus)matches++;
+    const shouldDisplay=matchesStatus&&displayed<visibleLimit;
+    row.hidden=!shouldDisplay;
+    if(shouldDisplay)displayed++;
+  }
+  empty.hidden=matches>0;
+  showMore.hidden=matches<=visibleLimit;
+  if(!showMore.hidden)showMore.textContent='Voir '+Math.min(pageSize(),matches-visibleLimit)+' autre(s) annonce(s) ↓';
+  filterBar.querySelectorAll('[data-publication-filter]').forEach(button=>{
+    button.setAttribute('aria-pressed',String(button.dataset.publicationFilter===activeFilter));
+  });
+ }
+ filterBar.addEventListener('click',event=>{
+  const button=event.target.closest('[data-publication-filter]');
+  if(!button)return;
+  activeFilter=button.dataset.publicationFilter;visibleLimit=pageSize();applyFilters();
+ });
+ showMore.addEventListener('click',()=>{visibleLimit+=pageSize();applyFilters();});
+
  const stat=(title,note,value)=>'<article class="hn-pub-stat"><span>'+esc(title)+'</span><strong>'+esc(value===null?'Indisponible':value)+'</strong><small>'+esc(note)+'</small></article>';
  const liveStates={VALIDEE:'Validée',REFUSEE:'Refusée',A_EXAMINER:'En attente'};
  async function refresh(){
@@ -48,9 +76,9 @@ export async function mountAdminOverview(){
    (reqs?.length?reqs.map(r=>{
     const visible=live?.some(x=>x.id===r.id)??false;
     const status=r.status==='VALIDEE'?visible?'EN LIGNE ✓':'VALIDÉE · NON VISIBLE !':liveStates[r.status]||'À examiner';
-    const cls=visible?'live':r.status==='VALIDEE'?'issue':'pending';
+    const cls=visible?'live':r.status==='VALIDEE'?'issue':r.status==='REFUSEE'?'rejected':'pending';
     const photo=r.has_workplace_photo?'✓ Photo fournie':'⚠ Photo manquante';
-    return '<article class="hn-pub-row '+cls+'" data-id="'+esc(r.id)+'"><div class="hn-pub-row-copy">'+
+    return '<article class="hn-pub-row '+cls+'" data-public-state="'+cls+'" data-id="'+esc(r.id)+'"><div class="hn-pub-row-copy">'+
      '<strong>'+esc(r.job_title||'Demande')+'</strong>'+
      '<span>'+esc(r.kind==='shift'?'SHIFT':'EMPLOI')+' · '+esc(r.job_role||'')+' · '+esc(r.city||'Maroc')+'</span>'+
      '<small>'+esc(r.business_name||'Établissement')+' · '+esc(photo)+'</small>'+
@@ -60,6 +88,7 @@ export async function mountAdminOverview(){
      (visible?'<a href="/job.html?id='+encodeURIComponent(r.id)+'" target="_blank" rel="noopener">Voir l’annonce ↗</a>':'')+
      '</div><div class="hn-pub-preview" data-photo-box="'+esc(r.id)+'"></div></article>';
    }).join(''):'<p>Aucune demande à vérifier.</p>');
+  applyFilters();
   list.querySelectorAll('[data-photo]').forEach(button=>button.onclick=async()=>{
    const id=button.dataset.photo,pane=button.closest('[data-id]').querySelector('[data-photo-box]');
    button.disabled=true;pane.textContent='Chargement sécurisé de la photo…';
