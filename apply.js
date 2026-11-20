@@ -174,8 +174,10 @@ if(form){
    const result=await hub('/api/applications',{method:'POST',body:{jobId,consentToIntro:true,locale:currentLang(),application}});
    const caseId=result?.item?.id;
    if(!caseId)throw Error('HORENOVA n’a pas confirmé l’enregistrement du dossier.');
+   const receiptNote=!result.alreadyApplied&&result.emailQueued&&result.emailEnabled
+    ?'<p>Un e-mail de confirmation est en cours d’envoi à votre adresse de connexion.</p>':'';
    box.innerHTML='<div class="hn-easy-success" role="status"><b>✓</b><h2>'+(result.alreadyApplied?'Candidature déjà enregistrée !':'Votre candidature est envoyée !')+'</h2>'+
-     '<p>Votre dossier a bien été reçu par HORENOVA. Vous pouvez suivre son traitement depuis votre espace.</p>'+
+     '<p>Votre dossier a bien été reçu par HORENOVA. Vous pouvez suivre son traitement depuis votre espace.</p>'+receiptNote+
      '<a class="hn-role-primary" href="/account.html">Accéder à mon espace ↗</a></div>';
   }catch(e){
    err.textContent=e?.message||'Impossible d’envoyer votre candidature. Réessayez.';
