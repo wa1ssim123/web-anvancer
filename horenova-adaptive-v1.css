@@ -1,0 +1,482 @@
+/* HORENOVA · adaptive dashboards. 2026-11-20
+ * Layout and accessible contrast for admin, recruiter, candidate and support.
+ * Strictly presentation-only: no authentication, fields or data are hidden.
+ */
+:root{
+ --hna-bg:#f7f3ec;--hna-paper:#fffdf9;--hna-text:#182b36;
+ --hna-muted:#526472;--hna-line:#dfe4e0;--hna-navy:#122b3d;
+ --hna-peach:#f6b37e;--hna-coral:#cb5e30;--hna-forest:#145548;
+ --hna-shadow:0 10px 28px rgba(18,39,54,.08);
+}
+body[data-hn12="admin"],
+body[data-hn12="account"],
+body[data-hn12="recruit"]{background:#09121b}
+body[data-hn12="admin"] .hn12-paper,
+body[data-hn12="account"] .hn12-paper,
+body[data-hn12="recruit"] .hn12-paper{background:var(--hna-bg);color:var(--hna-text)}
+body[data-hn12="admin"] .hn12-section-head,
+body[data-hn12="account"] .hn12-section-head,
+body[data-hn12="recruit"] .hn12-section-head{color:var(--hna-text)}
+body[data-hn12="admin"] .hn12-section-head h2,
+body[data-hn12="account"] .hn12-section-head h2,
+body[data-hn12="recruit"] .hn12-section-head h2{color:#182b36!important;overflow-wrap:anywhere}
+body[data-hn12="admin"] .hn12-section-head p,
+body[data-hn12="account"] .hn12-section-head p,
+body[data-hn12="recruit"] .hn12-section-head p{color:#526471!important;opacity:1!important}
+body[data-hn12="admin"] input,
+body[data-hn12="admin"] select,
+body[data-hn12="admin"] textarea,
+body[data-hn12="recruit"] input,
+body[data-hn12="recruit"] select,
+body[data-hn12="recruit"] textarea,
+body[data-hn12="account"] input{color:#142a37!important;background:#fff!important}
+body[data-hn12="admin"] input::placeholder,
+body[data-hn12="recruit"] input::placeholder,
+body[data-hn12="recruit"] textarea::placeholder{color:#627482!important;opacity:1}
+body[data-hn12="admin"] :focus-visible,
+body[data-hn12="account"] :focus-visible,
+body[data-hn12="recruit"] :focus-visible,
+body.hn-support-page :focus-visible{outline:3px solid #b85a24!important;outline-offset:3px}
+body[data-hn12="admin"] button,
+body[data-hn12="account"] button,
+body[data-hn12="recruit"] button{min-height:42px}
+body[data-hn12="admin"] [hidden],
+body[data-hn12="recruit"] [hidden],
+body[data-hn12="account"] [hidden]{display:none!important}
+/* Admin mobile jump navigation: anchored sections, not fake tabs. */
+.hn-admin-mobile-tabs{display:none}
+#hnAdminPublication,#adminSupportInbox,#adminApplications,#adminRecruiterRequests{scroll-margin-top:90px}
+/* Legible private support card on cream: overrides unrelated global panel rules. */
+body[data-hn12="admin"] #adminSupportInbox{
+ background:linear-gradient(128deg,#fffefb,#f8f3eb)!important;
+ color:#193442!important;border:1px solid #e2dcd0!important;
+ box-shadow:var(--hna-shadow);isolation:isolate
+}
+body[data-hn12="admin"] #adminSupportInbox .hn-support-admin-header h2{
+ color:#193442!important;text-shadow:none!important;opacity:1!important
+}
+body[data-hn12="admin"] #adminSupportInbox .hn-support-admin-header p{
+ color:#455a65!important;opacity:1!important
+}
+body[data-hn12="admin"] #adminSupportInbox .hn-support-admin-header span{
+ color:#a3471c!important;opacity:1!important
+}
+body[data-hn12="admin"] #adminSupportInbox .hn-support-admin-cta{
+ background:#b95224!important;color:#fff!important;border-color:#b95224!important;
+ text-shadow:none!important
+}
+body[data-hn12="admin"] #adminSupportInbox .hn-support-admin-tel{
+ background:#fff!important;color:#173b48!important;border:1px solid #cbd9d4!important
+}
+body[data-hn12="admin"] #adminSupportInbox .hn-support-admin-metrics>span{
+ background:#f1f6f2!important;color:#294d4a!important;border:1px solid #d5e5db!important;
+ opacity:1!important
+}
+body[data-hn12="admin"] #adminSupportInbox .hn-support-admin-metrics strong{
+ color:#153f3a!important;opacity:1!important
+}
+body[data-hn12="admin"] #adminSupportInbox .hn-support-admin-latest a{
+ background:#fff!important;color:#1d3943!important;border:1px solid #e0e5de!important
+}
+body[data-hn12="admin"] #adminSupportInbox .hn-support-admin-latest strong{color:#17323a!important}
+body[data-hn12="admin"] #adminSupportInbox .hn-support-admin-latest small{color:#556b70!important}
+/* Admin publication: navy canvas + light rows for easy scanning. */
+body[data-hn12="admin"] .hn-admin-publication{
+ background:linear-gradient(145deg,#10283a,#102333 82%)!important;
+ color:#fff!important;border:1px solid #234657!important;
+ box-shadow:0 16px 43px rgba(14,35,49,.15)
+}
+body[data-hn12="admin"] .hn-admin-publication-head h2,
+body[data-hn12="admin"] .hn-pub-list-head h3{color:#fff!important;opacity:1!important}
+body[data-hn12="admin"] .hn-admin-publication-head p,
+body[data-hn12="admin"] .hn-pub-list-head p{
+ color:#d9e5e8!important;line-height:1.6!important;opacity:1!important
+}
+body[data-hn12="admin"] .hn-pub-stat{
+ background:#f6f6f2!important;border:1px solid #cfdcd8!important;color:#163443!important;
+ min-width:0;box-shadow:0 6px 17px rgba(0,0,0,.08)
+}
+body[data-hn12="admin"] .hn-pub-stat span{color:#3c5762!important;opacity:1!important;font-size:12px!important;letter-spacing:normal}
+body[data-hn12="admin"] .hn-pub-stat strong{color:#184f4c!important;line-height:1.05!important}
+body[data-hn12="admin"] .hn-pub-stat small{color:#516b72!important;opacity:1!important}
+body[data-hn12="admin"] .hn-pub-row{
+ background:#fffdf9!important;color:#19323d!important;
+ border:1px solid #d6e2dd!important;min-width:0;
+ box-shadow:0 3px 11px rgba(0,0,0,.08)
+}
+body[data-hn12="admin"] .hn-pub-row-copy{min-width:0!important;overflow-wrap:anywhere}
+body[data-hn12="admin"] .hn-pub-row-copy strong{color:#172e3c!important;font-size:15px!important}
+body[data-hn12="admin"] .hn-pub-row-copy span,
+body[data-hn12="admin"] .hn-pub-row-copy small,
+body[data-hn12="admin"] .hn-pub-row-copy p{
+ color:#4c6370!important;font-size:12px!important;opacity:1!important
+}
+body[data-hn12="admin"] .hn-pub-row-actions{min-width:0!important}
+body[data-hn12="admin"] .hn-pub-row-actions b{color:#9f431e!important}
+body[data-hn12="admin"] .hn-pub-row-actions button,
+body[data-hn12="admin"] .hn-pub-row-actions a{
+ color:#143e3b!important;background:#eaf3ee!important;border:1px solid #c7ddd0!important;
+ border-radius:11px!important;min-height:42px!important;
+ text-decoration:none!important;text-align:center
+}
+body[data-hn12="admin"] .hn-pub-preview{color:#243e4a!important}
+body[data-hn12="admin"] #hnPublicationRefresh{
+ color:#19323d!important;background:var(--hna-peach)!important;border:1px solid #efbb90!important;
+ min-height:44px
+}
+.hn-pub-filter-toolbar{display:flex;gap:8px;overflow-x:auto;max-width:100%;padding:3px 1px 11px;margin:0 0 12px;scrollbar-width:thin}
+.hn-pub-filter-toolbar button{
+ white-space:nowrap;flex:none;border-radius:999px;padding:10px 14px;
+ background:#fff1!important;color:#fff!important;border:1px solid #ffffff68!important;
+ font-weight:750;font-size:12px
+}
+.hn-pub-filter-toolbar button[aria-pressed="true"]{
+ background:#ffcfaa!important;color:#142e3c!important;border-color:#ffcfaa!important
+}
+.hn-pub-show-more{display:block;width:100%;text-align:center;margin:15px auto 0;
+ border:1px solid #ffffff5a;border-radius:12px;background:#ffffff12;color:#fff;
+ padding:13px;font-weight:750}
+.hn-pub-show-more[hidden],.hn-pub-row[hidden]{display:none!important}
+.hn-pub-noresults{margin:15px 0;padding:15px;background:#ffffff18;color:#fff;border-radius:12px}
+/* Private recruitment and applications: no huge empty columns. */
+body[data-hn12="admin"] .hub-root{max-width:100%;min-width:0}
+body[data-hn12="admin"] .hub-head,
+body[data-hn12="admin"] .hub-panel,
+body[data-hn12="admin"] .hub-field,
+body[data-hn12="admin"] .hub-case{color:#17313c}
+body[data-hn12="admin"] .hub-head h2,
+body[data-hn12="admin"] .hub-panel h3{color:#183641!important}
+body[data-hn12="admin"] .hub-muted{color:#506472!important;opacity:1!important}
+body[data-hn12="admin"] .hub-panel{border-color:#d8e4df!important;background:#fffefb!important}
+body[data-hn12="admin"] .hub-case{background:#fffefc!important}
+body[data-hn12="admin"] .hub-case:hover,
+body[data-hn12="admin"] .hub-case.active{background:#e8f4ed!important}
+body[data-hn12="admin"] .hub-tag{background:#fff0df!important;color:#9e4b22!important}
+body[data-hn12="admin"] .hub-field{background:#f3f7f4!important}
+body[data-hn12="admin"] .hub-field small{color:#435a62!important}
+body[data-hn12="admin"] .hub-detail{min-height:0;line-height:1.55}
+body[data-hn12="admin"] #hubDetail:has(>.hub-detail:only-child) .hub-detail{
+ min-height:106px;display:flex;align-items:center
+}
+body[data-hn12="admin"] .hub-request-actions{display:flex;flex-wrap:wrap;gap:12px;align-items:end}
+body[data-hn12="admin"] .hub-request-actions>label{flex:1 1 200px;color:#243d46!important;font-weight:700}
+body[data-hn12="admin"] .hub-request-actions select{width:100%;min-height:44px}
+body[data-hn12="admin"] .hub-request-actions button{flex:0 0 auto}
+body[data-hn12="admin"] #hubRecruiterRequests .hub-case{border:1px solid #dfe7e2;border-radius:16px;margin:10px 0;box-shadow:var(--hna-shadow)}
+body[data-hn12="admin"] #hubRecruiterRequests .hub-case strong{color:#1b3742!important}
+body[data-hn12="admin"] .hub-case details>summary{color:#1c5148!important}
+body[data-hn12="admin"] .hub-panel-head{background:#f7faf7}
+/* Recruiter and member account views. */
+body[data-hn12="recruit"] .hn-rec-command,
+body[data-hn12="account"] .hn-rec-command{
+ background:linear-gradient(145deg,#112d3e,#1e514e)!important;border-color:#355855!important;
+ color:#fff!important
+}
+body[data-hn12="account"] .hn-rec-board,
+body[data-hn12="recruit"] .hn-rec-board{
+ background:#fffefb!important;border-color:#d9e4de!important;
+ color:var(--hna-text)!important
+}
+body[data-hn12="recruit"] .hn-rec-board h3,
+body[data-hn12="account"] .hn-rec-board h3{color:#1c3a42!important}
+body[data-hn12="recruit"] .hn-rec-tabs button,
+body[data-hn12="account"] .hn-rec-tabs button{color:#1b3c3c!important;background:#f5f8f5!important;border-color:#c6d6ce!important}
+body[data-hn12="recruit"] .hn-rec-tabs button[aria-selected="true"],
+body[data-hn12="account"] .hn-rec-tabs button[aria-selected="true"]{background:#143c3c!important;color:#fff!important}
+body[data-hn12="recruit"] .recruit-form,
+body[data-hn12="recruit"] .recruit-aside{background:#fffefb!important;border:1px solid #dbe3df!important;color:#193540!important}
+body[data-hn12="recruit"] .recruit-form small,
+body[data-hn12="recruit"] .recruit-aside .small-title{color:#984923!important;opacity:1!important}
+body[data-hn12="recruit"] .recruit-form label,
+body[data-hn12="recruit"] .recruit-form h2{color:#253d46!important}
+body[data-hn12="recruit"] .recruit-form p,
+body[data-hn12="recruit"] .recruit-aside p{color:#4e636c!important;opacity:1!important}
+body[data-hn12="account"] .account-dashboard-live{align-items:stretch}
+body[data-hn12="account"] .account-dashboard-live .dash-card{
+ background:#fffefa!important;color:#1a3540!important;border:1px solid #dce5df!important;
+ box-shadow:var(--hna-shadow);min-width:0
+}
+body[data-hn12="account"] .dash-card h3{color:#182f3a!important;opacity:1!important}
+body[data-hn12="account"] .dash-card p{color:#50616e!important;opacity:1!important}
+body[data-hn12="account"] .dash-card>span{color:#9e4d26!important}
+body[data-hn12="account"] .dash-card a{color:#a8441a!important;font-weight:800!important}
+body[data-hn12="account"] .hn-candidate-progress{
+ background:#f0f8f2!important;border-color:#c9e0d0!important;color:#1b4038!important
+}
+body[data-hn12="account"] .hn-candidate-progress p,
+body[data-hn12="account"] .hn-candidate-progress li{color:#24473d!important}
+body[data-hn12="account"] .hn-recruit-stats>span{background:#eff5f1!important;color:#2d4c48!important}
+body[data-hn12="account"] .hn-recruit-stats b{color:#19383c!important}
+/* Support: readable type and compact chat on small devices. */
+body.hn-support-page .hs-sidebar,
+body.hn-support-page .hs-chatpanel{min-width:0}
+body.hn-support-page .hs-thread{min-height:62px;color:#1c3841}
+body.hn-support-page .hs-send textarea,
+body.hn-support-page .hs-newdialog textarea,
+body.hn-support-page .hs-newdialog input{font-size:16px!important}
+body.hn-support-page .hs-chathead h2{overflow-wrap:anywhere}
+body.hn-support-page .hs-chathead p{color:#536b69!important}
+body.hn-support-page .hs-messages{overscroll-behavior:contain}
+body.hn-support-page .hs-message p{font-size:14px;line-height:1.6}
+body.hn-support-page .hs-hero p{color:#e7eee9!important}
+/* Tablet: natural two-column dashboards, sufficient tap targets. */
+@media(min-width:701px) and (max-width:1100px){
+ body[data-hn12="admin"] .hn-admin-publication-stats{grid-template-columns:repeat(3,minmax(0,1fr))}
+ body[data-hn12="admin"] .hub-layout{grid-template-columns:1fr!important}
+ body[data-hn12="admin"] .hub-stack{max-height:380px}
+ body[data-hn12="account"] .account-dashboard-live{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ body[data-hn12="recruit"] .recruit-page{grid-template-columns:1fr!important}
+ body[data-hn12="recruit"] .recruit-inbox article{grid-template-columns:minmax(0,1fr) auto!important}
+}
+/* Phones: intentionally compact from 320px to 700px. */
+@media(max-width:700px){
+ body[data-hn12="admin"] .hn12-page,
+ body[data-hn12="account"] .hn12-page,
+ body[data-hn12="recruit"] .hn12-page{
+  padding:76px 9px calc(100px + env(safe-area-inset-bottom,0px))!important
+ }
+ body[data-hn12="admin"] .hn12-hero,
+ body[data-hn12="account"] .hn12-hero,
+ body[data-hn12="recruit"] .hn12-hero{
+  min-height:168px!important;grid-template-columns:minmax(0,1fr)!important;
+  border-radius:21px!important;box-shadow:none!important
+ }
+ body[data-hn12="admin"] .hn12-hero-copy,
+ body[data-hn12="account"] .hn12-hero-copy,
+ body[data-hn12="recruit"] .hn12-hero-copy{
+  padding:24px 20px 25px!important;align-self:center!important;max-width:100%
+ }
+ body[data-hn12="admin"] .hn12-hero h1,
+ body[data-hn12="account"] .hn12-hero h1,
+ body[data-hn12="recruit"] .hn12-hero h1{
+  margin:9px 0 8px!important;font:500 clamp(26px,7vw,38px)/1.12 Georgia,serif!important;
+  letter-spacing:-.8px!important;max-width:600px
+ }
+ body[data-hn12="admin"] .hn12-hero p,
+ body[data-hn12="account"] .hn12-hero p,
+ body[data-hn12="recruit"] .hn12-hero p{font-size:12.5px!important;line-height:1.5!important;max-width:520px;margin:0!important;color:#e8e9e7!important}
+ body[data-hn12="admin"] .hn12-hero-art,
+ body[data-hn12="account"] .hn12-hero-art,
+ body[data-hn12="recruit"] .hn12-hero-art,
+ body[data-hn12="admin"] .hn12-aside-art,
+ body[data-hn12="account"] .hn12-aside-art,
+ body[data-hn12="recruit"] .hn12-aside-art{display:none!important}
+ body[data-hn12="admin"] .hn12-section,
+ body[data-hn12="account"] .hn12-section,
+ body[data-hn12="recruit"] .hn12-section{margin-top:10px!important;border-radius:20px!important;overflow:visible!important}
+ body[data-hn12="admin"] .hn12-section-head,
+ body[data-hn12="account"] .hn12-section-head,
+ body[data-hn12="recruit"] .hn12-section-head{
+  padding:23px 18px 10px!important;display:block!important
+ }
+ body[data-hn12="admin"] .hn12-section-head h2,
+ body[data-hn12="account"] .hn12-section-head h2,
+ body[data-hn12="recruit"] .hn12-section-head h2{
+  font:500 clamp(26px,8vw,34px)/1.13 Georgia,serif!important;
+  letter-spacing:-.8px!important;margin:9px 0!important
+ }
+ body[data-hn12="admin"] .hn12-section-head p,
+ body[data-hn12="account"] .hn12-section-head p,
+ body[data-hn12="recruit"] .hn12-section-head p{
+  margin:7px 0 0!important;font-size:13px!important;line-height:1.55!important
+ }
+ .hn-admin-mobile-tabs{
+  display:flex;position:sticky;top:76px;z-index:35;align-items:center;gap:6px;
+  overflow-x:auto;scrollbar-width:none;background:#fbf8f1eF;
+  border:1px solid #e5dfd2;border-radius:15px;
+  margin:9px 12px 0;padding:9px;box-shadow:0 5px 16px #19272e0c
+ }
+ .hn-admin-mobile-tabs a{
+  flex:none;padding:10px 12px;min-height:42px;display:flex;align-items:center;
+  text-decoration:none;white-space:nowrap;border-radius:11px;
+  background:#eaf2ed;color:#244b43;font-weight:800;font-size:12px
+ }
+ .hn-admin-mobile-tabs a:first-child{background:#183c3c;color:#fff}
+ body[data-hn12="admin"] #adminGate,
+ body[data-hn12="admin"] .hub-root{width:100%;max-width:100%;min-width:0}
+ body[data-hn12="admin"] #adminGate{padding:7px 9px 23px!important;display:block!important}
+ body[data-hn12="admin"] .hub-root{padding:0!important;margin:0!important}
+ body[data-hn12="admin"] #adminSupportInbox{
+  border-radius:18px!important;margin:8px 0 12px!important;padding:17px!important
+ }
+ body[data-hn12="admin"] #adminSupportInbox .hn-support-admin-header{display:grid!important;gap:12px!important}
+ body[data-hn12="admin"] #adminSupportInbox .hn-support-admin-header h2{font:600 23px/1.17 Georgia,serif!important;margin:7px 0!important}
+ body[data-hn12="admin"] #adminSupportInbox .hn-support-admin-header p{font-size:13px!important;line-height:1.5!important}
+ body[data-hn12="admin"] #adminSupportInbox .hn-support-admin-header>div:last-child{display:grid!important;grid-template-columns:1fr 1fr;gap:9px!important}
+ body[data-hn12="admin"] #adminSupportInbox .hn-support-admin-header a{width:100%;min-height:44px;justify-content:center;padding:11px 9px!important;white-space:normal;text-align:center}
+ body[data-hn12="admin"] #adminSupportInbox .hn-support-admin-metrics{
+  display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:8px!important;margin:13px 0!important;font-size:12px!important
+ }
+ body[data-hn12="admin"] #adminSupportInbox .hn-support-admin-metrics>span{padding:11px!important;min-width:0}
+ body[data-hn12="admin"] #adminSupportInbox .hn-support-admin-metrics strong{display:block;font-size:25px!important;margin:0 0 4px!important}
+ body[data-hn12="admin"] #adminSupportInbox .hn-support-admin-latest a{
+  grid-template-columns:minmax(0,1fr) auto!important;gap:6px!important;padding:11px!important
+ }
+ body[data-hn12="admin"] #adminSupportInbox .hn-support-admin-latest a small{
+  grid-column:1/-1;grid-row:2;font-size:12px!important;line-height:1.35!important
+ }
+ body[data-hn12="admin"] .hn-admin-publication{
+  margin:12px 0 16px!important;padding:16px!important;border-radius:18px!important
+ }
+ body[data-hn12="admin"] .hn-admin-publication-head{
+  display:block!important;margin-bottom:14px!important
+ }
+ body[data-hn12="admin"] .hn-admin-publication-head h2{
+  font:500 clamp(23px,7.5vw,30px)/1.2 Georgia,serif!important;margin:9px 0!important
+ }
+ body[data-hn12="admin"] .hn-admin-publication-head p{font-size:13px!important;margin:7px 0 12px!important}
+ body[data-hn12="admin"] #hnPublicationRefresh{width:100%!important}
+ body[data-hn12="admin"] .hn-admin-publication-stats{
+  display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:8px!important;margin-bottom:19px!important
+ }
+ body[data-hn12="admin"] .hn-pub-stat{padding:12px!important;border-radius:13px!important;gap:4px!important}
+ body[data-hn12="admin"] .hn-pub-stat strong{font-size:clamp(25px,8vw,34px)!important}
+ body[data-hn12="admin"] .hn-pub-stat small{font-size:11px!important;line-height:1.4!important}
+ body[data-hn12="admin"] .hn-pub-row{
+  display:grid!important;gap:11px!important;padding:14px!important;
+  margin:9px 0!important;border-radius:14px!important
+ }
+ body[data-hn12="admin"] .hn-pub-row-copy strong{font-size:16px!important}
+ body[data-hn12="admin"] .hn-pub-row-actions{
+  display:flex!important;align-items:center!important;justify-content:flex-start!important;
+  gap:9px!important;flex-wrap:wrap;width:100%!important
+ }
+ body[data-hn12="admin"] .hn-pub-row-actions b{flex-basis:100%;font-size:11px!important}
+ body[data-hn12="admin"] .hn-pub-row-actions button,
+ body[data-hn12="admin"] .hn-pub-row-actions a{flex:1 1 112px;min-width:0}
+ body[data-hn12="admin"] .hn-pub-list-head h3{font-size:19px!important}
+ body[data-hn12="admin"] .hn-pub-list-head p{font-size:12px!important}
+ body[data-hn12="admin"] .hub-head{display:grid!important;gap:9px!important;padding:12px 4px!important;margin:0!important}
+ body[data-hn12="admin"] .hub-head h2{font:600 24px/1.12 Georgia,serif!important;margin:0 0 5px}
+ body[data-hn12="admin"] .hub-small{color:#a04a24!important}
+ body[data-hn12="admin"] .hub-head .hub-muted{margin:6px 0 0}
+ body[data-hn12="admin"] .hub-head .hub-action{width:100%;min-height:44px}
+ body[data-hn12="admin"] .hub-input{min-width:0!important;max-width:100%!important;width:100%!important}
+ body[data-hn12="admin"] .hub-layout{
+  display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:10px!important
+ }
+ body[data-hn12="admin"] .hub-panel{border-radius:16px!important;box-shadow:none!important}
+ body[data-hn12="admin"] .hub-panel-head{padding:15px!important}
+ body[data-hn12="admin"] .hub-stack{max-height:290px!important}
+ body[data-hn12="admin"] .hub-detail{padding:14px!important;min-height:0!important}
+ body[data-hn12="admin"] .hub-grid{grid-template-columns:1fr!important}
+ body[data-hn12="admin"] #hubDetail:has(>.hub-detail:only-child) .hub-detail{min-height:80px!important}
+ body[data-hn12="admin"] #hubRecruiterRequests .hub-case{padding:14px!important}
+ body[data-hn12="admin"] .hub-request-actions{display:grid!important;grid-template-columns:1fr!important}
+ body[data-hn12="admin"] .hub-request-actions button{width:100%!important}
+ body[data-hn12="admin"] .hub-controls select{width:100%!important}
+ body[data-hn12="account"] #accountIdentity{display:flex;gap:5px;flex-wrap:wrap;overflow-wrap:anywhere}
+ body[data-hn12="account"] #accountDashboard{
+  display:grid!important;grid-template-columns:minmax(0,1fr)!important;
+  padding:13px!important;gap:11px!important
+ }
+ body[data-hn12="account"] .hn-role-welcome{
+  min-height:0!important;border-radius:18px!important;padding:20px!important
+ }
+ body[data-hn12="account"] .hn-role-welcome h3{
+  font:500 clamp(26px,8vw,37px)/1.15 Georgia,serif!important;margin:14px 0 10px!important
+ }
+ body[data-hn12="account"] .hn-role-welcome p{font-size:13px!important;line-height:1.6!important}
+ body[data-hn12="account"] .dash-card{
+  grid-column:auto!important;padding:17px!important;border-radius:16px!important;
+  min-height:0!important
+ }
+ body[data-hn12="account"] .dash-card.wide,
+ body[data-hn12="account"] .hn-candidate-progress{grid-column:1/-1!important}
+ body[data-hn12="account"] .dash-card h3{font-size:22px!important;margin:8px 0 9px!important}
+ body[data-hn12="account"] .dash-card p{font-size:13px!important;margin:8px 0}
+ body[data-hn12="account"] .hn-candidate-progress{padding:16px!important;border-radius:16px!important}
+ body[data-hn12="account"] .hn-rec-command{padding:18px!important;border-radius:18px!important;margin:0 0 12px!important}
+ body[data-hn12="account"] .hn-rec-command h2{font-size:27px!important}
+ body[data-hn12="account"] .hn-rec-kpis{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}
+ body[data-hn12="account"] .hn-rec-kpi{padding:12px!important;min-width:0}
+ body[data-hn12="account"] .hn-recruit-stats{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}
+ body[data-hn12="recruit"] #recruitGate{min-width:0;padding:13px!important}
+ body[data-hn12="recruit"] .hn-rec-command{padding:18px!important;border-radius:18px!important;margin-bottom:13px!important}
+ body[data-hn12="recruit"] .hn-rec-command h2{font-size:28px!important;margin:9px 0!important}
+ body[data-hn12="recruit"] .hn-rec-command p{font-size:13px!important}
+ body[data-hn12="recruit"] .hn-rec-command .hn-rec-create{width:100%;justify-content:center;min-height:46px}
+ body[data-hn12="recruit"] .hn-rec-kpis{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}
+ body[data-hn12="recruit"] .hn-rec-kpi{padding:12px!important;min-width:0}
+ body[data-hn12="recruit"] .hn-rec-kpi strong{font-size:27px!important}
+ body[data-hn12="recruit"] .hn-rec-board{border-radius:17px!important;padding:15px!important;margin-bottom:11px!important}
+ body[data-hn12="recruit"] .hn-rec-board-head{display:grid!important}
+ body[data-hn12="recruit"] .hn-rec-board h3{font-size:22px!important}
+ body[data-hn12="recruit"] .hn-rec-board .jobs-grid-page{grid-template-columns:minmax(0,1fr)!important}
+ body[data-hn12="recruit"] .hn-rec-tabs{flex-wrap:nowrap!important;overflow-x:auto!important;scrollbar-width:thin;margin:11px 0!important}
+ body[data-hn12="recruit"] .hn-rec-tabs button{flex:0 0 auto!important;white-space:nowrap!important;min-height:42px}
+ body[data-hn12="recruit"] .recruit-page{
+  display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:10px!important;
+  padding:0!important
+ }
+ body[data-hn12="recruit"] .recruit-form,
+ body[data-hn12="recruit"] .recruit-aside{min-width:0!important;padding:16px!important;border-radius:16px!important}
+ body[data-hn12="recruit"] .recruit-form .form-grid,
+ body[data-hn12="recruit"] .recruit-form .form-row{
+  grid-template-columns:minmax(0,1fr)!important;gap:12px!important
+ }
+ body[data-hn12="recruit"] .recruit-form .form-grid>label,
+ body[data-hn12="recruit"] .recruit-form .form-grid>div{grid-column:auto!important;min-width:0!important}
+ body[data-hn12="recruit"] .recruit-form .form-grid>.wide{grid-column:1/-1!important}
+ body[data-hn12="recruit"] .recruit-form input,
+ body[data-hn12="recruit"] .recruit-form select,
+ body[data-hn12="recruit"] .recruit-form textarea{font-size:16px!important;max-width:100%!important}
+ body[data-hn12="recruit"] .recruit-form button[type=submit]{width:100%!important;min-height:49px}
+ body[data-hn12="recruit"] .recruit-aside{margin:0!important}
+ body[data-hn12="recruit"] .recruit-inbox{padding:9px 2px!important}
+ body[data-hn12="recruit"] .recruit-inbox article{grid-template-columns:minmax(0,1fr)!important;padding:15px!important;gap:9px!important}
+ body[data-hn12="recruit"] .listing-toolbar{display:block!important;padding:10px 0!important}
+ body[data-hn12="recruit"] .listing-toolbar h2{font-size:24px!important}
+ body.hn-support-page .hs-main{width:calc(100% - 18px)!important;margin:9px auto!important}
+ body.hn-support-page .hs-hero{min-height:0!important;padding:21px!important;border-radius:19px!important}
+ body.hn-support-page .hs-hero h1{font-size:clamp(27px,8vw,36px)!important}
+ body.hn-support-page .hs-livebar{padding:14px!important}
+ body.hn-support-page .hs-console{border-radius:17px!important;min-height:0!important}
+ body.hn-support-page .hs-sidehead{padding:17px!important}
+ body.hn-support-page .hs-threads{max-height:185px!important}
+ body.hn-support-page .hs-chathead{padding:14px!important}
+ body.hn-support-page .hs-messages{min-height:240px!important;max-height:45dvh!important;padding:13px!important}
+ body.hn-support-page .hs-message{max-width:93%!important;padding:11px 13px!important}
+ body.hn-support-page .hs-send{padding:11px!important;gap:7px!important}
+ body.hn-support-page .hs-send textarea{min-height:51px!important}
+ body.hn-support-page .hs-send button{padding:12px!important}
+ body.hn-support-page .hs-newdialog{padding:17px!important}
+ body.hn-support-page .hs-dialog-actions{flex-wrap:wrap}
+ body.hn-support-page .hs-dialog-actions>*{flex:1 1 135px}
+}
+@media(max-width:380px){
+ body[data-hn12="admin"] .hn-admin-publication-stats{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ body[data-hn12="admin"] .hn-pub-stat{padding:10px!important}
+ body[data-hn12="admin"] .hn-pub-stat span{font-size:11px!important}
+ body[data-hn12="admin"] .hn-pub-stat strong{font-size:25px!important}
+ body[data-hn12="admin"] .hn-pub-stat small{font-size:10.5px!important}
+ body[data-hn12="admin"] #adminSupportInbox .hn-support-admin-header>div:last-child{grid-template-columns:1fr!important}
+ body[data-hn12="admin"] .hn12-page,body[data-hn12="account"] .hn12-page,body[data-hn12="recruit"] .hn12-page{padding-left:6px!important;padding-right:6px!important}
+ body[data-hn12="admin"] .hn12-section-head,body[data-hn12="account"] .hn12-section-head,body[data-hn12="recruit"] .hn12-section-head{padding-left:13px!important;padding-right:13px!important}
+}
+@media(min-width:701px) and (max-width:1024px){
+ body[data-hn12="admin"] .hn12-hero,
+ body[data-hn12="account"] .hn12-hero,
+ body[data-hn12="recruit"] .hn12-hero{min-height:315px!important}
+ body[data-hn12="admin"] .hn12-hero h1,
+ body[data-hn12="account"] .hn12-hero h1,
+ body[data-hn12="recruit"] .hn12-hero h1{font-size:clamp(38px,5vw,56px)!important}
+ body[data-hn12="admin"] .hn12-hero-copy,
+ body[data-hn12="account"] .hn12-hero-copy,
+ body[data-hn12="recruit"] .hn12-hero-copy{padding:37px!important}
+ body[data-hn12="admin"] .hn12-section-head h2,
+ body[data-hn12="account"] .hn12-section-head h2,
+ body[data-hn12="recruit"] .hn12-section-head h2{font-size:clamp(30px,4vw,45px)!important}
+ body[data-hn12="admin"] .hub-root{padding:12px!important}
+ body[data-hn12="admin"] .hn-admin-publication-stats{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+}
+@media(min-width:1101px){
+ body[data-hn12="admin"] #adminSupportInbox .hn-support-admin-metrics{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(prefers-reduced-motion:reduce){
+ body[data-hn12="admin"] *,
+ body[data-hn12="account"] *,
+ body[data-hn12="recruit"] *{scroll-behavior:auto!important}
+}
