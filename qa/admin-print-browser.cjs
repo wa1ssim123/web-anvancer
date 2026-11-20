@@ -70,6 +70,16 @@ async function run(){
    });
    await page.goto('https://horenova.test/admin.html',{waitUntil:'domcontentloaded'});
    await page.locator('#hubCases button[data-id]').waitFor({state:'visible',timeout:9000});
+   const quick=page.locator('#hubCases [data-quickprint-id]').first();
+   await quick.waitFor({state:'visible'});
+   assert.match(await quick.innerText(),/Imprimer la candidature avec photo/);
+   const quickPop=page.waitForEvent('popup');
+   await quick.click();
+   const quickSheet=await quickPop;
+   await quickSheet.locator('img.portrait').waitFor({state:'visible',timeout:7000});
+   assert.match(await quickSheet.locator('body').innerText(),/Samira Exemple/);
+   assert.match(await quickSheet.locator('body').innerText(),/Serveur en salle/);
+   await quickSheet.close();
    await page.locator('#hubCases button[data-id]').first().click();
    const candidateBtn=page.locator('#hnCasePrint');
    await candidateBtn.waitFor({state:'visible'});
