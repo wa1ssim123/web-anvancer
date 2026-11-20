@@ -21,6 +21,8 @@ jobs:
 
       - name: Test dynamic French, English and Arabic updates
         run: node qa/i18n-dynamic.cjs
+      - name: Test all transactional confirmations, GIFs and email retry safety
+        run: node qa/transactional-email.cjs
   browser-smoke:
     runs-on: ubuntu-latest
     permissions:
