@@ -167,3 +167,44 @@
   .hs-launcher.hs-fab-v3 .hs-fab-panel{animation:none!important}
   .hs-launcher.hs-fab-v3 .hs-fab-trigger{transition:none!important}
 }
+
+
+/* HORENOVA support: direct, calm and usable on every device (2026-11-20). */
+body.hn-support-page{background:#f6f7f1}
+.hn-support-page .hs-main{margin-top:18px}
+.hn-support-page .hs-hero{
+ display:block!important;min-height:0!important;max-width:100%;padding:clamp(25px,4.5vw,48px)!important;
+ background:linear-gradient(118deg,#0c292d 0%,#15473e 58%,#2d5d4b 100%)!important;
+ border-radius:22px;box-shadow:0 16px 40px rgba(13,48,43,.13)
+}
+.hn-support-page .hs-hero>div:first-child{max-width:960px}
+.hn-support-page .hs-hero h1{margin:14px 0 18px;font-size:clamp(32px,4.6vw,60px)}
+.hn-support-page .hs-hero-art{display:none!important}
+.hn-support-page .hs-availability-note{margin:16px 0 0!important;font:600 12px/1.75 Inter,system-ui,sans-serif;color:#dcefe4}
+.hn-support-page .hs-actions{gap:12px}
+.hn-support-page .hs-actions .hs-primary,.hn-support-page .hs-actions .hs-secondary{
+ display:inline-flex;align-items:center;justify-content:center;text-align:center;
+ min-height:49px;padding:12px 20px;border-radius:12px;font-size:13px;font-weight:800;
+ transition:transform .18s ease,background .18s ease;cursor:pointer
+}
+.hn-support-page .hs-actions .hs-secondary{background:#f7fcf8;color:#1a473b;border:1px solid #cbdcd0}
+.hn-support-page .hs-actions .hs-primary:hover,.hn-support-page .hs-actions .hs-secondary:hover{transform:translateY(-2px)}
+.hn-support-page .hs-livebar{margin-top:13px;margin-bottom:18px;box-shadow:none;border-color:#dbe6dd}
+.hn-support-page .hs-live-indicator{background:#dca26e;border:2px solid white;box-shadow:0 0 0 3px rgba(243,186,126,.2)}
+.hn-support-page .hs-live-indicator.online{background:#2ca570}
+.hn-support-page .hs-console{min-height:520px}
+.hn-support-page .hs-newdialog{position:relative;box-shadow:0 20px 70px rgba(16,45,38,.17)}
+.hs-launcher.hs-fab-v3 .hs-fab-trigger.hs-fab-direct{text-decoration:none!important}
+@media(max-width:750px){
+ .hn-support-page .hs-main{margin-top:9px}
+ .hn-support-page .hs-hero{padding:25px 19px!important}
+ .hn-support-page .hs-actions{display:grid;grid-template-columns:1fr;gap:9px}
+ .hn-support-page .hs-actions .hs-primary,.hn-support-page .hs-actions .hs-secondary{width:100%}
+ .hn-support-page .hs-livebar{padding:14px;align-items:start}
+ .hn-support-page .hs-livebar small{font-size:11px}
+ .hn-support-page .hs-console{border-radius:17px}
+ .hn-support-page .hs-chathead{gap:10px}
+ .hn-support-page .hs-dialog-actions{flex-wrap:wrap}
+ .hn-support-page .hs-dialog-actions>button{flex:1}
+}
+@media(prefers-reduced-motion:reduce){.hn-support-page .hs-actions .hs-primary,.hn-support-page .hs-actions .hs-secondary{transition:none}}
