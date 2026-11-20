@@ -6,7 +6,7 @@ const root=document.getElementById('adminGate');
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 if(!auth){root.innerHTML='<div class="hub-error">Accès réservé à l’administration HORENOVA. <a href="/enter.html?mode=signin">Se connecter</a></div>';}
 else{
-root.innerHTML='<div class="hub-root"><div class="hub-head"><div><span class="hub-small">HORENOVA · CENTRE PRIVÉ</span><h2>Candidatures & recrutement</h2><p class="hub-muted">Dossiers détaillés, photos privées, contrôle des mises en relation et conversations.</p></div><a class="hub-action secondary" href="/conversations.html">Chat HORENOVA ↗</a></div><div class="hub-error" id="hubError"></div><div class="hub-head"><input id="hubSearch" class="hub-input" placeholder="Rechercher un candidat ou une offre…" aria-label="Rechercher"><button class="hub-action secondary" id="hubRefresh">Actualiser</button></div><div class="hub-layout"><section class="hub-panel" id="adminApplications"><div class="hub-panel-head"><h3 id="hubCount">Candidatures</h3><p class="hub-muted">Nouveaux dossiers transmis à HORENOVA</p></div><div id="hubCases" class="hub-stack"></div></section><section class="hub-panel" id="hubDetail"><div class="hub-detail hub-muted">Choisissez un dossier à examiner.</div></section></div><section class="hub-panel" id="adminRecruiterRequests" style="margin-top:22px"><div class="hub-panel-head"><h3>Demandes de recrutement <span id="hubRequestsCount"></span></h3><p class="hub-muted">Demandes privées reçues des établissements, disponibles pour vérification et association aux candidatures.</p></div><div id="hubRecruiterRequests" class="hub-stack"></div></section><p class="hub-muted" style="margin-top:22px">Dossiers historiques : <a target="_blank" rel="noopener" href="https://manage.wix.com/dashboard/7d0d5cbc-d6b5-483c-adcf-eda65565ae2e/wix-cms">ouvrir le CMS Wix administrateur</a>.</p></div>';
+root.innerHTML='<div class="hub-root"><div class="hub-head"><div><span class="hub-small">HORENOVA · CENTRE PRIVÉ · VERSION 20/11 / SUPPORT & IMPRESSION</span><h2>Candidatures & recrutement</h2><p class="hub-muted">Dossiers détaillés, photos privées, contrôle des mises en relation et conversations. <strong>Impression A4 accessible directement sur chaque dossier.</strong></p></div><a class="hub-action secondary" href="/conversations.html">Chat HORENOVA ↗</a></div><div class="hub-error" id="hubError"></div><div class="hub-head"><input id="hubSearch" class="hub-input" placeholder="Rechercher un candidat ou une offre…" aria-label="Rechercher"><button class="hub-action secondary" id="hubRefresh">Actualiser</button></div><div class="hub-layout"><section class="hub-panel" id="adminApplications"><div class="hub-panel-head"><h3 id="hubCount">Candidatures</h3><p class="hub-muted">Nouveaux dossiers transmis à HORENOVA</p></div><div id="hubCases" class="hub-stack"></div></section><section class="hub-panel" id="hubDetail"><div class="hub-detail hub-muted">Choisissez un dossier à examiner.</div></section></div><section class="hub-panel" id="adminRecruiterRequests" style="margin-top:22px"><div class="hub-panel-head"><h3>Demandes de recrutement <span id="hubRequestsCount"></span></h3><p class="hub-muted">Demandes privées reçues des établissements, disponibles pour vérification et association aux candidatures.</p></div><div id="hubRecruiterRequests" class="hub-stack"></div></section><p class="hub-muted" style="margin-top:22px">Dossiers historiques : <a target="_blank" rel="noopener" href="https://manage.wix.com/dashboard/7d0d5cbc-d6b5-483c-adcf-eda65565ae2e/wix-cms">ouvrir le CMS Wix administrateur</a>.</p></div>';
 
 root.insertAdjacentHTML('afterbegin',
  '<section class="hn-support-admin-inbox" id="adminSupportInbox"><div class="hn-support-admin-header"><div><span>HORENOVA · SUPPORT NATIONAL</span><h2>Messages & problèmes des membres</h2><p>Les demandes de candidats et recruteurs sont privées. Cliquez pour répondre.</p></div><div><a class="hn-support-admin-cta" href="/support.html">Ouvrir le support ↗</a><a class="hn-support-admin-tel" href="tel:+212648377009">☎ 0648377009</a></div></div>'+
@@ -102,11 +102,22 @@ function listRequests(){
   }));
 }
 function list(){
-const term=$('hubSearch').value.toLowerCase().trim();
-const shown=applications.filter(a=>[a.jobTitle,a.candidateEmail,a.profile?.firstName,a.profile?.lastName,a.profile?.city].join(' ').toLowerCase().includes(term));
-$('hubCount').textContent=applications.length+' dossier(s)';
-$('hubCases').innerHTML=shown.map(a=>'<button type="button" class="hub-case '+(a.id===selected?'active':'')+'" data-id="'+esc(a.id)+'"><span>'+esc(new Date(a.createdAt).toLocaleDateString('fr-MA'))+'</span><strong>'+esc([a.profile?.firstName,a.profile?.lastName].filter(Boolean).join(' ')||a.candidateEmail)+'</strong><span>'+esc(a.jobTitle)+' · '+esc(a.profile?.city||'')+'</span><p class="hub-tag">'+esc(names[a.status]||a.status)+'</p></button>').join('')||'<div class="hub-detail hub-muted">Aucune candidature.</div>';
-$('hubCases').querySelectorAll('[data-id]').forEach(b=>b.onclick=()=>detail(b.dataset.id,true));
+ const term=$('hubSearch').value.toLowerCase().trim();
+ const shown=applications.filter(a=>[a.jobTitle,a.candidateEmail,a.profile?.firstName,a.profile?.lastName,a.profile?.city].join(' ').toLowerCase().includes(term));
+ $('hubCount').textContent=applications.length+' dossier(s)';
+ $('hubCases').innerHTML=shown.map(a=>'<article class="hn-case-list-item">'+
+   '<button type="button" class="hub-case '+(a.id===selected?'active':'')+'" data-id="'+esc(a.id)+'" aria-label="Ouvrir le dossier de '+esc([a.profile?.firstName,a.profile?.lastName].filter(Boolean).join(' ')||a.candidateEmail)+'">'+
+   '<span>'+esc(new Date(a.createdAt).toLocaleDateString('fr-MA'))+'</span>'+
+   '<strong>'+esc([a.profile?.firstName,a.profile?.lastName].filter(Boolean).join(' ')||a.candidateEmail)+'</strong>'+
+   '<span>'+esc(a.jobTitle)+' · '+esc(a.profile?.city||'')+'</span>'+
+   '<p class="hub-tag">'+esc(names[a.status]||a.status)+'</p></button>'+
+   '<button class="hn-admin-print-btn hn-case-quickprint" type="button" data-quickprint-id="'+esc(a.id)+'" aria-label="Imprimer le dossier complet de '+esc([a.profile?.firstName,a.profile?.lastName].filter(Boolean).join(' ')||a.candidateEmail)+' avec photo">⎙ Imprimer la candidature avec photo</button>'+
+   '</article>').join('')||'<div class="hub-detail hub-muted">Aucune candidature.</div>';
+ $('hubCases').querySelectorAll('button[data-id]').forEach(b=>b.onclick=()=>detail(b.dataset.id,true));
+ $('hubCases').querySelectorAll('button[data-quickprint-id]').forEach(b=>b.onclick=()=>{
+   const candidate=applications.find(a=>a.id===b.dataset.quickprintId);
+   if(candidate)void printCandidate(candidate,()=>hubPhoto('/api/applications/'+encodeURIComponent(candidate.id)+'/photo'));
+ });
 }
 async function detail(id,scrollToDetail=false){
  selected=id;list();
