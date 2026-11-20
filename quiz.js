@@ -65,6 +65,17 @@ const QUIZ_COPY={
 };
 let quizLang='fr';try{const selected=localStorage.getItem('mihna-lang');if(['fr','en','ar'].includes(selected))quizLang=selected;}catch{}
 const copy=QUIZ_COPY[quizLang];
+const QUIZ_DRAFT_KEY='hn-quiz-draft-v2:'+encodeURIComponent(role);
+function saveDraft(answers){
+ try{sessionStorage.setItem(QUIZ_DRAFT_KEY,JSON.stringify({answers,at:Date.now()}))}catch{}
+}
+function recoverDraft(){
+ try{
+  const value=JSON.parse(sessionStorage.getItem(QUIZ_DRAFT_KEY)||'null');
+  if(value?.at&&Date.now()-value.at<3*60*60*1000&&Array.isArray(value.answers))return value.answers;
+ }catch{}
+ return [];
+}
 const sourceQuestions=BANK[role]||BANK.default;
 const translated=QUIZ_I18N[quizLang]?.[BANK[role]?role:'default'];
 const localizedQuestions=translated?sourceQuestions.map((q,i)=>[translated[i][0],translated[i][1],q[2]]):sourceQuestions;
@@ -73,7 +84,24 @@ const quizIntro=document.querySelector('.quiz-exam-head p');if(quizIntro)quizInt
 const quizSection=document.querySelector('.quiz-exam');if(quizSection)quizSection.dir=quizLang==='ar'?'rtl':'ltr';
 
 const questions=localizedQuestions,form=document.getElementById('domainQuiz');form.innerHTML='<div class="hn-quiz-progress" role="status" style="font-weight:800;padding:12px 16px;color:#16463e;background:#e0efe6;border-radius:12px"><span id="hnQuizAnswered">0 / '+questions.length+'</span></div>'+questions.map((q,i)=>`<fieldset><legend><b>${String(i+1).padStart(2,'0')}</b>${q[0]}</legend>${q[1].map((a,j)=>`<label><input type="radio" name="q${i}" value="${j}" required><span>${a}</span></label>`).join('')}</fieldset>`).join('')+'<button class="cta-main" type="submit">'+copy.submit+' ↗</button>';
-form.addEventListener('change',()=>{const answered=questions.filter((_,i)=>form.querySelector('input[name="q'+i+'"]:checked')).length;document.getElementById('hnQuizAnswered').textContent=answered+' / '+questions.length;});
+const restoredAnswers=recoverDraft();
+for(let i=0;i<questions.length;i++){
+ const answer=restoredAnswers[i];
+ if(Number.isInteger(answer)&&answer>=0&&answer<questions[i][1].length){
+  const input=form.querySelector('input[name="q'+i+'"][value="'+answer+'"]');
+  if(input)input.checked=true;
+ }
+}
+function updateProgress(){
+ const selected=questions.map((_,i)=>{
+  const input=form.querySelector('input[name="q'+i+'"]:checked');
+  return input?Number(input.value):null;
+ });
+ document.getElementById('hnQuizAnswered').textContent=selected.filter(x=>x!==null).length+' / '+questions.length;
+ saveDraft(selected);
+}
+form.addEventListener('change',updateProgress);
+updateProgress();
 form.onsubmit=async event=>{
  event.preventDefault();
  if(!form.reportValidity())return;
@@ -98,6 +126,7 @@ form.onsubmit=async event=>{
  try{
   const saved=await insertItem('QuizAttempts',{jobFamily:role,score,passed,answersJson:JSON.stringify(answers)});
   if(!saved?._id)throw Error(copy.error);
+  try{sessionStorage.removeItem(QUIZ_DRAFT_KEY)}catch{}
   const profile=(await queryItems('CandidateProfiles',{filters:[{field:'_owner',op:'eq',value:auth.member.id}],limit:1})).items[0];
   if(profile){try{await patchItemFields('CandidateProfiles',profile._id,{quizScore:score,quizPassed:passed});}catch(error){console.warn('Quiz attempt saved; optional profile score sync deferred.',error?.message||'cms');}}
   result.hidden=false;
