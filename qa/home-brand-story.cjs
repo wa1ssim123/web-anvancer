@@ -1,0 +1,81 @@
+'use strict';
+/* HORENOVA home smoke: real DOM/CSS, public Shop + Academy links, Morocco/Canada story, FR/EN/AR. */
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const path=require('node:path');
+const {chromium}=require('playwright');
+const root=path.resolve(__dirname,'..');
+const read=file=>fs.readFileSync(path.join(root,file),'utf8');
+const html=read('index.html');
+const i18n=read('horenova-i18n.js');
+const home=read('horenova-home.js');
+const css=read('horenova-home-story-20261120.css');
+assert.match(html,/class="hn-intro-shortcut hn-intro-shortcut-shop" href="\/shop.html"/);
+assert.match(html,/class="hn-intro-shortcut hn-intro-shortcut-academy" href="\/academy.html"/);
+assert.match(html,/id="notre-histoire"/);
+assert.match(css,/max-width:360px/);
+const store="export const getMemberState=()=>({loggedIn:false,member:null});export const subscribeMember=()=>()=>{};";
+async function scenario(browser,lang,width,height){
+ const context=await browser.newContext({viewport:{width,height},serviceWorkers:'block',reducedMotion:'reduce'});
+ const page=await context.newPage(),errors=[];
+ page.on('pageerror',err=>errors.push(err.message));
+ await page.addInitScript(language=>localStorage.setItem('mihna-lang',language),lang);
+ await page.route('**/*',async route=>{
+  const request=route.request();const url=new URL(request.url());
+  if(url.hostname!=='horenova.test'){
+   // Decorative remote images and video are not necessary for layout QA.
+   return route.fulfill({status:204,body:''});
+  }
+  const pathName=url.pathname;
+  if(pathName==='/')return route.fulfill({status:200,contentType:'text/html; charset=utf-8',body:html});
+  if(pathName==='/js/wix/member-store.js')return route.fulfill({status:200,contentType:'text/javascript',body:store});
+  if(pathName==='/horenova-home.js')return route.fulfill({status:200,contentType:'text/javascript',body:home});
+  if(pathName==='/horenova-i18n.js')return route.fulfill({status:200,contentType:'text/javascript',body:i18n});
+  if(pathName.endsWith('.js'))return route.fulfill({status:200,contentType:'text/javascript',body:''});
+  if(pathName.endsWith('.css')&&fs.existsSync(path.join(root,pathName.slice(1))))
+   return route.fulfill({status:200,contentType:'text/css',body:read(pathName.slice(1))});
+  return route.fulfill({status:204,body:''});
+ });
+ await page.goto('https://horenova.test/',{waitUntil:'domcontentloaded'});
+ await page.locator('.hn-intro.open').waitFor({timeout:6000});
+ await page.waitForFunction(l=>document.documentElement.lang===l,lang);
+ assert.equal(await page.locator('.hn-intro-shortcut-shop').getAttribute('href'),'/shop.html');
+ assert.equal(await page.locator('.hn-intro-shortcut-academy').getAttribute('href'),'/academy.html');
+ assert.equal(await page.locator('.hn-intro-shortcut').count(),2);
+ const translated={
+  fr:['POUR S’ÉQUIPER','POUR APPRENDRE','Deux horizons.'],
+  en:['TO EQUIP YOURSELF','TO LEARN','Two horizons.'],
+  ar:['للتجهيز','للتعلم','أفقان.']
+ }[lang];
+ const actual=await page.evaluate(()=>[
+  document.querySelector('.hn-intro-shortcut-shop .hn-intro-shortcut-overline')?.textContent?.trim(),
+  document.querySelector('.hn-intro-shortcut-academy .hn-intro-shortcut-overline')?.textContent?.trim(),
+  document.querySelector('#hn-origin-title')?.firstChild?.textContent?.trim()
+ ]);
+ assert.deepEqual(actual,translated);
+ const layout=await page.evaluate(()=>{
+  const el=document.querySelector('.hn-intro-shortcuts'),rect=el.getBoundingClientRect();
+  const origin=document.querySelector('.hn-origin'),originRect=origin.getBoundingClientRect();
+  return {documentWidth:document.documentElement.scrollWidth,windowWidth:innerWidth,
+   tilesLeft:rect.left,tilesRight:rect.right,originWidth:originRect.width,
+   scrollableIntro:document.querySelector('.hn-intro').scrollHeight>=document.querySelector('.hn-intro').clientHeight,
+   images:[...document.querySelectorAll('.hn-origin-flags [role=img]')].map(n=>n.textContent.trim())
+  };
+ });
+ assert.ok(layout.tilesLeft>=-1&&layout.tilesRight<=width+1,'Intro quick links overflow '+JSON.stringify(layout));
+ assert.ok(layout.originWidth<=width+1,'Origin section exceeds viewport '+JSON.stringify(layout));
+ assert.deepEqual(layout.images,['🇲🇦','🇨🇦']);
+ assert.equal(await page.locator('.hn-origin-values .hn-origin-value').count(),3);
+ await page.locator('button.hn-intro-enter').click();
+ await page.locator('.hn-intro.gone').waitFor({timeout:4000});
+ assert.deepEqual(errors,[],'Browser errors: '+errors.join('; '));
+ console.log('PASS home brand '+lang+' '+width+'x'+height);
+ await context.close();
+}
+(async()=>{const browser=await chromium.launch({headless:true});try{
+ for(const language of ['fr','en','ar']){
+  for(const [width,height] of [[320,640],[390,844],[768,1024],[1280,800]]){
+   await scenario(browser,language,width,height);
+  }
+ }
+}finally{await browser.close()}})().catch(error=>{console.error('FAIL home brand: '+error.stack);process.exitCode=1});
