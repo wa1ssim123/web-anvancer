@@ -307,7 +307,7 @@ async function api(req,res,path,method) {
         jobTitle:title,businessName:business,city:limit(d.city,80),
         scheduleText:limit(d.scheduleText,120)}
     });
-    return json(res,201,{id:q.rows[0].id,ok:true,emailQueued:receipt.queued});
+    return json(res,201,{id:q.rows[0].id,ok:true,emailQueued:receipt.queued,emailEnabled:mailer.configured()});
   }
   if(path==='/api/recruiter-requests' && method==='GET') {
     requireRole(user,['recruiter','admin']);
@@ -434,7 +434,7 @@ async function api(req,res,path,method) {
       locale:d.locale||profile?.preferredLanguage,
       payload:{firstName,jobTitle:limit(job.title,140)}
     });
-    return json(res,201,{ok:true,item:present(created.rows[0],user),emailQueued:receipt.queued});
+    return json(res,201,{ok:true,item:present(created.rows[0],user),emailQueued:receipt.queued,emailEnabled:mailer.configured()});
   }
   if(path==='/api/applications' && method==='GET') {
     requireRole(user,['candidate','recruiter','admin']);
