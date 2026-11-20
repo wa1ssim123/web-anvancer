@@ -34,6 +34,11 @@ export function applyLanguage(lang=currentLang()){document.documentElement.lang=
 function injectLang(){const html='<div class="lang-switch"><button data-lang="fr">FR</button><button data-lang="ar">ع</button><button data-lang="en">EN</button></div>';for(const id of ['langMount','mobileLangMount']){const m=document.getElementById(id);if(m)m.innerHTML=html}document.querySelectorAll('.lang-switch button').forEach(b=>b.onclick=()=>setLang(b.dataset.lang));applyLanguage()}
 // Authenticated role-specific navigation. Never infer a role from URL/localStorage.
 const HN_ROLE_NAV={
+  candidate:{
+    fr:[['Mon espace','/account.html','♙'],['Offres','/jobs.html','⌕'],['Shifts','/shifts.html','◷'],['Mes matchs','/matches.html','★'],['Academy','/academy.html','✦'],['Shop','/shop.html','◇'],['Explore','/explore.html','◉']],
+    ar:[['حسابي','/account.html','♙'],['الوظائف','/jobs.html','⌕'],['المهام','/shifts.html','◷'],['مطابقاتي','/matches.html','★'],['الأكاديمية','/academy.html','✦'],['المتجر','/shop.html','◇'],['استكشف','/explore.html','◉']],
+    en:[['My account','/account.html','♙'],['Jobs','/jobs.html','⌕'],['Shifts','/shifts.html','◷'],['Matches','/matches.html','★'],['Academy','/academy.html','✦'],['Shop','/shop.html','◇'],['Explore','/explore.html','◉']]
+  },
   recruiter:{
     fr:[['Tableau de bord','/account.html','⌂'],['Annonces & shifts','/recruit.html','▣'],['Talents','/talents.html','★'],['Candidatures','/account.html#recruitment','◷'],['Chat','/conversations.html','✉'],['Shop','/shop.html','◇'],['Explore','/explore.html','◉']],
     ar:[['لوحة التحكم','/account.html','⌂'],['الوظائف والمهمات','/recruit.html','▣'],['المواهب','/talents.html','★'],['الترشيحات','/account.html#recruitment','◷'],['المحادثات','/conversations.html','✉'],['المتجر','/shop.html','◇'],['استكشف','/explore.html','◉']],
@@ -68,7 +73,7 @@ async function installMemberRoleNavigation(session){
   if(!session?.loggedIn||!session?.member?.id)return;
   const role=await getRole();
   if(ticket!==hnRoleNavRequest||getMemberState().member?.id!==session.member.id)return;
-  if(!['recruiter','admin'].includes(role))return; // Candidates retain the employment-first navigation.
+  if(!['candidate','recruiter','admin'].includes(role))return; // Each verified role sees only relevant navigation.
   const links=HN_ROLE_NAV[role][['fr','en','ar'].includes(currentLang())?currentLang():'fr'];
   const top=document.querySelector('.hn12-nav');
   const dock=document.querySelector('.hn12-dock');
