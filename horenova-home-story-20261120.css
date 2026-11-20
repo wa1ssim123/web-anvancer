@@ -25,7 +25,10 @@
 .hn-origin-topline{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;margin:0 auto 44px;max-width:1240px}
 .hn-origin-label{font:800 11px/1.5 Inter,Arial,sans-serif;letter-spacing:.16em;color:#ffc18e}
 .hn-origin-flags{display:flex;align-items:center;gap:10px;padding:9px 15px;border:1px solid rgba(255,255,255,.15);border-radius:999px;background:rgba(255,255,255,.055);font:800 10px/1.2 Inter,Arial,sans-serif;color:#d9e0d8;letter-spacing:.05em}
-.hn-origin-flags [role=img]{font-size:23px;line-height:1}
+/* Inline flags avoid missing Windows emoji fonts and network image dependencies. */
+.hn-origin-flags .hn-flag-icon{display:block!important;flex:0 0 auto;width:35px!important;height:23px!important;min-width:35px;max-width:35px;max-height:23px;aspect-ratio:auto;overflow:hidden;box-sizing:border-box;border-radius:3px;box-shadow:0 0 0 1px rgba(255,255,255,.25),0 3px 12px rgba(0,0,0,.19);filter:none!important;opacity:1!important;visibility:visible!important}
+.hn-origin-flags .hn-flag-icon rect,.hn-origin-flags .hn-flag-icon path{visibility:visible!important;opacity:1!important}
+.hn-origin-flags .hn-flag-icon[role=img]{font-size:inherit;line-height:normal}
 .hn-origin-flags b{color:#e6a86c;font-size:14px}
 .hn-origin-grid{max-width:1240px;margin:auto;display:grid;grid-template-columns:minmax(0,1.17fr) minmax(290px,.83fr);align-items:start;gap:clamp(27px,6vw,90px)}
 .hn-origin-eyebrow{display:block;font:800 11px/1.6 Inter,Arial,sans-serif;color:#e8aa80;letter-spacing:.16em;margin-bottom:18px}
@@ -68,12 +71,12 @@ html[dir=rtl] .hn-intro-shortcut{align-items:flex-start}
  .hn-origin{padding:65px 18px 75px}
  .hn-origin-topline{gap:15px}
  .hn-origin-flags{padding:8px 10px;gap:7px;letter-spacing:0}
- .hn-origin-flags [role=img]{font-size:20px}
+ .hn-origin-flags .hn-flag-icon{width:30px!important;height:21px!important;min-width:30px;max-width:30px;max-height:21px}
  .hn-origin-label{font-size:10px}
  .hn-origin h2{font-size:clamp(39px,10vw,56px);letter-spacing:-.045em;margin-bottom:20px}
  .hn-origin-quote blockquote{font-size:28px}
  .hn-origin-actions a{width:100%}
 }
-@media(max-width:360px){.hn-intro .hn-intro-inner>p{font-size:12px!important}.hn-intro-shortcut{padding:12px 10px;min-height:112px}.hn-intro-shortcut strong{font-size:23px}.hn-intro-shortcut-description{font-size:9px}.hn-origin-flags{gap:5px}.hn-origin-flags [role=img]{font-size:17px}.hn-origin-flags span:not([role=img]){font-size:9px}}
+@media(max-width:360px){.hn-intro .hn-intro-inner>p{font-size:12px!important}.hn-intro-shortcut{padding:12px 10px;min-height:112px}.hn-intro-shortcut strong{font-size:23px}.hn-intro-shortcut-description{font-size:9px}.hn-origin-flags{gap:5px}.hn-origin-flags .hn-flag-icon{width:27px!important;height:19px!important;min-width:27px;max-width:27px;max-height:19px}.hn-origin-flags span:not([role=img]){font-size:9px}}
 @media(max-height:690px) and (max-width:900px){.hn-intro .hn-intro-inner>img{width:50px!important}.hn-intro .hn-intro-inner>small{margin:6px 0 4px!important}.hn-intro .hn-intro-inner>h1{font-size:clamp(31px,9vw,52px)!important}.hn-intro .hn-intro-inner>p{margin:7px auto!important}.hn-intro-shortcuts{margin-top:10px}.hn-intro-shortcut{min-height:94px;padding:10px 12px}.hn-intro-shortcut strong{margin:4px 0;font-size:clamp(22px,5vw,30px)}.hn-intro .hn-intro-enter{margin-top:9px!important;min-height:43px!important}.hn-intro .hn-intro-explore{margin-top:8px!important;min-height:42px!important}}
 @media(prefers-reduced-motion:reduce){.hn-intro-shortcut,.hn-origin-actions a{transition:none!important;transform:none!important}}
