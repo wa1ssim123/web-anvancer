@@ -54,6 +54,12 @@ function savedPendingEmail(){
  }catch{}
  return null;
 }
+/** A pending code may survive a reload in the same browser tab (not across browsers).
+ * Never expose the Wix state token in a URL or persistent localStorage.
+ */
+export function hasPendingEmailVerification() {
+    return Boolean(savedPendingEmail());
+}
 /** True when the persisted token set is a member's (no network) — the store skips the profile read when false. */
 export function loggedInHint() {
     return loadTokens()?.role === "member";
