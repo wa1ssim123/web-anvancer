@@ -181,7 +181,7 @@ async function render(){
   status.className='';
   status.textContent='Synchronisation de votre ancienne demande…';
   try{
-   await hub('/api/recruiter-requests',{method:'POST',body:{
+   const submitted=await hub('/api/recruiter-requests',{method:'POST',body:{
     ...request,jobTitle:request.title,wixRequestId:request._id,locale:currentLang()
    }});
    status.className='recruit-status-ok';
@@ -293,7 +293,7 @@ form.addEventListener('submit',async event=>{
   }});
   pendingSync=null;
   status.className='recruit-status-ok';
-  status.textContent='✓ Demande et photo enregistrées. Publication après validation par l’administrateur HORENOVA.';
+  status.textContent='✓ Demande et photo enregistrées. Publication après validation par l’administrateur HORENOVA.'+(submitted.emailQueued&&submitted.emailEnabled?' Un e-mail de confirmation est en cours d’envoi.':'');
   form.elements.title.value='';
   form.elements.description.value='';
   await render();
