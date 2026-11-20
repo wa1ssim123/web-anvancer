@@ -164,4 +164,6 @@ if(photoFile){
   await hubUploadPhoto(compressed);
   status.textContent='Photo privée enregistrée ✓';
 }
-location.assign('/quiz.html?role='+encodeURIComponent(privateData.jobFamily)+'&setup=1')}catch(x){err.textContent=x.message||String(x)}finally{btn.disabled=false}};
+const target=new URLSearchParams(location.search).get('returnTo')||'';
+const safeTarget=target.startsWith('/')&&!target.startsWith('//')&&!target.includes('\\')?target:'';
+location.assign('/quiz.html?role='+encodeURIComponent(privateData.jobFamily)+'&setup=1'+(safeTarget?'&returnTo='+encodeURIComponent(safeTarget):''))}catch(x){err.textContent=x.message||String(x)}finally{btn.disabled=false}};
