@@ -6,6 +6,34 @@ const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 if(!auth){root.innerHTML='<div class="hub-error">Accès réservé à l’administration HORENOVA. <a href="/enter.html?mode=signin">Se connecter</a></div>';}
 else{
 root.innerHTML='<div class="hub-root"><div class="hub-head"><div><span class="hub-small">HORENOVA · CENTRE PRIVÉ</span><h2>Candidatures & recrutement</h2><p class="hub-muted">Dossiers détaillés, photos privées, contrôle des mises en relation et conversations.</p></div><a class="hub-action secondary" href="/conversations.html">Chat HORENOVA ↗</a></div><div class="hub-error" id="hubError"></div><div class="hub-head"><input id="hubSearch" class="hub-input" placeholder="Rechercher un candidat ou une offre…" aria-label="Rechercher"><button class="hub-action secondary" id="hubRefresh">Actualiser</button></div><div class="hub-layout"><section class="hub-panel"><div class="hub-panel-head"><h3 id="hubCount">Candidatures</h3><p class="hub-muted">Nouveaux dossiers transmis à HORENOVA</p></div><div id="hubCases" class="hub-stack"></div></section><section class="hub-panel" id="hubDetail"><div class="hub-detail hub-muted">Choisissez un dossier à examiner.</div></section></div><section class="hub-panel" style="margin-top:22px"><div class="hub-panel-head"><h3>Demandes de recrutement <span id="hubRequestsCount"></span></h3><p class="hub-muted">Demandes privées reçues des établissements, disponibles pour vérification et association aux candidatures.</p></div><div id="hubRecruiterRequests" class="hub-stack"></div></section><p class="hub-muted" style="margin-top:22px">Dossiers historiques : <a target="_blank" rel="noopener" href="https://manage.wix.com/dashboard/7d0d5cbc-d6b5-483c-adcf-eda65565ae2e/wix-cms">ouvrir le CMS Wix administrateur</a>.</p></div>';
+
+root.insertAdjacentHTML('afterbegin',
+ '<section class="hn-support-admin-inbox"><div class="hn-support-admin-header"><div><span>HORENOVA · SUPPORT NATIONAL</span><h2>Messages & problèmes des membres</h2><p>Les demandes de candidats et recruteurs sont privées. Cliquez pour répondre.</p></div><div><a class="hn-support-admin-cta" href="/support.html">Ouvrir le support ↗</a><a class="hn-support-admin-tel" href="tel:+212648377009">☎ 0648377009</a></div></div>'+
+ '<div class="hn-support-admin-metrics" id="hnSupportAdminMetrics" role="status">Chargement des messages de support…</div>'+
+ '<div class="hn-support-admin-latest" id="hnSupportAdminLatest"></div></section>');
+async function refreshSupportInbox(){
+ const count=document.getElementById('hnSupportAdminMetrics');
+ const list=document.getElementById('hnSupportAdminLatest');
+ if(!count||!list)return;
+ try{
+  const result=await hub('/api/support/threads');
+  const items=result.items||[];
+  const unread=items.reduce((n,t)=>n+Number(t.unread||0),0);
+  const open=items.filter(x=>x.status==='OPEN'||x.status==='IN_PROGRESS').length;
+  count.innerHTML='<span><strong>'+unread+'</strong> Messages non lus</span><span><strong>'+open+'</strong> Demandes ouvertes</span><span><strong>'+items.length+'</strong> Conversations récentes</span>';
+  list.replaceChildren();
+  if(!items.length){list.textContent='Aucune demande pour le moment.';return;}
+  for(const item of items.slice(0,7)){
+   const link=document.createElement('a');link.href='/support.html?thread='+encodeURIComponent(item.id);
+   const title=document.createElement('strong');title.textContent=item.subject||'Demande de support';
+   const meta=document.createElement('small');meta.textContent=[item.memberEmail,item.category,item.status].filter(Boolean).join(' · ');
+   const badge=document.createElement('b');badge.textContent=Number(item.unread)>0?item.unread+' nouveau(x)':'Répondre ↗';
+   link.append(title,meta,badge);list.append(link);
+  }
+ }catch(error){count.textContent='Suivi du support momentanément indisponible. Appelez le 0648377009.';}
+}
+void refreshSupportInbox();
+setInterval(()=>{if(!document.hidden)void refreshSupportInbox();},14000);
 const $=id=>document.getElementById(id);
 const names={EN_ETUDE:'En étude',PRESELECTION:'Présélection',ENTRETIEN:'Entretien',MISE_EN_RELATION:'Mise en relation',RETENUE:'Retenue',REFUSEE:'Refusée',CLOTURE:'Clôturée'};
 const statuses=['EN_ETUDE','PRESELECTION','ENTRETIEN','MISE_EN_RELATION','RETENUE','REFUSEE','CLOTURE'];
