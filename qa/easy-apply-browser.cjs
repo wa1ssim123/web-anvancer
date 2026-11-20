@@ -8,7 +8,7 @@ const root=path.resolve(__dirname,'..');
 const app=fs.readFileSync(path.join(root,'apply.js'),'utf8');
 const i18n=fs.readFileSync(path.join(root,'horenova-i18n.js'),'utf8');
 const fixture='<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body data-hn12="apply"><header class="hn12-top"><div class="hn12-actions"><button id="menuBtn">Menu</button></div></header><main class="hn12-page"><section class="hn-application-studio"><div class="hn-application-layout"><div class="hn-application-panel"><div id="applyJob"></div><div id="applyChecks"></div></div><aside class="hn-application-aside"><img id="applyPortrait" hidden><span id="applyPortraitEmpty">Photo</span><h2 id="applyCandidateName"></h2><p id="applyCandidateMeta"></p></aside></div></section></main><nav class="hn12-dock"><a href="/jobs.html">Jobs</a></nav><script type="module" src="/apply.js"></script><script defer src="/horenova-i18n.js"></script></body></html>';
-const memberModule="export async function requireRole(){return {role:'candidate',member:{id:'candidate-mock',contact:{firstName:'Samira',lastName:'Test'}}};}";
+const memberModule="export async function requireRole(){return {role:'candidate',member:{id:'candidate-mock',contact:{firstName:'Samira',lastName:'Test'}}};} export function currentLang(){return localStorage.getItem('mihna-lang')||'fr'}";
 const itemsModule="export async function queryItems(){return {items:[]}};export async function getItemById(){return null};";
 function apiModule(hasPhoto){
  return `export async function hub(path,options){
