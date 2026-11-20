@@ -6,7 +6,7 @@ const threads=[],messages=[],presence=[];
 const db={
  async query(statement,params=[]){
   const sql=String(statement).replace(/\s+/g,' ').trim();
-  if(sql.startsWith('CREATE '))return {rows:[]};
+  if(sql.startsWith('CREATE ')||sql.startsWith('SELECT 1 FROM hr_support_'))return {rows:[]};
   if(sql.startsWith('INSERT INTO hr_support_threads')){
    threads.push({id:params[0],member_wix_id:params[1],member_email:params[2],member_role:params[3],subject:params[4],category:params[5],status:'OPEN',created_at:new Date().toISOString(),updated_at:new Date().toISOString(),last_message_at:new Date().toISOString()});
    return {rows:[]};
