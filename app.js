@@ -122,13 +122,73 @@ function setupRecruit(){const f=$('#recruitForm');if(!f)return;f.onsubmit=e=>{e.
 function renderRecruitList(){const g=$('#myRecruitJobs');if(!g)return;g.innerHTML=state.customJobs.length?state.customJobs.map(cardJob).join(''):'<div class="empty-state"><h2>Aucun brouillon.</h2><p>Votre première offre apparaîtra ici après enregistrement.</p></div>'}
 function setupBoost(){const s=$('#boostSummary');$$('.boost-plan').forEach(b=>b.onclick=()=>{$$('.boost-plan').forEach(x=>x.classList.toggle('active',x===b));if(s)s.textContent=`${b.dataset.plan} heures · ${b.dataset.price} DH`});const pay=$('#boostPayBtn');if(pay)pay.onclick=()=>toast('Paiement pas encore activé')}
 function setupTrip(){const btn=$('#saveTripPage');if(!btn)return;state.trip.forEach(v=>{const x=$(`.trip-destinations input[value="${v}"]`);if(x)x.checked=true});const show=()=>{const d=$('#tripSaved');if(d)d.textContent=state.trip.length?'Votre carnet : '+state.trip.join(' · '):'Aucune destination enregistrée.'};show();btn.onclick=()=>{state.trip=$$('.trip-destinations input:checked').map(i=>i.value);persist();show();toast('Carnet enregistré')}}
-function renderJobDetail(){const box=$('#jobDetail');if(!box)return;const id=new URLSearchParams(location.search).get('id'),j=jobs().find(x=>x.id===id);if(!j){box.innerHTML='<div class="empty-state"><h2>Offre introuvable ou retirée.</h2><p>Consultez les offres disponibles.</p><a href="/jobs.html">Retour aux offres</a></div>';return}const saved=state.saved.includes(j.id);box.innerHTML=`<a class="back-link" href="${j.kind==='shift'?'/shifts.html':'/jobs.html'}">← Retour</a><div class="detail-grid"><div class="detail-photo"><img src="${j.img}" alt="${j.title}"></div><div class="detail-copy"><span class="small-title">${j.kind==='shift'?'SHIFT':'EMPLOI'} · ${j.role}</span><h1>${j.title}</h1><p class="detail-business">${j.business} · ${j.city}</p>${j.businessType?`<p class="hn-workplace-kind">🏢 ${j.businessType}</p>`:""}<div class="detail-pay">${j.pay} <small>${j.period}</small></div>${j.time?`<p>◷ ${j.time}</p>`:''}<p>${j.details||j.desc||''}</p><div class="hn-workplace-facts">
-${j.workplaceAddress?'<div><small>LIEU DE TRAVAIL</small><strong>⌖ '+j.workplaceAddress+'</strong></div>':''}
-${j.contractType?'<div><small>CONTRAT</small><strong>'+j.contractType+'</strong></div>':''}
-${j.openings?'<div><small>POSTES À POURVOIR</small><strong>'+j.openings+'</strong></div>':''}
-${j.startDate?'<div><small>DÉBUT</small><strong>'+formatJobStartDate(j.startDate)+'</strong></div>':''}
-${j.requirements?'<div class="wide"><small>COMPÉTENCES & EXIGENCES</small><p>'+j.requirements+'</p></div>':''}
-</div>${j.hasWorkplacePhoto?'<p class="hn-workplace-authentic">✓ Photo communiquée par l’établissement et publiée après validation HORENOVA</p>':''}<div class="detail-actions"><a class="cta-main button-link" href="/apply.html?id=${encodeURIComponent(j.id)}&role=${encodeURIComponent(j.role)}&title=${encodeURIComponent(j.title)}&business=${encodeURIComponent(j.business)}&recruiter=${encodeURIComponent(j._owner||'')}">Postuler maintenant ↗</a><button type="button" class="soft-btn" data-share-job="${encodeURIComponent(j.id)}" data-share-mode="native">↗ Partager l’annonce</button><button type="button" class="soft-btn" data-share-job="${encodeURIComponent(j.id)}" data-share-mode="whatsapp">WhatsApp</button><button type="button" class="soft-btn" data-share-job="${encodeURIComponent(j.id)}" data-share-mode="copy">Copier le lien</button><button class="soft-btn" id="detailSave">${saved?'Retirer des favoris':'♡ Enregistrer'}</button><a class="soft-btn" href="/matches.html">Autres matchs</a></div></div></div>`;const _ds=$('#detailSave');if(_ds)_ds.onclick=()=>{state.saved=saved?state.saved.filter(x=>x!==j.id):[...state.saved,j.id];persist();renderJobDetail();toast(saved?'Retiré des favoris':'Ajouté aux favoris')}}
+function renderJobDetail(){
+ const box=$('#jobDetail');
+ if(!box)return;
+ const id=new URLSearchParams(location.search).get('id');
+ const j=jobs().find(item=>item.id===id);
+ if(!j){
+  box.innerHTML='<section class="hn-opportunity-not-found"><span>HORENOVA · OPPORTUNITÉS</span><h1>Cette annonce n’est plus disponible.</h1><p>Elle a peut-être été retirée ou n’est pas encore publiée.</p><a href="/jobs.html">Voir les offres disponibles ↗</a></section>';
+  return;
+ }
+ const saved=state.saved.includes(j.id);
+ const isShift=j.kind==='shift';
+ const backHref=isShift?'/shifts.html':'/jobs.html';
+ const headline=String(j.title||'').replace(/\s*,\s*/g,' · ').replace(/\s{2,}/g,' ').replace(/[·\s]+$/,'').trim();
+ const imageClass=j.hasWorkplacePhoto?'hn-opportunity-picture-workplace':'hn-opportunity-picture-generic';
+ const employer=j.business||'Employeur vérifié · HORENOVA';
+ const facts=[
+  j.workplaceAddress?{label:'Lieu de travail',value:j.workplaceAddress,icon:'⌖'}:null,
+  j.contractType?{label:'Contrat',value:j.contractType,icon:'▣'}:null,
+  j.openings?{label:'Postes à pourvoir',value:String(j.openings),icon:'♧'}:null,
+  j.startDate?{label:'Date de début',value:formatJobStartDate(j.startDate),icon:'◷'}:null
+ ].filter(Boolean);
+ const applyHref='/apply.html?id='+encodeURIComponent(j.id)+'&role='+encodeURIComponent(j.role)+'&title='+encodeURIComponent(j.title)+'&business='+encodeURIComponent(j.business)+'&recruiter='+encodeURIComponent(j._owner||'');
+ const escapeAttribute=value=>String(value||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+ box.innerHTML=`<div class="hn-opportunity-layout">
+  <nav class="hn-opportunity-breadcrumb" aria-label="Fil d’Ariane">
+   <a href="${backHref}">← ${isShift?'Toutes les missions':'Toutes les offres'}</a>
+   <span aria-hidden="true">/</span><span>${isShift?'Mission ponctuelle':'Offre d’emploi'}</span>
+  </nav>
+  <article class="hn-opportunity-card">
+   <div class="hn-opportunity-visual ${imageClass}">
+    <img src="${escapeAttribute(j.img)}" alt="${escapeAttribute(j.hasWorkplacePhoto?'Visuel fourni pour cette annonce':headline)}" loading="eager" decoding="async">
+    <span class="hn-opportunity-media-label">${j.hasWorkplacePhoto?'Visuel communiqué par l’établissement':'HORENOVA · OPPORTUNITÉS'}</span>
+   </div>
+   <div class="hn-opportunity-inner">
+    <div class="hn-opportunity-eyebrow"><span class="hn-opportunity-tag">${isShift?'◷ EXTRA · SHIFT':'✦ EMPLOI'}</span><span class="hn-opportunity-role">${j.role}</span></div>
+    <h1 class="hn-opportunity-title">${headline}</h1>
+    <div class="hn-opportunity-byline"><span>${employer}</span><span>⌖ ${j.city}</span></div>
+    ${j.businessType?'<p class="hn-opportunity-business-type">'+j.businessType+'</p>':''}
+    <div class="hn-opportunity-highlights">
+     <div class="hn-opportunity-salary"><small>RÉMUNÉRATION INDIQUÉE</small><strong>${j.pay} <span>${j.period}</span></strong></div>
+     ${j.time?'<div class="hn-opportunity-schedule"><small>HORAIRES</small><strong>'+j.time+'</strong></div>':''}
+    </div>
+    ${j.details||j.desc?'<section class="hn-opportunity-section"><h2>À propos de '+(isShift?'cette mission':'ce poste')+'</h2><p>'+(j.details||j.desc)+'</p></section>':''}
+    ${facts.length?'<section class="hn-opportunity-section hn-opportunity-conditions"><h2>Informations pratiques</h2><div class="hn-opportunity-facts">'+facts.map(x=>'<div class="hn-opportunity-fact"><span aria-hidden="true">'+x.icon+'</span><div><small>'+x.label+'</small><strong>'+x.value+'</strong></div></div>').join('')+'</div></section>':''}
+    ${j.requirements?'<section class="hn-opportunity-section hn-opportunity-requirements"><h2>Compétences & exigences</h2><p>'+j.requirements+'</p></section>':''}
+    ${j.hasWorkplacePhoto?'<p class="hn-opportunity-photo-note">✓ Photo communiquée par l’établissement et publiée après validation HORENOVA</p>':''}
+    <div class="hn-opportunity-apply">
+     <div class="hn-opportunity-apply-heading"><span>PRÊT POUR LA SUITE ?</span><h2>${isShift?'Cette mission vous intéresse ?':'Envie de rejoindre cette équipe ?'}</h2></div>
+     <a class="hn-opportunity-apply-btn" href="${applyHref}">Postuler maintenant <span aria-hidden="true">↗</span></a>
+     <div class="hn-opportunity-tools">
+      <button type="button" class="hn-opportunity-tool" data-share-job="${encodeURIComponent(j.id)}" data-share-mode="native"><span aria-hidden="true">↗</span> Partager</button>
+      <button type="button" class="hn-opportunity-tool" data-share-job="${encodeURIComponent(j.id)}" data-share-mode="whatsapp"><span aria-hidden="true">◉</span> WhatsApp</button>
+      <button type="button" class="hn-opportunity-tool" id="detailSave"><span aria-hidden="true">${saved?'♥':'♡'}</span> ${saved?'Enregistré':'Enregistrer'}</button>
+     </div>
+     <button type="button" class="hn-opportunity-copy" data-share-job="${encodeURIComponent(j.id)}" data-share-mode="copy">Copier le lien de l’annonce ↗</button>
+    </div>
+    <div class="hn-opportunity-end"><a href="${backHref}">← ${isShift?'Découvrir d’autres shifts':'Découvrir d’autres emplois'}</a><a href="/support.html">Besoin d’aide ?</a></div>
+   </div>
+  </article>
+ </div>`;
+ const btn=$('#detailSave');
+ if(btn)btn.onclick=()=>{
+  state.saved=saved?state.saved.filter(item=>item!==j.id):[...state.saved,j.id];
+  persist();renderJobDetail();toast(saved?'Retiré des favoris':'Ajouté aux favoris');
+ };
+}
+
 function renderTalentDetail(){
  const box=$('#talentDetail');if(!box)return;
  const id=new URLSearchParams(location.search).get('id'),talent=[...(window.HORENOVA_LIVE_TALENTS||[])].find(x=>x.id===id);
