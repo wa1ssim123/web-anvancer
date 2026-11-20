@@ -45,15 +45,43 @@ badge.textContent=auth.role==='recruiter'?'COMPTE RECRUTEUR':auth.role==='admin'
 const card=(tag,title,desc,links)=>'<div class="dash-card"><span>'+esc(tag)+'</span><h3>'+esc(title)+'</h3><p>'+esc(desc)+'</p>'+links.map(x=>'<a href="'+esc(x[1])+'">'+esc(x[0])+' ↗</a>').join(' · ')+'</div>';
 const section=()=>'<p class="hub-muted">En cas de problème temporaire, actualisez la page. Aucune information personnelle n’est publiée dans l’annuaire.</p>';
 if(auth.role==='candidate'){
- document.getElementById('accountTitle').innerHTML='Mon espace candidat.<br><em>Votre progression.</em>';
- let p=null,apps=null;
- try{p=(await queryItems('CandidateProfiles',{filters:[{field:'_owner',op:'eq',value:auth.member.id}],limit:1})).items[0]||null;}catch{}
- try{apps=(await hub('/api/applications')).items||[];}catch{apps=null;}
- document.getElementById('accountSubtitle').textContent=p?'Votre profil privé est enregistré.':'Complétez votre profil pour postuler.';
- dash.innerHTML=card('PROFIL',p?'Profil enregistré':'À compléter',p?(p.jobFamily||'')+' · '+(p.city||''):'Ajoutez identité, langues, vidéo et photo privée.',[['Modifier mon profil','/candidate-setup.html']])
- +card('QUIZ',p?.quizScore!=null?p.quizScore+' %':'À passer','Vérifiez les bases de votre métier.',[['Ouvrir le quiz','/quiz.html?role='+encodeURIComponent(p?.jobFamily||'Serveur')]])
- +card('VIDÉO PRIVÉE',p?.videoFileId?'Enregistrée ✓':'Manquante','Réservée au processus de recrutement autorisé.',[['Gérer mon profil','/candidate-setup.html']])
- +'<div class="dash-card wide"><span>CANDIDATURES · SUIVI CENTRAL</span><h3>'+(apps===null?'Suivi indisponible':apps.length)+'</h3><div class="mini-list">'+(apps===null?'<p>Le serveur des candidatures est momentanément inaccessible. Aucun dossier n’a été effacé.</p>':apps.length?apps.map(a=>'<p><b>'+esc(a.jobTitle||'Candidature')+'</b><span>'+esc(a.status||'En étude')+'</span></p>').join(''):'<p>Aucune candidature enregistrée dans le suivi central.</p>')+'</div><a href="/jobs.html">Voir les offres ↗</a> · <a href="/conversations.html">Mes conversations HORENOVA ↗</a></div>';
+ const language=currentLang();const l={
+  fr:{title:'Mon espace candidat.<br><em>Votre progression.</em>',intro:'Votre parcours professionnel, étape par étape.',heading:'Préparez votre candidature',complete:'Prêt à postuler',progress:'Votre inscription avance',stepProfile:'Profil et informations',stepVideo:'Présentation vidéo privée',stepQuiz:'Quiz du métier',stepPhoto:'Photo privée',action:'Compléter mon dossier',quizAction:'Passer le quiz métier',unknown:'À vérifier',missing:'À compléter',done:'Validé',only:'Vous pouvez postuler aux offres correspondant à votre quiz métier.',mismatch:'Un quiz validé pour un métier différent ne débloque pas cette candidature.'},
+  en:{title:'My candidate space.<br><em>Your progress.</em>',intro:'Your professional journey, step by step.',heading:'Prepare your application',complete:'Ready to apply',progress:'Your registration progress',stepProfile:'Profile and information',stepVideo:'Private introduction video',stepQuiz:'Profession quiz',stepPhoto:'Private portrait',action:'Complete my file',quizAction:'Take the profession quiz',unknown:'To check',missing:'To complete',done:'Completed',only:'You may apply to jobs matching your profession quiz.',mismatch:'A quiz passed for another profession will not unlock this application.'},
+  ar:{title:'فضاء المرشح.<br><em>تقدّم ملفك.</em>',intro:'ملفك المهني خطوة بخطوة.',heading:'جهّز ترشيحك',complete:'جاهز للتقديم',progress:'تقدّم التسجيل',stepProfile:'المعلومات الشخصية',stepVideo:'الفيديو التعريفي الخاص',stepQuiz:'اختبار المهنة',stepPhoto:'الصورة الخاصة',action:'إكمال ملفي',quizAction:'اجتياز اختبار المهنة',unknown:'بانتظار التحقق',missing:'غير مكتمل',done:'مكتمل',only:'يمكنك الترشح للإعلانات المطابقة لاختبار مهنتك.',mismatch:'اختبار مهنة أخرى لا يفتح الترشح لهذه الوظيفة.'}
+ }[language]||null;
+ const t=l||{title:'Mon espace candidat.<br><em>Votre progression.</em>',intro:'Votre parcours professionnel, étape par étape.',heading:'Préparez votre candidature',complete:'Prêt à postuler',progress:'Votre inscription avance',stepProfile:'Profil et informations',stepVideo:'Présentation vidéo privée',stepQuiz:'Quiz du métier',stepPhoto:'Photo privée',action:'Compléter mon dossier',quizAction:'Passer le quiz métier',unknown:'À vérifier',missing:'À compléter',done:'Validé',only:'Vous pouvez postuler aux offres correspondant à votre quiz métier.',mismatch:'Un quiz validé pour un métier différent ne débloque pas cette candidature.'};
+ document.getElementById('accountTitle').innerHTML=t.title;
+ let p=null,apps=null,attempts=null,photo=null,profileState='unknown';
+ const results=await Promise.allSettled([
+  queryItems('CandidateProfiles',{filters:[{field:'_owner',op:'eq',value:auth.member.id}],limit:1}),
+  hub('/api/applications'),
+  queryItems('QuizAttempts',{filters:[{field:'_owner',op:'eq',value:auth.member.id}],limit:100}),
+  hub('/api/profile/photo/status')
+ ]);
+ if(results[0].status==='fulfilled'){p=results[0].value.items?.[0]||null;profileState=p?.profileComplete?'complete':'missing';}
+ if(results[1].status==='fulfilled')apps=results[1].value.items||[];
+ if(results[2].status==='fulfilled')attempts=results[2].value.items||[];
+ if(results[3].status==='fulfilled')photo=!!results[3].value.hasPhoto;
+ const family=p?.jobFamily||'Serveur';
+ const best=attempts?.filter(x=>x.passed&&x.jobFamily===family).sort((a,b)=>(Number(b.score)||0)-(Number(a.score)||0))[0];
+ const quizReady=!!best,videoReady=!!(p?.videoFileId&&p?.videoConsent);
+ const steps=[
+  [t.stepProfile,profileState==='complete'?true:profileState==='unknown'?null:false,'/candidate-setup.html'],
+  [t.stepVideo,profileState==='unknown'?null:videoReady,'/candidate-setup.html'],
+  [t.stepQuiz,attempts===null?null:quizReady,'/quiz.html?role='+encodeURIComponent(family)],
+  [t.stepPhoto,photo,'/candidate-setup.html']
+ ];
+ const ready=steps.every(x=>x[1]===true);
+ const progress=steps.filter(x=>x[1]===true).length;
+ document.getElementById('accountSubtitle').textContent=t.intro;
+ dash.innerHTML='<section class="hn-candidate-progress"><span class="small-title">HORENOVA · '+esc(t.progress)+'</span><h3>'+esc(ready?t.complete:t.heading)+' · '+progress+'/4</h3>'+
+ '<ol>'+steps.map(([label,ok,url])=>'<li>'+(ok===true?'✓ ':ok===false?'○ ':'? ')+esc(label)+' — <strong>'+esc(ok===true?t.done:ok===false?t.missing:t.unknown)+'</strong>'+(ok===true?'':' · <a href="'+esc(url)+'">'+esc(t.action)+'</a>')+'</li>').join('')+'</ol>'+
+ '<p>'+esc(t.only)+'</p><div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px"><a class="hn-role-primary" href="'+(profileState!=='complete'||!videoReady?'/candidate-setup.html':'/quiz.html?role='+encodeURIComponent(family))+'">'+esc(ready?t.quizAction:t.action)+' ↗</a><a class="soft-btn" href="/jobs.html">Offres HORENOVA →</a></div></section>'+
+ card(t.stepProfile,p?.profileComplete?t.done:t.missing,p?(p.jobFamily||'')+' · '+(p.city||''):'Votre identité et votre métier.',[[t.action,'/candidate-setup.html']])+
+ card(t.stepQuiz,best?best.score+' %':attempts===null?t.unknown:t.missing,t.mismatch,[[t.quizAction,'/quiz.html?role='+encodeURIComponent(family)]])+
+ card(t.stepVideo,videoReady?t.done:t.missing,'Document privé réservé aux recrutements autorisés.',[[t.action,'/candidate-setup.html']])+
+ '<div class="dash-card wide"><span>CANDIDATURES · HORENOVA</span><h3>'+(apps===null?t.unknown:apps.length)+'</h3><div class="mini-list">'+(apps===null?'<p>Suivi temporairement indisponible.</p>':apps.length?apps.map(a=>'<p><b>'+esc(a.jobTitle||'Candidature')+'</b><span>'+esc(a.status||'En étude')+'</span></p>').join(''):'<p>Aucune candidature déposée.</p>')+'</div><a href="/jobs.html">Voir les offres ↗</a> · <a href="/conversations.html">Mes conversations ↗</a></div>';
 }
 else if(auth.role==='recruiter'){
  document.getElementById('accountTitle').innerHTML='Espace recruteur.<br><em>Pilotez vos recrutements.</em>';
