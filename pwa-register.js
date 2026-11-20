@@ -38,7 +38,7 @@
  */
 (function(){
   'use strict';
-  const BUILD='2026.11.20.help-fab-r3';
+  const BUILD='2026.11.20.candidate-v4';
   const CHECK_EVERY_MS=90000;
   const SUPPORT_CSS='/support.css?v=20261120-fab-r3';
   const tr={
