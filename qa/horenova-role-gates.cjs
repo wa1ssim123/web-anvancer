@@ -78,7 +78,7 @@ async function checkAccount(role){
    assert.doesNotMatch(html,/candidate-setup/);
    assert.equal(d.body.dataset.accountRole,'recruiter');
  } else if(role==='candidate'){
-   assert.match(html,/Quiz du métier|Passer le quiz métier|QUIZ/);
+   assert.match(html,/Quiz métier \(facultatif\)|Quiz du métier|Passer le quiz métier/,'The quiz may be offered as optional enrichment, never a mandatory application gate');
    assert.match(html,/candidate-setup/);
    assert.doesNotMatch(html,/Déposer une offre ou un shift/);
  } else {
