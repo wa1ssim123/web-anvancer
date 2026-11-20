@@ -354,31 +354,46 @@ async function api(req,res,path,method) {
       job=found.dataItem?.data || {};
     }
     if(!job.active || !job._id) throw error(422,'Cette offre n’est pas active.');
-    const profiles=await wixItems(user.token,'CandidateProfiles',10,user.id);
-    const profile=profiles.find(x=>x._owner===user.id);
-    if(!profile?.profileComplete || !profile?.videoFileId || !profile.videoConsent) throw error(422,'Complétez votre profil et votre vidéo confidentielle avant de postuler.');
-    const attempts=await wixItems(user.token,'QuizAttempts',100,user.id);
-    const best=attempts.filter(a=>a.passed && a.jobFamily===job.role).sort((a,b)=>(b.score||0)-(a.score||0))[0];
-    if(!best) throw error(422,'Vous devez réussir le quiz métier correspondant avant de postuler.');
-    const allowed=['firstName','lastName','age','city','jobFamily','bio','arabic','arabicLevel','french','frenchLevel','english','englishLevel','otherLanguage','otherLanguageLevel','preferredLanguage','videoFileId','videoConsent','profileComplete'];
-    const snapshot=Object.fromEntries(allowed.map(k=>[k,profile[k]??null]));
-    snapshot.quizScore=best.score??null; snapshot.quizPassed=true;
+    // Simple application flow: identity verified by Wix; photo and explicit
+    // consent required. Quiz and video are welcome but never submission gates.
     const form=d.application||{};
-    const experienceYears=Number(form.experienceYears);
-    if(!Number.isFinite(experienceYears)||experienceYears<0||experienceYears>60)
-      throw error(422,'Précisez correctement vos années d’expérience.');
-    const motivation=limit(form.motivation,900);
-    if(motivation.length<35)throw error(422,'Présentez vos motivations en au moins 35 caractères.');
-    const skills=Array.isArray(form.skills)?form.skills.slice(0,12).map(x=>limit(x,40)).filter(Boolean):[];
-    if(!skills.length)throw error(422,'Ajoutez au moins une compétence professionnelle.');
+    const firstName=limit(form.firstName,80),lastName=limit(form.lastName,80);
+    if(firstName.length<2||lastName.length<2)
+      throw error(422,'Indiquez votre prénom et votre nom.');
     const phone=limit(form.phone,40);
-    if(!/^\+?[0-9\s().-]{8,25}$/.test(phone))throw error(422,'Numéro de téléphone candidat invalide.');
+    if(!/^\\+?[0-9\\s().-]{8,25}$/.test(phone))
+      throw error(422,'Ajoutez un numéro de téléphone valide.');
+    const desiredCity=limit(form.desiredCity,80);
+    if(desiredCity.length<2)throw error(422,'Précisez votre ville.');
     const uploaded=await pool.query('SELECT 1 FROM hr_candidate_photos WHERE candidate_wix_id=$1 LIMIT 1',[user.id]);
     if(!uploaded.rows[0])throw error(422,'Ajoutez une photo de profil à votre candidature.');
+    const exists=await pool.query('SELECT * FROM hr_applications WHERE candidate_wix_id=$1 AND job_id=$2 LIMIT 1',[user.id,job._id]);
+    if(exists.rows[0])return json(res,200,{ok:true,alreadyApplied:true,item:present(exists.rows[0],user)});
+    let profile=null,best=null;
+    try{
+      const profiles=await wixItems(user.token,'CandidateProfiles',10,user.id);
+      profile=profiles.find(x=>x._owner===user.id)||null;
+    }catch(e){console.warn('Optional candidate profile unavailable',e?.message||'unavailable');}
+    try{
+      const attempts=await wixItems(user.token,'QuizAttempts',100,user.id);
+      best=attempts.filter(a=>a.passed && a.jobFamily===job.role).sort((a,b)=>(b.score||0)-(a.score||0))[0]||null;
+    }catch(e){console.warn('Optional quiz result unavailable',e?.message||'unavailable');}
+    const allowed=['age','bio','arabic','arabicLevel','french','frenchLevel','english','englishLevel','otherLanguage','otherLanguageLevel','preferredLanguage','videoFileId','videoConsent'];
+    const snapshot=Object.fromEntries(allowed.map(k=>[k,profile?.[k]??null]));
+    snapshot.firstName=firstName;snapshot.lastName=lastName;
+    snapshot.city=desiredCity;snapshot.jobFamily=limit(job.role,90);
+    snapshot.quizScore=best?.score??null;snapshot.quizPassed=!!best;
+    snapshot.profileComplete=true;
+    const experienceYears=form.experienceYears===''||form.experienceYears==null?null:Number(form.experienceYears);
+    if(experienceYears!==null&&(!Number.isFinite(experienceYears)||experienceYears<0||experienceYears>60))
+      throw error(422,'Les années d’expérience doivent être comprises entre 0 et 60.');
+    const skills=Array.isArray(form.skills)?form.skills.slice(0,12).map(x=>limit(x,40)).filter(Boolean):[];
+    const motivation=limit(form.motivation,900);
     snapshot.application={
       experienceYears,skills,phone,
-      lastPosition:limit(form.lastPosition,90),availability:limit(form.availability,50),
-      desiredCity:limit(form.desiredCity,80),contractPreference:limit(form.contractPreference,60),
+      lastPosition:limit(form.lastPosition,90),
+      availability:limit(form.availability,50),
+      desiredCity,contractPreference:limit(form.contractPreference,60),
       motivation,earliestStart:limit(form.earliestStart,10)
     };
     const params=[user.id,user.email,job._id,limit(job.title,150),limit(job.role,90),JSON.stringify(snapshot)];
@@ -386,7 +401,11 @@ async function api(req,res,path,method) {
     try {
       created=await pool.query("INSERT INTO hr_applications(candidate_wix_id,candidate_email,job_id,job_title,job_role,profile,consent_to_intro) VALUES($1,$2,$3,$4,$5,$6::jsonb,true) RETURNING *",params);
     } catch(e) {
-      if(e.code==='23505') throw error(409,'Vous avez déjà envoyé une candidature pour cette offre.');
+      if(e.code==='23505'){
+        const previous=await pool.query('SELECT * FROM hr_applications WHERE candidate_wix_id=$1 AND job_id=$2 LIMIT 1',[user.id,job._id]);
+        if(previous.rows[0])return json(res,200,{ok:true,alreadyApplied:true,item:present(previous.rows[0],user)});
+        throw error(409,'Cette candidature est déjà enregistrée.');
+      }
       throw e;
     }
     return json(res,201,{ok:true,item:present(created.rows[0],user)});
