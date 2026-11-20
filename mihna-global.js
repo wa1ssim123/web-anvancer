@@ -51,8 +51,21 @@ const HN_ROLE_NAV={
   }
 };
 let hnRoleNavRequest=0;
-function roleNavMarkup(links,variant){
-  if(variant==='dock')return links.map(([label,href,icon])=>'<a href="'+href+'"'+(location.pathname===href?' class="active"':'')+'><b>'+icon+'</b><span>'+label+'</span></a>').join('');
+function roleNavMarkup(links,variant,role=''){
+  // Keep the phone dock strictly on one row. Every link still exists in the main menu.
+  if(variant==='dock'){
+    const lang=['fr','en','ar'].includes(currentLang())?currentLang():'fr';
+    const short={
+      admin:{fr:['Admin','Demandes','Dossiers','Chat','Profil'],en:['Admin','Requests','Cases','Chat','Profile'],ar:['إدارة','طلبات','ملفات','دردشة','حسابي']},
+      recruiter:{fr:['Accueil','Annonces','Talents','Dossiers','Chat'],en:['Home','Jobs','Talents','Cases','Chat'],ar:['الرئيسية','إعلانات','مواهب','ملفات','دردشة']},
+      candidate:{fr:['Profil','Offres','Shifts','Matchs','Academy'],en:['Profile','Jobs','Shifts','Matches','Academy'],ar:['حسابي','وظائف','مهمات','تطابق','أكاديمية']}
+    };
+    return links.slice(0,5).map(([label,href,icon],i)=>{
+      const display=short[role]?.[lang]?.[i]||label;
+      const active=(new URL(href,location.origin)).pathname===location.pathname && (i===0||!href.includes('#'));
+      return '<a href="'+href+'" aria-label="'+label.replace(/"/g,'&quot;')+'"'+(active?' class="active"':'')+'><b aria-hidden="true">'+icon+'</b><span>'+display+'</span></a>';
+    }).join('');
+  }
   if(variant==='mobile'){
     const items=links.map(([label,href])=>'<a href="'+href+'">'+label+' <span>↗</span></a>').join('');
     // Public Explore tools must remain accessible from every logged-in role.
@@ -79,7 +92,7 @@ async function installMemberRoleNavigation(session){
   const dock=document.querySelector('.hn12-dock');
   const mobile=document.getElementById('mobileMenu');
   if(top){top.innerHTML=roleNavMarkup(links,'top');top.dataset.roleNavigation=role;}
-  if(dock){dock.innerHTML=roleNavMarkup(links,'dock');dock.dataset.roleNavigation=role;}
+  if(dock){dock.innerHTML=roleNavMarkup(links,'dock',role);dock.dataset.roleNavigation=role;document.dispatchEvent(new Event('hn-dock-updated'));}
   if(mobile){mobile.innerHTML=roleNavMarkup(links,'mobile');mobile.dataset.roleNavigation=role;}
   document.body.dataset.memberRole=role;
    document.dispatchEvent(new Event('hn-role-navigation-ready'));
