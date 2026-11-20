@@ -82,11 +82,13 @@ async function loadPublicTalents(reset=false){
     window.HORENOVA_TALENTS_HAS_NEXT=talentPaging.hasNext;
     const previous=new Set(window.HORENOVA_LIVE_TALENTS.map(x=>x.id));
     const next=(page.items||[]).filter(p=>!previous.has(safeText(p._id))).map(p=>({
-      id:safeText(p._id),name:'Talent HORENOVA',
+      id:safeText(p._id),
+      name:safeText(p.publicIdentityConsent&&p.displayName?String(p.displayName):'Profil confidentiel'),
       role:safeText(p.jobFamily||'Hospitalité'),
       city:safeText(p.city||''),
+      languages:safeText(p.languageSummary||''),
       rating:0,reviews:0,sponsored:false,
-      bio:'Profil anonymisé. Mise en relation uniquement par HORENOVA.',
+      bio:safeText(p.publicIdentityConsent&&p.bio?String(p.bio):'Identité protégée · prise de contact exclusivement par HORENOVA.'),
       live:true
     }));
     window.HORENOVA_LIVE_TALENTS=[...window.HORENOVA_LIVE_TALENTS,...next];
