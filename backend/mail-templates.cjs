@@ -100,13 +100,13 @@ function renderMail(kind,input={},requestedLocale='fr'){
    ...(!candidate&&city?[[t.city,city]]:[]),
    ...(!candidate&&kind==='shift'&&schedule?[[t.schedule,schedule]]:[])
  ].filter(([,value])=>value);
- const info=rows.map(([label,value],i)=>`<tr><td align="${rtl?'right':'left'}" style="padding:13px 17px;border-bottom:${i===rows.length-1?'0':'1px solid #e6e5dc'};font:700 11px/1.4 Arial,Helvetica,sans-serif;color:#607067;white-space:nowrap">${escapeHtml(label)}</td><td align="${rtl?'left':'right'}" style="padding:13px 17px;border-bottom:${i===rows.length-1?'0':'1px solid #e6e5dc'};font:700 13px/1.45 Arial,Helvetica,sans-serif;color:#18342b">${escapeHtml(value)}</td></tr>`).join('');
+ const info=rows.map(([label,value],i)=>`<tr><td align="${rtl?'right':'left'}" style="padding:13px 17px;border-bottom:${i===rows.length-1?'0':'1px solid #e6e5dc'};font:700 11px/1.4 Arial,Helvetica,sans-serif;color:#607067;word-break:break-word;overflow-wrap:anywhere">${escapeHtml(label)}</td><td align="${rtl?'left':'right'}" style="padding:13px 17px;border-bottom:${i===rows.length-1?'0':'1px solid #e6e5dc'};font:700 13px/1.45 Arial,Helvetica,sans-serif;color:#18342b;word-break:break-word;overflow-wrap:anywhere;max-width:330px">${escapeHtml(value)}</td></tr>`).join('');
  const html=`<!doctype html><html lang="${lang}" dir="${rtl?'rtl':'ltr'}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><title>${escapeHtml(subject)}</title><style>
  @keyframes hn-confirm-pop{0%{transform:scale(.86);opacity:.8}50%{transform:scale(1.11);opacity:1}100%{transform:scale(1);opacity:1}}
  @keyframes hn-mail-line{from{opacity:.55}to{opacity:1}}
  .hn-success-mark{animation:hn-confirm-pop 1.3s ease-out 1}
  .hn-mail-accent{animation:hn-mail-line 2.4s ease-in-out infinite alternate}
- @media(max-width:600px){.hn-email-shell{width:100%!important}.hn-email-pad{padding:28px 22px!important}.hn-email-headline{font-size:31px!important}.hn-email-body{font-size:15px!important}}
+ @media(max-width:600px){.hn-email-shell{width:100%!important}.hn-email-pad{padding:28px 22px!important}.hn-email-headline{font-size:31px!important}.hn-email-body{font-size:15px!important}.hn-email-tagline{display:none!important}.hn-email-brand{font-size:16px!important}}
  @media(prefers-reduced-motion:reduce){.hn-success-mark,.hn-mail-accent{animation:none!important}}
  </style></head><body style="margin:0;padding:0;background:#101917">
  <div style="display:none;font-size:1px;line-height:1px;max-height:0;overflow:hidden;opacity:0">${escapeHtml(explanation.slice(0,125))}&nbsp;&#8204;&nbsp;&#8204;</div>
@@ -114,8 +114,8 @@ function renderMail(kind,input={},requestedLocale='fr'){
  <table role="presentation" class="hn-email-shell" width="620" cellspacing="0" cellpadding="0" border="0" style="width:100%;max-width:620px;border-collapse:separate;border-spacing:0;border:1px solid #34423a;border-radius:22px;overflow:hidden;background:#fcfaf4">
  <tr><td style="background:#122520;padding:26px 30px 24px">
    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"><tr>
-   <td align="${rtl?'right':'left'}" style="vertical-align:middle"><img src="${LOGO}" alt="" width="36" height="36" style="display:inline-block;width:36px;height:36px;max-width:36px;vertical-align:middle;border:0"><span style="font:900 20px/1.3 Arial,Helvetica,sans-serif;letter-spacing:2px;color:#f6ecd9;vertical-align:middle"> HORENOVA<span style="color:#ef9c64">.</span></span></td>
-   <td align="${rtl?'left':'right'}" style="font:700 10px/1.4 Arial,Helvetica,sans-serif;color:#d7aa80;letter-spacing:.1em;vertical-align:middle">MADE FOR PEOPLE</td></tr></table>
+   <td align="${rtl?'right':'left'}" style="vertical-align:middle"><img src="${LOGO}" alt="" width="36" height="36" style="display:inline-block;width:36px;height:36px;max-width:36px;vertical-align:middle;border:0"><span class="hn-email-brand" style="font:900 20px/1.3 Arial,Helvetica,sans-serif;letter-spacing:2px;color:#f6ecd9;vertical-align:middle"> HORENOVA<span style="color:#ef9c64">.</span></span></td>
+   <td align="${rtl?'left':'right'}" class="hn-email-tagline" style="font:700 10px/1.4 Arial,Helvetica,sans-serif;color:#d7aa80;letter-spacing:.1em;vertical-align:middle">MADE FOR PEOPLE</td></tr></table>
  </td></tr>
  <tr><td class="hn-mail-accent" height="5" style="height:5px;font-size:0;line-height:0;background:${borderColor}">&nbsp;</td></tr>
  <tr><td class="hn-email-pad" style="padding:43px 46px 40px;text-align:${rtl?'right':'left'}">
