@@ -36,5 +36,32 @@ async function fetchText(url){
    assert.ok(ok,'Actual public site did not serve latest HORENOVA release at '+base+check.path+' ('+last+')');
   }
  }
+
+ // Real browser preflight: previously Access-Control-Allow-Methods omitted DELETE,
+ // causing the iPhone to report the API as unavailable before hitting the route.
+ const preflightUrl='https://horenova-hub-api.onrender.com/api/recruiter-requests/not-a-valid-uuid';
+ let validated=false,last='No response';
+ for(let attempt=1;attempt<=10;attempt++){
+  try{
+   const response=await fetch(preflightUrl,{
+    method:'OPTIONS',
+    headers:{
+      Origin:'https://horenova.com',
+      'Access-Control-Request-Method':'DELETE',
+      'Access-Control-Request-Headers':'authorization'
+    },
+    signal:AbortSignal.timeout(15000)
+   });
+   const methods=response.headers.get('access-control-allow-methods')||'';
+   const headers=response.headers.get('access-control-allow-headers')||'';
+   const origin=response.headers.get('access-control-allow-origin')||'';
+   validated=response.status===204&&/\\bDELETE\\b/.test(methods)&&/authorization/i.test(headers)&&origin==='https://horenova.com';
+   last='HTTP '+response.status+'; origin='+origin+'; methods='+methods+'; headers='+headers;
+  }catch(error){last=String(error?.message||error).slice(0,150)}
+  if(validated)break;
+  if(attempt<10)await sleep(12000);
+ }
+ console.log((validated?'PASS':'FAIL')+' production DELETE CORS preflight '+last);
+ assert.ok(validated,'Browser cannot delete HORENOVA jobs because API preflight is incorrect: '+last);
  console.log('PASS production HORENOVA custom domain and Render: current support, admin printing, version, launcher.');
 })().catch(e=>{console.error(e.stack);process.exitCode=1});
