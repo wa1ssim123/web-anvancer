@@ -55,7 +55,7 @@ async function fetchText(url){
    const methods=response.headers.get('access-control-allow-methods')||'';
    const headers=response.headers.get('access-control-allow-headers')||'';
    const origin=response.headers.get('access-control-allow-origin')||'';
-   validated=response.status===204&&/\\bDELETE\\b/.test(methods)&&/authorization/i.test(headers)&&origin==='https://horenova.com';
+   validated=response.status===204&&methods.split(',').map(x=>x.trim()).includes('DELETE')&&/authorization/i.test(headers)&&origin==='https://horenova.com';
    last='HTTP '+response.status+'; origin='+origin+'; methods='+methods+'; headers='+headers;
   }catch(error){last=String(error?.message||error).slice(0,150)}
   if(validated)break;
