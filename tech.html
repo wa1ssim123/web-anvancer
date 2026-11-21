@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#091117"><link rel="icon" href="/assets/horenova-icon-192.png">
+<link rel="manifest" href="/manifest.json">
+<title>HORENOVA TECH — Caisse, gestion, menus NFC et équipements pour restaurants</title>
+<meta name="description" content="HORENOVA TECH : découvrez la caisse connectée, la gestion des stocks, les menus de table NFC & QR et les équipements professionnels pour restaurants et cafés. Demandez un devis personnalisé.">
+<link rel="canonical" href="https://horenova.com/tech.html"><meta property="og:type" content="website"><meta property="og:title" content="HORENOVA TECH — Le restaurant connecté"><meta property="og:description" content="Caisse, gestion, menus NFC, équipements : un écosystème technologique pour l'hospitalité."><meta property="og:url" content="https://horenova.com/tech.html">
+<link rel="stylesheet" href="/tech.css?v=1">
+</head>
+<body class="tech-page">
+<a class="skip" href="#solutions">Passer au contenu</a>
+<header class="tech-header">
+  <a class="tech-brand" href="/" aria-label="Horenova, accueil"><img src="/assets/horenova-brand-mark.svg" alt=""><span>HORENOVA<strong>TECH<span class="brand-dot">.</span></strong></span></a>
+  <nav class="tech-links" aria-label="Navigation principale">
+    <a href="/index.html" data-i18n="navHome">Accueil</a><a href="/shop.html" data-i18n="navShop">Shop</a><a href="/business.html" data-i18n="navBusiness">Business</a><a class="on" href="/tech.html" aria-current="page">Tech</a>
+  </nav>
+  <div class="tech-actions">
+    <label class="sr" for="techLanguage">Langue</label><select id="techLanguage" aria-label="Choisir la langue"><option value="fr">FR</option><option value="en">EN</option><option value="ar">العربية</option></select>
+    <button type="button" id="quoteTrigger" class="quote-trigger" aria-controls="quotePanel" aria-expanded="false"><span data-i18n="quote">Mon devis</span><b id="quoteCount">0</b></button>
+  </div>
+</header>
+<main>
+  <section class="hero" aria-labelledby="heroTitle">
+    <div class="hero-grain" aria-hidden="true"></div>
+    <div class="hero-content">
+      <span class="eyebrow"><span class="led"></span> HORENOVA TECH / DIGITAL HOSPITALITY</span>
+      <h1 id="heroTitle" data-i18n="heroTitle">La technologie<br>au service <em>du service.</em></h1>
+      <p data-i18n="heroCopy">Une caisse élégante. Une gestion intelligente. Un menu accessible d’un simple geste. Tout un établissement, pensé comme un seul système.</p>
+      <div class="hero-buttons"><a class="btn main" href="#solutions"><span data-i18n="exploreSolutions">Explorer les solutions</span><span aria-hidden="true">↗</span></a><a class="btn ghost" href="/tech-demo.html" data-i18n="tryDemo">Essayer la démonstration</a></div>
+      <div class="hero-foot"><span>01 / POINT DE VENTE</span><span>02 / GESTION</span><span>03 / TABLE CONNECTÉE</span></div>
+    </div>
+    <div class="hero-art" aria-label="Illustration du logiciel de caisse et de gestion connecté">
+      <div class="glow"></div>
+      <div class="floating-chip"><i></i><span data-i18n="connectedSystem">ÉCOSYSTÈME CONNECTÉ</span></div>
+      <div class="device-screen">
+        <div class="device-top"><span class="dots"><i></i><i></i><i></i></span><strong>HORENOVA / POS</strong><small>DEMO UI</small></div>
+        <div class="device-main"><div class="device-rail"><span>◈</span><span>▦</span><span>◫</span><span>◷</span></div><div class="device-content"><small>TABLE 07 / SALLE</small><h3>Service du soir</h3><div class="device-cards"><div><i>☕</i><b>Café</b><small>2</small></div><div><i>◒</i><b>Plat</b><small>1</small></div><div><i>◈</i><b>Dessert</b><small>2</small></div></div><div class="device-line"><span></span><span></span><span></span></div><div class="device-line short"><span></span><span></span></div></div><aside class="device-receipt"><small>TICKET / DÉMO</small><div>CAFÉ <b>× 2</b></div><div>PLAT <b>× 1</b></div><div>DESSERT <b>× 2</b></div><hr><strong>POS ↔ STOCK</strong><span class="receipt-status">● SYNC CONCEPT</span></aside></div>
+      </div>
+      <div class="nfc-object"><div class="nfc-rings"><span></span><span></span><span></span></div><b>HORENOVA</b><strong>TAP TO MENU</strong><small>NFC + QR / CONCEPT</small></div>
+      <div class="art-label">TECH COLLECTION <b>001 — 2026</b></div>
+    </div>
+  </section>
+
+  <section class="ecosystem">
+    <div><span class="sec-label">ONE CONNECTED EXPERIENCE</span><h2 data-i18n="ecosystemTitle">La commande circule.<br><em>La gestion suit.</em></h2></div>
+    <div class="flow"><div><b>01</b><strong data-i18n="flow1">Table / Menu NFC</strong></div><span>→</span><div><b>02</b><strong data-i18n="flow2">Caisse / Commandes</strong></div><span>→</span><div><b>03</b><strong data-i18n="flow3">Stock / Analyses</strong></div></div>
+    <p data-i18n="ecosystemCopy">Notre objectif : relier l'expérience client, l'encaissement et les opérations. Les liaisons de production seront déployées et validées établissement par établissement.</p>
+  </section>
+
+  <section class="products" id="solutions">
+    <div class="section-head"><div><span class="sec-label" data-i18n="catalogEyebrow">LE CATALOGUE TECH</span><h2 data-i18n="catalogTitle">Des solutions pour<br><em>chaque moment du service.</em></h2></div><p data-i18n="catalogCopy">Sélectionnez les solutions qui vous intéressent. Nous préparons ensuite une proposition adaptée à votre établissement.</p></div>
+    <div class="filters" aria-label="Filtrer les catégories">
+      <button type="button" data-filter="all" aria-pressed="true" class="selected" data-i18n="filterAll">Tout voir</button><button type="button" data-filter="software" aria-pressed="false" data-i18n="filterSoftware">Logiciels</button><button type="button" data-filter="nfc" aria-pressed="false" data-i18n="filterNfc">Menus NFC</button><button type="button" data-filter="hardware" aria-pressed="false" data-i18n="filterHardware">Matériel & packs</button>
+    </div>
+    <div class="catalog-grid" id="catalogGrid">
+      <article class="product feature" data-category="software" data-sku="POS" data-product="Horenova POS">
+        <div class="product-visual visual-pos"><div class="pos-mini"><div class="pos-mini-top"><span>● ● ●</span><b>H / POS</b></div><div class="pos-mini-tiles"><span></span><span></span><span></span><span></span><span></span><span></span></div><div class="pos-mini-bar"></div></div><div class="float-note">POS / ORDER SYSTEM</div></div>
+        <div class="product-body"><div class="product-meta"><span>SOFTWARE / 01</span><span class="availability" data-i18n="onRequest">Sur devis</span></div><h3>Horenova POS</h3><p data-i18n="posDesc">Logiciel de caisse tactile : produits, tables, commandes, tickets, historique et clôture de service. Conçu pour se connecter à la gestion.</p><div class="tags"><span>TABLES</span><span>CAISSE</span><span>TICKETS</span></div><button type="button" class="product-add" data-add="POS"><span data-i18n="addToQuote">Ajouter au devis</span> ↗</button></div>
+      </article>
+      <article class="product feature" data-category="software" data-sku="ERP" data-product="Horenova Gestion">
+        <div class="product-visual visual-erp"><div class="erp-mini"><div class="erp-mini-top"><span></span><b>CONTROL CENTER</b><i>●</i></div><div class="erp-mini-graph"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div><div class="erp-mini-rows"><span></span><span></span><span></span></div></div><div class="float-note">ERP / OPERATIONS</div></div>
+        <div class="product-body"><div class="product-meta"><span>SOFTWARE / 02</span><span class="availability" data-i18n="onRequest">Sur devis</span></div><h3>Horenova Gestion</h3><p data-i18n="erpDesc">Stocks, achats, fournisseurs, recettes, consommations et indicateurs. Architecture prévue pour une synchronisation avec la caisse.</p><div class="tags"><span>STOCK</span><span>RECETTES</span><span>ANALYTICS</span></div><button type="button" class="product-add" data-add="ERP"><span data-i18n="addToQuote">Ajouter au devis</span> ↗</button></div>
+      </article>
+      <article class="product" data-category="nfc" data-sku="NFC" data-product="Horenova Tap Menu">
+        <div class="product-visual visual-nfc"><div class="nfc-plate"><div class="nfc-logo">HORENOVA<span>.</span></div><div class="tap-icon">◉</div><strong>TAP · SCAN · EXPLORE</strong><div class="qr-illustration" aria-hidden="true">▦</div></div></div>
+        <div class="product-body"><div class="product-meta"><span>TABLE EXPERIENCE / 03</span><span class="availability" data-i18n="customMade">Personnalisable</span></div><h3>Horenova Tap Menu</h3><p data-i18n="nfcDesc">Plaque élégante à fixer sur la table : puce NFC et code QR ouvrant un menu digital sur le téléphone, sans application à installer.</p><div class="tags"><span>NFC</span><span>QR</span><span>MENU MOBILE</span></div><div class="card-actions"><button type="button" class="product-add" data-add="NFC"><span data-i18n="addToQuote">Ajouter au devis</span> ↗</button><a class="inline-link" href="/tech-demo.html#menu" data-i18n="previewMenu">Voir le menu démo ↗</a></div></div>
+      </article>
+      <article class="product" data-category="hardware" data-sku="TERMINAL" data-product="Terminal de caisse tactile">
+        <div class="product-visual visual-terminal"><div class="physical-pos"><div class="physical-display"><div class="display-tile"></div><div class="display-tile"></div><div class="display-tile"></div><div class="display-tile"></div></div><div class="physical-stand"></div></div></div>
+        <div class="product-body"><div class="product-meta"><span>HARDWARE / 04</span><span class="availability" data-i18n="supplyToConfirm">Disponibilité à confirmer</span></div><h3 data-i18n="terminalTitle">Terminal tactile</h3><p data-i18n="terminalDesc">Une caisse au design épuré avec écran tactile, à dimensionner selon le logiciel et le rythme de votre établissement.</p><div class="tags"><span>POS DISPLAY</span><span>TOUCH</span></div><button type="button" class="product-add" data-add="TERMINAL"><span data-i18n="addToQuote">Ajouter au devis</span> ↗</button></div>
+      </article>
+      <article class="product" data-category="hardware" data-sku="PERIPHERALS" data-product="Périphériques de caisse">
+        <div class="product-visual visual-peripherals"><div class="printer-body"><div></div><span>REÇU</span><b>H</b></div><div class="drawer-body"><span></span></div><div class="scanner-shape"></div></div>
+        <div class="product-body"><div class="product-meta"><span>HARDWARE / 05</span><span class="availability" data-i18n="supplyToConfirm">Disponibilité à confirmer</span></div><h3 data-i18n="peripheralTitle">Les essentiels caisse</h3><p data-i18n="peripheralDesc">Imprimante thermique, tiroir-caisse, scanner de codes-barres, afficheur client et accessoires compatibles selon configuration.</p><div class="tags"><span>PRINT</span><span>SCAN</span><span>CASH</span></div><button type="button" class="product-add" data-add="PERIPHERALS"><span data-i18n="addToQuote">Ajouter au devis</span> ↗</button></div>
+      </article>
+      <article class="product" data-category="hardware" data-sku="KDS" data-product="Écran cuisine KDS">
+        <div class="product-visual visual-kds"><div class="kds-device"><div><span>PRÉPARATION</span><b>TABLE 03</b><i>●</i></div><div><span>EN ATTENTE</span><b>TABLE 11</b><i>●</i></div><div><span>PRÊT</span><b>TABLE 02</b><i>✓</i></div></div></div>
+        <div class="product-body"><div class="product-meta"><span>KITCHEN TECH / 06</span><span class="availability" data-i18n="plannedSolution">Solution envisagée</span></div><h3 data-i18n="kdsTitle">Écran de préparation</h3><p data-i18n="kdsDesc">Une vision claire des commandes à préparer côté cuisine ou bar. Intégration à étudier selon votre installation.</p><div class="tags"><span>KDS</span><span>CUISINE</span></div><button type="button" class="product-add" data-add="KDS"><span data-i18n="addToQuote">Ajouter au devis</span> ↗</button></div>
+      </article>
+    </div>
+    <p class="catalog-note" data-i18n="catalogNote">Les visuels sont des illustrations conceptuelles, pas des photographies de matériel en stock. Tarifs, compatibilités, fonctionnalités et délais à valider avant toute commande.</p>
+  </section>
+
+  <section class="experience" id="nfc-experience">
+    <div class="experience-copy"><span class="sec-label">TAP / SCAN / DISCOVER</span><h2 data-i18n="nfcTitle">Le menu n'est plus<br><em>un objet à distribuer.</em></h2><p data-i18n="nfcCopy">Le client pose son téléphone sur une plaque NFC ou scanne le QR code. Le menu s’ouvre instantanément dans son navigateur. Votre établissement conserve une présentation à son image.</p><div class="experience-steps"><span>01 <b data-i18n="stepTap">Poser ou scanner</b></span><span>02 <b data-i18n="stepMenu">Explorer le menu</b></span><span>03 <b data-i18n="stepUpdate">Mettre à jour à distance</b></span></div><a class="btn main" href="/tech-demo.html#menu"><span data-i18n="tryMenu">Ouvrir un menu de démonstration</span> ↗</a></div>
+    <div class="experience-device"><div class="phone-frame"><div class="phone-notch"></div><div class="phone-menu"><small>HORENOVA · TABLE 07</small><h3>La Carte.</h3><p>UNE EXPÉRIENCE À SAVOURER</p><div class="menu-photo"></div><div class="phone-item"><span>Espresso</span><b>22 DH</b></div><div class="phone-item"><span>Cappuccino</span><b>34 DH</b></div><div class="phone-item"><span>Thé à la menthe</span><b>24 DH</b></div><div class="phone-tag">MENU EXEMPLE · PRIX FICTIFS</div></div></div><div class="experience-nfc">◉<small>NFC / TABLE 07</small></div></div>
+  </section>
+  <section class="demo-band"><div><span class="sec-label">INTERACTIVE PRODUCT PREVIEW</span><h2 data-i18n="demoTitle">Essayez la caisse et la gestion<br><em>dans un seul prototype.</em></h2><p data-i18n="demoCopy">Ajoutez une commande, observez l’évolution du stock et ouvrez le menu client. Les données de démo restent dans ce navigateur.</p></div><a class="btn main" href="/tech-demo.html"><span data-i18n="launchDemo">Lancer la démo interactive</span> ↗</a></section>
+  <section class="closing"><span class="sec-label">HORENOVA TECH / YOUR NEXT SERVICE</span><h2 data-i18n="closeTitle">Dessinons votre installation.<br><em>Pas un pack générique.</em></h2><p data-i18n="closeCopy">Restaurant, café, hôtel ou complexe : expliquez-nous votre besoin et composez une première sélection.</p><button class="btn main" type="button" id="closingQuote"><span data-i18n="buildQuote">Composer mon devis</span> ↗</button></section>
+</main>
+<footer class="tech-footer"><a href="/" class="footer-logo">HORENOVA<span>TECH.</span></a><p data-i18n="footerTag">Digital tools for the people behind hospitality.</p><nav aria-label="Liens utiles"><a href="/shop.html">Shop</a><a href="/business.html">Business</a><a href="/support.html" data-i18n="support">Support</a><a href="/index.html" data-i18n="navHome">Accueil</a></nav><small>© 2026 HORENOVA · MAROC</small></footer>
+
+<div id="quoteOverlay" class="quote-overlay" hidden></div>
+<aside id="quotePanel" class="quote-panel" role="dialog" aria-modal="true" aria-labelledby="quotePanelTitle" aria-hidden="true" hidden>
+  <div class="quote-head"><div><small>HORENOVA TECH</small><h2 id="quotePanelTitle" data-i18n="quoteTitle">Votre sélection</h2></div><button type="button" id="closeQuote" aria-label="Fermer">×</button></div>
+  <div class="quote-items" id="quoteItems"><p data-i18n="emptyQuote">Aucune solution sélectionnée pour le moment.</p></div>
+  <form id="quoteForm"><label><span data-i18n="nameField">Votre nom</span><input name="name" autocomplete="name" maxlength="80" placeholder="Nom et prénom"></label><label><span data-i18n="businessField">Établissement / Ville</span><input name="business" maxlength="120" placeholder="Restaurant, Casablanca"></label><label><span data-i18n="needsField">Besoin particulier</span><textarea name="notes" rows="3" maxlength="600" placeholder="Nombre de caisses, nombre de tables..."></textarea></label><p data-i18n="quoteNotice">Aucun paiement ici : cette sélection prépare une demande de devis. Les prix et disponibilités restent à confirmer.</p><button type="submit" class="btn main send-quote"><span data-i18n="sendWhatsapp">Envoyer via WhatsApp</span> ↗</button></form>
+</aside>
+<div class="toast" id="techToast" role="status" aria-live="polite"></div>
+<script src="/tech.js?v=1" defer></script>
+</body></html>
