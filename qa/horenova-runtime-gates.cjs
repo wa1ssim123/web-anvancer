@@ -20,11 +20,11 @@ const pg={Pool:class{
     const sql=String(statement).replace(/\s+/g,' ').trim();
     if(sql.startsWith('SELECT 1 AS ok'))return {rows:[{ok:1}]};
     if(sql.includes('FROM hr_recruiter_requests r WHERE r.status=\'VALIDEE\''))
-      return {rows:db.requests.filter(row=>row.status==='VALIDEE').map(row=>({...row,has_photo:true}))};
+      return {rows:db.requests.filter(row=>row.status==='VALIDEE'&&!row.removed_at).map(row=>({...row,has_photo:true}))};
     if(sql.includes('SELECT p.image FROM hr_job_photos p JOIN hr_recruiter_requests r')){
       const req=db.requests.find(x=>x.id===params[0]);
       if(!req||!db.snapshots.some(x=>x.request_id===req.id)||(
-        sql.includes("r.status='VALIDEE'")&&req.status!=='VALIDEE'))return {rows:[]};
+        sql.includes("r.status='VALIDEE'")&&(req.status!=='VALIDEE'||!!req.removed_at)))return {rows:[]};
       return {rows:[{image:Buffer.from([0xff,0xd8,0xff,0xd9])}]};
     }
     if(sql.includes('INSERT INTO hr_workplace_photos(')||sql.includes('INSERT INTO hr_candidate_photos('))return {rows:[]};
@@ -35,9 +35,16 @@ const pg={Pool:class{
     if(sql.includes('SELECT 1 FROM hr_candidate_photos WHERE candidate_wix_id=$1'))return {rows:db.photos.filter(x=>x.candidate_wix_id===params[0]).map(()=>({exists:1}))};
     if(sql.includes('SELECT 1 FROM hr_workplace_photos WHERE recruiter_wix_id=$1'))return {rows:db.photos.filter(x=>x.recruiter_wix_id===params[0]).map(()=>({exists:1}))};
     if(sql.includes('SELECT id,job_title,job_role FROM hr_recruiter_requests'))
-      return {rows:db.requests.filter(row=>row.id===params[0]&&row.status==='VALIDEE')};
+      return {rows:db.requests.filter(row=>row.id===params[0]&&row.status==='VALIDEE'&&!row.removed_at)};
     if(sql.includes('SELECT * FROM hr_recruiter_requests WHERE id='))
-      return {rows:db.requests.filter(row=>row.id===params[0])};
+      return {rows:db.requests.filter(row=>row.id===params[0]&&!row.removed_at)};
+    if(sql.includes('WITH changed AS')&&sql.includes('UPDATE hr_recruiter_requests')){
+      const row=db.requests.find(x=>x.id===params[0]&&!x.removed_at);
+      if(!row)return {rows:[]};
+      row.removed_at='2026-11-21T02:30:00Z';
+      db.audits.push({event_type:'RECRUITER_REQUEST_REMOVED',actor:params[1],requestId:params[0]});
+      return {rows:[{id:row.id,job_title:row.job_title,kind:row.kind}]};
+    }
     if(sql.includes('UPDATE hr_recruiter_requests SET status=')){
       const row=db.requests.find(row=>row.id===params[1]);
       if(row)row.status=params[0];
@@ -164,6 +171,20 @@ async function run(){
   mark('Candidate can send message',r.status===201);
   r=await call('GET','/api/applications/'+applicationId+'/messages','rec-token');
   mark('Recruiter sees candidate message',r.status===200&&r.data.items.some(m=>m.body==='Bonjour recrutement'));
+  r=await call('DELETE','/api/recruiter-requests/'+requestId,'cand-token');
+  mark('Candidate cannot delete job or shift',r.status===403);
+  r=await call('DELETE','/api/recruiter-requests/'+requestId,'rec-token');
+  mark('Recruiter cannot delete without administrator permission',r.status===403);
+  r=await call('DELETE','/api/recruiter-requests/'+requestId,'adm-token');
+  mark('Administrator removes published job with audit',r.status===200&&r.data.removed===true&&db.audits.some(x=>x.event_type==='RECRUITER_REQUEST_REMOVED'&&x.requestId===requestId));
+  r=await call('GET','/api/jobs/public');
+  mark('Removed offer immediately disappears from public listings',r.status===200&&r.data.items.length===0);
+  r=await call('GET','/api/jobs/public/'+requestId+'/workplace-photo');
+  mark('Removed public photo is no longer accessible',r.status===404);
+  r=await call('DELETE','/api/recruiter-requests/'+requestId,'adm-token');
+  mark('A second delete cannot repeat removal',r.status===404);
+  r=await call('GET','/api/applications','adm-token');
+  mark('Applicant dossiers remain in admin after removal',r.status===200&&r.data.items.length===1);
   console.log('PASS '+out.length+' / '+out.length+' simulated API cross-account tests (NO real accounts or DB mutations).');
 }
 run().catch(error=>{console.error(error);process.exitCode=1;});
