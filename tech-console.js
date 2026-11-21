@@ -5,13 +5,13 @@ const $=id=>document.getElementById(id);
 const make=(tag,klass,text)=>{const el=document.createElement(tag);if(klass)el.className=klass;if(text!==undefined)el.textContent=String(text);return el};
 const money=centimes=>(Number(centimes)/100).toLocaleString('fr-MA',{minimumFractionDigits:2,maximumFractionDigits:2})+' DH';
 const int=(x,min,max)=>Number.isSafeInteger(x)&&x>=min&&x<=max;
-let venues=[],venue=null,products=[],cart=new Map(),pendingSaleRef=null,requestBusy=false;
+let venues=[],venue=null,products=[],cart=new Map(),pendingSaleRef=null,requestBusy=false,editingProductId=null;
 const showMessage=(text,isError=false)=>{const el=$('proAlert');el.textContent=text;el.classList.toggle('error',isError);};
 const setStatus=(message,live=false)=>{$('serverStatus').textContent=message;$('serverIndicator').classList.toggle('online',live);};
 const toggle=(id,on)=>{$(id).hidden=!on;};
 const removeChildren=root=>root.replaceChildren();
 const route=id=>'/api/tech/venues/'+encodeURIComponent(id);
-function guard(fn){return async event=>{if(requestBusy)return;requestBusy=true;const btn=event?.submitter||event?.currentTarget;if(btn && 'disabled' in btn)btn.disabled=true;try{await fn(event)}catch(e){showMessage(e.message||'Erreur du service.',true)}finally{requestBusy=false;if(btn&&'disabled'in btn)btn.disabled=false;}}}
+function guard(fn){return async event=>{if(event?.type==='submit')event.preventDefault();if(requestBusy)return;requestBusy=true;const btn=event?.submitter||event?.currentTarget;if(btn && 'disabled' in btn)btn.disabled=true;try{await fn(event)}catch(e){showMessage(e.message||'Erreur du service.',true)}finally{requestBusy=false;if(btn&&'disabled'in btn)btn.disabled=false;}}}
 function venueSelect(){
   const el=$('venueSelect');el.replaceChildren(new Option('Sélectionner…',''));
   venues.forEach(v=>el.append(new Option(v.name+' · '+v.city,v.id)));
@@ -94,6 +94,8 @@ function renderCatalog(){
     main.append(make('strong','',p.name),make('small','',p.category+' · '+(p.sku||'Sans SKU')+' · Stock '+p.stock));
     const side=make('div');
     side.append(make('span','pro-price',money(p.priceCentimes)+' '));
+    const edit=make('button','','Modifier');edit.type='button';edit.addEventListener('click',()=>beginProductEdit(p));
+    side.append(edit);
     const visible=make('button','',p.menuVisible?'Masquer menu':'Afficher menu');visible.type='button';
     visible.addEventListener('click',guard(async()=>{
       await hub(route(venue.id)+'/products/'+p.id,{method:'PATCH',body:{menuVisible:!p.menuVisible}});
@@ -107,6 +109,28 @@ function renderCatalog(){
     side.append(visible,active);row.append(main,side);root.append(row);
   });
 }
+function endProductEdit(){
+  editingProductId=null;
+  $('productForm').reset();$('productForm').elements.menuVisible.checked=true;
+  $('productForm').elements.stock.disabled=false;$('productForm').elements.sku.disabled=false;
+  $('productFormTitle').textContent='Créer un article';
+  $('productSubmit').textContent='Enregistrer l’article';
+  $('cancelProductEdit').hidden=true;
+}
+function beginProductEdit(p){
+  switchTab('catalog');editingProductId=p.id;
+  const form=$('productForm');
+  form.elements.name.value=p.name;form.elements.category.value=p.category;
+  form.elements.price.value=(p.priceCentimes/100).toFixed(2);
+  form.elements.stock.value=p.stock;form.elements.stock.disabled=true;
+  form.elements.sku.value=p.sku||'';form.elements.sku.disabled=true;
+  form.elements.menuVisible.checked=p.menuVisible;
+  $('productFormTitle').textContent='Modifier '+p.name;
+  $('productSubmit').textContent='Enregistrer les modifications';
+  $('cancelProductEdit').hidden=false;
+  form.scrollIntoView({behavior:'smooth',block:'start'});
+}
+$('cancelProductEdit').addEventListener('click',endProductEdit);
 function renderStockSelection(){
   const select=$('stockProduct');select.replaceChildren(new Option('Choisir l’article',''));
   products.forEach(p=>select.append(new Option(p.name+' (stock '+p.stock+')',p.id)));
@@ -175,10 +199,17 @@ $('productForm').addEventListener('submit',guard(async e=>{
   e.preventDefault();if(!venue)return;
   const form=e.currentTarget,d=new FormData(form);
   const price=Math.round(Number(d.get('price'))*100),stock=Number(d.get('stock'));
-  if(!int(price,0,100000000)||!int(stock,0,10000000))throw Error('Prix ou quantité invalide.');
-  await hub(route(venue.id)+'/products',{method:'POST',body:{name:String(d.get('name')||'').trim(),category:String(d.get('category')||'').trim(),priceCentimes:price,stock,sku:String(d.get('sku')||'').trim(),menuVisible:d.get('menuVisible')==='on'}});
-  form.reset();form.elements.menuVisible.checked=true;
-  await loadVenue();showMessage('Article ajouté au catalogue et stock initial enregistré.');
+  if(!int(price,0,100000000)||(!editingProductId&&!int(stock,0,10000000)))throw Error('Prix ou quantité invalide.');
+  const body={name:String(d.get('name')||'').trim(),category:String(d.get('category')||'').trim(),priceCentimes:price,menuVisible:d.get('menuVisible')==='on'};
+  if(editingProductId){
+    await hub(route(venue.id)+'/products/'+editingProductId,{method:'PATCH',body});
+    endProductEdit();
+    await loadVenue();showMessage('Article modifié. Le stock reste géré dans le module Stock.');
+  } else {
+    await hub(route(venue.id)+'/products',{method:'POST',body:{...body,stock,sku:String(d.get('sku')||'').trim()}});
+    endProductEdit();
+    await loadVenue();showMessage('Article ajouté au catalogue et stock initial enregistré.');
+  }
 }));
 $('stockForm').addEventListener('submit',guard(async e=>{
   e.preventDefault();if(!venue)return;
