@@ -7,7 +7,7 @@ const bases=['https://horenova.com','https://horenova-site-officiel.onrender.com
 const checks=[
  {path:'/version.json',verify:s=>{try{return JSON.parse(s).version===release}catch{return false}}},
  {path:'/support.html',verify:s=>s.includes('id="hsQuickDemand"')&&s.includes('support.js?v='+asset)&&s.includes('Assistance 24 h/24')},
- {path:'/admin.html',verify:s=>s.includes('admin.js?v='+asset)&&s.includes('horenova-admin-cases-v2.css?v='+asset)},
+ {path:'/admin.html',verify:s=>s.includes('admin.js?v=spv7-20261120')&&s.includes('horenova-admin-cases-v2.css?v=spv7-20261120')},
  {path:'/admin.js',verify:s=>s.includes('data-quickprint-id')&&s.includes('Imprimer la candidature avec photo')},
  {path:'/pwa-register.js',verify:s=>s.includes("const BUILD='"+release+"'")&&s.includes("link.href='/support.html'")}
 ];
