@@ -18,6 +18,8 @@ jobs:
         run: node qa/site-audit.cjs
       - name: Simulate candidate, recruiter and administrator permissions
         run: node --test qa/roles.test.cjs
+      - name: Test HORENOVA TECH multi-venue authorization and atomic POS inventory transactions
+        run: node --test qa/tech-api.test.cjs
 
       - name: Test dynamic French, English and Arabic updates
         run: node qa/i18n-dynamic.cjs
