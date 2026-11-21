@@ -43,16 +43,18 @@ async function scenario(browser,lang,width,height){
  assert.equal(await page.locator('.hn-intro-shortcut-shop').getAttribute('href'),'/shop.html');
  assert.equal(await page.locator('.hn-intro-shortcut-academy').getAttribute('href'),'/academy.html');
  assert.equal(await page.locator('.hn-intro-shortcut-matching').getAttribute('href'),'/matching-guide.html');
- assert.equal(await page.locator('.hn-intro-shortcut').count(),3);
+ assert.equal(await page.locator('.hn-intro-shortcut-tech').getAttribute('href'),'/tech.html');
+ assert.equal(await page.locator('.hn-intro-shortcut').count(),4);
  const translated={
-  fr:['POUR S’ÉQUIPER','POUR APPRENDRE','POUR TROUVER SA PLACE','Deux horizons.'],
-  en:['TO EQUIP YOURSELF','TO LEARN','FIND YOUR PLACE','Two horizons.'],
-  ar:['للتجهيز','للتعلم','لتجد مكانك المناسب','أفقان.']
+  fr:['POUR S’ÉQUIPER','POUR APPRENDRE','POUR TROUVER SA PLACE','POUR INNOVER','Deux horizons.'],
+  en:['TO EQUIP YOURSELF','TO LEARN','FIND YOUR PLACE','TO INNOVATE','Two horizons.'],
+  ar:['للتجهيز','للتعلم','لتجد مكانك المناسب','للابتكار','أفقان.']
  }[lang];
  const actual=await page.evaluate(()=>[
   document.querySelector('.hn-intro-shortcut-shop .hn-intro-shortcut-overline')?.textContent?.trim(),
   document.querySelector('.hn-intro-shortcut-academy .hn-intro-shortcut-overline')?.textContent?.trim(),
   document.querySelector('.hn-intro-shortcut-matching .hn-intro-shortcut-overline')?.textContent?.trim(),
+  document.querySelector('.hn-intro-shortcut-tech .hn-intro-shortcut-overline')?.textContent?.trim(),
   document.querySelector('#hn-origin-title')?.firstChild?.textContent?.trim()
  ]);
  assert.deepEqual(actual,translated);
