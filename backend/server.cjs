@@ -525,7 +525,9 @@ const server=http.createServer(async(req,res)=>{
     res.setHeader('Access-Control-Allow-Origin',origin);
     res.setHeader('Vary','Origin');
     res.setHeader('Access-Control-Allow-Headers','Authorization, Content-Type');
-    res.setHeader('Access-Control-Allow-Methods','GET, POST, PATCH, OPTIONS');
+    // DELETE must be explicitly advertised during the browser's CORS preflight.
+    // Authorization is still required by the DELETE route after the preflight.
+    res.setHeader('Access-Control-Allow-Methods','GET, POST, PATCH, DELETE, OPTIONS');
   }
   if(req.method==='OPTIONS'){res.writeHead(204);return res.end();}
   const path=new URL(req.url,'http://localhost').pathname;
