@@ -10,7 +10,7 @@ export async function mountAdminOverview(){
  const section=document.createElement('section');
  section.className='hn-admin-publication';
  section.id='hnAdminPublication';
- section.innerHTML='<div class="hn-admin-publication-head"><div><span>HORENOVA · SUPERVISION NATIONALE</span><h2>Publication & visibilité.</h2><p>Contrôle réel des emplois, shifts, talents et candidatures. Les informations privées ne sont pas exposées.</p></div><button id="hnPublicationRefresh" type="button">Vérifier en ligne ↻</button></div><div class="hn-admin-publication-stats" id="hnPublicationStats" role="status">Vérification de la publication…</div><div class="hn-pub-filter-toolbar" id="hnPublicationFilters" role="group" aria-label="Afficher les annonces par statut"><button type="button" data-publication-filter="all" aria-pressed="true">Toutes</button><button type="button" data-publication-filter="live" aria-pressed="false">En ligne</button><button type="button" data-publication-filter="pending" aria-pressed="false">En attente</button><button type="button" data-publication-filter="issue" aria-pressed="false">À vérifier</button><button type="button" data-publication-filter="rejected" aria-pressed="false">Refusées</button></div><div class="hn-admin-publication-rows" id="hnPublicationRows"></div><p class="hn-pub-noresults" id="hnPublicationEmpty" hidden>Aucune annonce dans cette catégorie.</p><button class="hn-pub-show-more" id="hnPublicationMore" type="button" hidden>Afficher plus d’annonces ↓</button>';
+ section.innerHTML='<div class="hn-admin-publication-head"><div><span>HORENOVA · SUPERVISION NATIONALE</span><h2>Publication & visibilité.</h2><p>Contrôle réel des emplois, shifts, talents et candidatures. Les informations privées ne sont pas exposées.</p></div><button id="hnPublicationRefresh" type="button">Vérifier en ligne ↻</button></div><div class="hn-admin-publication-stats" id="hnPublicationStats" role="status">Vérification de la publication…</div><div class="hn-pub-filter-toolbar" id="hnPublicationFilters" role="group" aria-label="Afficher les annonces par statut"><button type="button" data-publication-filter="all" aria-pressed="true">Toutes</button><button type="button" data-publication-filter="live" aria-pressed="false">En ligne</button><button type="button" data-publication-filter="pending" aria-pressed="false">En attente</button><button type="button" data-publication-filter="issue" aria-pressed="false">À vérifier</button><button type="button" data-publication-filter="rejected" aria-pressed="false">Refusées</button></div><p id="hnPublicationFeedback" role="alert" hidden></p><div class="hn-admin-publication-rows" id="hnPublicationRows"></div><p class="hn-pub-noresults" id="hnPublicationEmpty" hidden>Aucune annonce dans cette catégorie.</p><button class="hn-pub-show-more" id="hnPublicationMore" type="button" hidden>Afficher plus d’annonces ↓</button>';
  root.insertAdjacentElement('afterbegin',section);
  const stats=section.querySelector('#hnPublicationStats'),list=section.querySelector('#hnPublicationRows');
  let previews=new Map(),checking=false;
@@ -90,6 +90,7 @@ export async function mountAdminOverview(){
      '<p>'+esc(r.workplace_address||'Adresse du lieu non précisée')+' · '+esc(r.contract_type||'Contrat à préciser')+'</p></div>'+
      '<div class="hn-pub-row-actions"><b>'+esc(status)+'</b>'+
      '<button type="button" data-photo="'+esc(r.id)+'">Voir la photo ↗</button>'+
+     '<button type="button" class="hn-pub-remove" data-remove-id="'+esc(r.id)+'" aria-label="Supprimer cette annonce">🗑 Supprimer</button>'+
      (visible?'<a href="/job.html?id='+encodeURIComponent(r.id)+'" target="_blank" rel="noopener">Voir l’annonce ↗</a>':'')+
      '</div><div class="hn-pub-preview" data-photo-box="'+esc(r.id)+'"></div></article>';
    }).join(''):'<p>Aucune demande à vérifier.</p>');
@@ -107,9 +108,26 @@ export async function mountAdminOverview(){
    }catch(error){pane.textContent='Photo indisponible : '+(error?.message||'erreur');}
    finally{button.disabled=false;}
   });
+  list.querySelectorAll('[data-remove-id]').forEach(button=>button.addEventListener('click',async()=>{
+    const id=button.dataset.removeId,record=reqs?.find(x=>x.id===id);
+    if(!record||button.disabled)return;
+    const label=(record.kind==='shift'?'le shift « ':'l’offre « ')+(record.job_title||'Sans titre')+' »';
+    if(!window.confirm('Supprimer '+label+' ?\\n\\nL’annonce ne sera plus accessible publiquement. Les candidatures et l’historique administratif seront conservés.'))return;
+    button.disabled=true;
+    const oldText=button.textContent;button.textContent='Suppression…';
+    try{
+      await hub('/api/recruiter-requests/'+encodeURIComponent(id),{method:'DELETE'});
+      document.dispatchEvent(new Event('hn-admin-listing-removed'));
+    }catch(error){
+      button.disabled=false;button.textContent=oldText;
+      const msg=section.querySelector('#hnPublicationFeedback');
+      if(msg){msg.textContent='Impossible de supprimer l’annonce : '+(error?.message||String(error));msg.hidden=false;}
+    }
+  }));
   checking=false;refreshButton.disabled=false;
  }
  section.querySelector('#hnPublicationRefresh').onclick=()=>refresh();
  document.addEventListener('hn-admin-moderation-changed',()=>{void refresh()});
+ document.addEventListener('hn-admin-listing-removed',()=>{void refresh()});
  await refresh();
 }
