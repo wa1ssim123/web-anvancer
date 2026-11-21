@@ -31,6 +31,10 @@ const ORIGINS=['https://horenova.com','https://horenova-site-officiel.onrender.c
       whiskResources:performance.getEntriesByType('resource').filter(x=>/art-(whisk|chefhat|coffee|zellige)/.test(x.name)).map(x=>x.name)};
    });
    console.log('LIVE_SUPPORT_DOM '+JSON.stringify({origin,screen,result,errors:failures}));
+   assert.ok(Math.abs(result.headerTop)<=3,'Support starts below first viewport: '+JSON.stringify(result.firstChildren));
+   assert.ok(!result.firstChildren.some(x=>x.cls?.includes('mihna-art-canvas')),'Old illustration container still injected');
+   assert.ok(!result.whiskHtml,'An art-whisk drawing should not exist in live support DOM');
+   assert.deepEqual(failures,[],'Unexpected runtime errors on support');
    await context.close();
   }
  }

@@ -1,8 +1,8 @@
 'use strict';
 /* Public production smoke: verifies actual domain content, not only GitHub files. */
 const assert=require('node:assert/strict');
-const release='2026.11.20.support-print-v7';
-const asset='spv7-20261120';
+const release='2026.11.21.support-no-art-v8';
+const asset='support-no-art-v8';
 const bases=['https://horenova.com','https://horenova-site-officiel.onrender.com'];
 const checks=[
  {path:'/version.json',verify:s=>{try{return JSON.parse(s).version===release}catch{return false}}},

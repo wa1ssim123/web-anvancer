@@ -1,5 +1,5 @@
 {
-  "version": "2026.11.20.support-print-v7",
-  "releasedAt": "2026-11-20",
-  "message": "HORENOVA : support direct 24 h/24 et impression A4 disponible sur chaque candidature, offre, shift et conversation."
+  "version": "2026.11.21.support-no-art-v8",
+  "releasedAt": "2026-11-21",
+  "message": "Suppression définitive des quatre illustrations introduites par le script global devant l'assistance HORENOVA. Support immédiat en haut de page et impression des dossiers."
 }
