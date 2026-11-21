@@ -50,6 +50,8 @@ jobs:
         run: node qa/admin-case-layout.cjs
       - name: Verify admin A4 printing of full candidate, job/shift and support case records
         run: node qa/admin-print-browser.cjs
+      - name: Test recruiter list mobile scrolling and confirmed deletion of jobs and shifts
+        run: node qa/admin-deletion-scroll.cjs
       - name: Check email verification, existing-account recovery, and shared-offer continuation
         run: node qa/candidate-journey.cjs
       - name: Test direct candidature with private photo and FR EN AR
