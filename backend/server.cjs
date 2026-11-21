@@ -334,7 +334,7 @@ async function api(req,res,path,method) {
        ), trace AS (
          INSERT INTO hr_audit(actor_wix_id,event_type,detail)
          SELECT $2,'RECRUITER_REQUEST_REMOVED',
-           json_build_object('requestId',id,'title',job_title,'kind',kind)::text
+           jsonb_build_object('requestId',id,'title',job_title,'kind',kind)
          FROM changed RETURNING id
        )
        SELECT id,job_title,kind FROM changed`,[id,user.id]);
