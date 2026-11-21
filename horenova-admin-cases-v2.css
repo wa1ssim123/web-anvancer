@@ -356,3 +356,16 @@ body[data-hn12="admin"] #hnPublicationFeedback:not([hidden]){color:#922d23;font-
  body[data-hn12="admin"] .hn-admin-remove-btn,
  body[data-hn12="admin"] .hn-pub-remove{transition:none!important}
 }
+
+/* Higher specificity than legacy #adminGate .hub-stack {max-height:300px!important}.
+   Let the DOCUMENT scroll; never create a nested touch scroller for recruiter cards. */
+@media(max-width:1050px){
+ body[data-hn12="admin"] #adminGate #hubRecruiterRequests.hub-stack{
+  max-height:none!important;height:auto!important;min-height:0!important;
+  overflow-y:visible!important;overflow-x:visible!important;
+  touch-action:pan-y!important;overscroll-behavior-y:auto!important;
+ }
+ body[data-hn12="admin"] #adminGate #adminRecruiterRequests.hub-panel{
+  max-height:none!important;height:auto!important;overflow:visible!important
+ }
+}
