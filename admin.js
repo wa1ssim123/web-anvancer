@@ -70,12 +70,31 @@ function listRequests(){
       '</div></details>'+
       '<div class="hub-request-actions"><label>Décision administrative <select class="hub-select" data-request-status>'+options+'</select></label>'+
       '<button type="button" class="hub-action secondary" data-request-save>Enregistrer</button>'+
-      '<button type="button" class="hn-admin-print-btn" data-request-print>⎙ Imprimer la demande</button></div>'+
+      '<button type="button" class="hn-admin-print-btn" data-request-print>⎙ Imprimer la demande</button>'+'<button type="button" class="hn-admin-remove-btn" data-request-remove aria-label="Supprimer cette annonce">🗑 Supprimer l’annonce</button></div>'+
       '<p class="hub-muted" data-request-feedback role="status"></p></article>';
   }).join(''):'<div class="hub-detail hub-muted">Aucune demande de recrutement dans le suivi central.</div>';
   target.querySelectorAll('[data-request-print]').forEach(button=>button.addEventListener('click',()=>{
     const card=button.closest('[data-request-id]'),record=requests.find(r=>r.id===card?.dataset.requestId);
     if(record)void printRecruiter(record,record.has_workplace_photo?()=>hubPhoto('/api/recruiter-requests/'+encodeURIComponent(record.id)+'/workplace-photo'):null);
+  }));
+  target.querySelectorAll('[data-request-remove]').forEach(button=>button.addEventListener('click',async()=>{
+    const card=button.closest('[data-request-id]');
+    const id=card?.dataset.requestId,record=requests.find(r=>r.id===id);
+    if(!record||button.disabled)return;
+    const label=(record.kind==='shift'?'le shift « ':'l’offre « ')+(record.job_title||'Sans titre')+' »';
+    if(!window.confirm('Supprimer '+label+' de HORENOVA ?\\n\\nElle disparaîtra des offres et shifts publics. Les candidatures déjà reçues et leur historique seront conservés.'))return;
+    const feedback=card.querySelector('[data-request-feedback]');
+    button.disabled=true;
+    if(feedback)feedback.textContent='Suppression de l’annonce…';
+    try{
+      await hub('/api/recruiter-requests/'+encodeURIComponent(id),{method:'DELETE'});
+      requests=requests.filter(r=>r.id!==id);
+      listRequests();
+      document.dispatchEvent(new Event('hn-admin-listing-removed'));
+    }catch(error){
+      if(feedback){feedback.textContent='Suppression impossible : '+(error?.message||String(error));feedback.style.color='#a52419';}
+      button.disabled=false;
+    }
   }));
   target.querySelectorAll('[data-request-save]').forEach(button=>button.addEventListener('click',async()=>{
     const card=button.closest('[data-request-id]');
@@ -187,6 +206,7 @@ async function refresh(){
 try{showError('');const [a,r]=await Promise.all([hub('/api/applications'),hub('/api/recruiter-requests')]);applications=a.items||[];requests=r.items||[];list();listRequests();if(selected&&applications.some(a=>a.id===selected))await detail(selected,false);else root.classList.remove('hn-case-open');}
 catch(e){showError(e.message+' Les dossiers privés restent accessibles dans le CMS administrateur Wix.');$('hubCases').innerHTML='<div class="hub-detail hub-muted">Service des dossiers non disponible.</div>';}
 }
+document.addEventListener('hn-admin-listing-removed',()=>{void refresh()});
 $('hubSearch').oninput=list;$('hubRefresh').onclick=refresh;await refresh();
 try{const {mountAdminOverview}=await import('/admin-overview.js?v=mail-stats-20261120-r1');await mountAdminOverview();}catch(error){console.error('Contrôle des publications indisponible',error);}
 }
