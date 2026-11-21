@@ -167,25 +167,25 @@ $('newVenueToggle').addEventListener('click',()=>{toggle('venueForm',$('venueFor
 $('emptyCreateVenue').addEventListener('click',openVenueForm);
 $('venueForm').addEventListener('submit',guard(async e=>{
   e.preventDefault();
-  const d=new FormData(e.currentTarget);
+  const form=e.currentTarget, d=new FormData(form);
   const r=await hub('/api/tech/venues',{method:'POST',body:{name:String(d.get('name')||'').trim(),city:String(d.get('city')||'').trim()}});
-  await loadVenues(r.venue.id);toggle('venueForm',false);e.currentTarget.reset();showMessage('Établissement créé et isolé. Ajoutez vos premiers articles.');
+  await loadVenues(r.venue.id);toggle('venueForm',false);form.reset();showMessage('Établissement créé et isolé. Ajoutez vos premiers articles.');
 }));
 $('productForm').addEventListener('submit',guard(async e=>{
   e.preventDefault();if(!venue)return;
-  const d=new FormData(e.currentTarget);
+  const form=e.currentTarget,d=new FormData(form);
   const price=Math.round(Number(d.get('price'))*100),stock=Number(d.get('stock'));
   if(!int(price,0,100000000)||!int(stock,0,10000000))throw Error('Prix ou quantité invalide.');
   await hub(route(venue.id)+'/products',{method:'POST',body:{name:String(d.get('name')||'').trim(),category:String(d.get('category')||'').trim(),priceCentimes:price,stock,sku:String(d.get('sku')||'').trim(),menuVisible:d.get('menuVisible')==='on'}});
-  e.currentTarget.reset();e.currentTarget.elements.menuVisible.checked=true;
+  form.reset();form.elements.menuVisible.checked=true;
   await loadVenue();showMessage('Article ajouté au catalogue et stock initial enregistré.');
 }));
 $('stockForm').addEventListener('submit',guard(async e=>{
   e.preventDefault();if(!venue)return;
-  const d=new FormData(e.currentTarget),delta=Number(d.get('delta'));
+  const form=e.currentTarget,d=new FormData(form),delta=Number(d.get('delta'));
   if(!int(delta,-100000,100000)||delta===0)throw Error('Variation de stock invalide.');
   await hub(route(venue.id)+'/stock',{method:'POST',body:{productId:String(d.get('productId')||''),delta,reason:String(d.get('reason')||'').trim()}});
-  e.currentTarget.reset();await loadVenue();await loadStock();showMessage('Mouvement de stock enregistré avec son motif.');
+  form.reset();await loadVenue();await loadStock();showMessage('Mouvement de stock enregistré avec son motif.');
 }));
 $('proClearCart').addEventListener('click',()=>{cart.clear();pendingSaleRef=null;renderCart();showMessage('Ticket vidé.');});
 $('proCheckout').addEventListener('click',guard(async()=>{
