@@ -2,7 +2,7 @@
 (() => {
   'use strict';
   const STORAGE = 'horenova-tech-quote-v1';
-  const LANGKEY = 'horenova-tech-lang';
+  const LANGKEY = 'mihna-lang'; // Shared preference with HORENOVA's FR / EN / AR language control.
   const PHONE = '212648377009'; // Same public business phone shown on Horenova's website.
   const catalog = {
     POS: 'Horenova POS',
