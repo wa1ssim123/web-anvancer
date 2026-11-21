@@ -208,3 +208,15 @@ body.hn-support-page{background:#f6f7f1}
  .hn-support-page .hs-dialog-actions>button{flex:1}
 }
 @media(prefers-reduced-motion:reduce){.hn-support-page .hs-actions .hs-primary,.hn-support-page .hs-actions .hs-secondary{transition:none}}
+
+
+/* Regression fix: even a cached legacy global JS must never leave its
+   four standalone SVGs ahead of the HORENOVA assistance header. */
+body.hn-support-page>.mihna-art-canvas,
+body.hn-support-page>.mihna-art-canvas img,
+body.hn-support-page>.mihna-art-canvas .art-glow{
+ display:none!important;visibility:hidden!important;
+ height:0!important;max-height:0!important;padding:0!important;
+ margin:0!important;overflow:hidden!important
+}
+body.hn-support-page>.hs-top{margin-top:0!important}
