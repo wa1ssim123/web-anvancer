@@ -62,6 +62,8 @@ jobs:
         run: node qa/home-brand-story.cjs
       - name: Test HORENOVA A-to-Z matching guide, navigation and RTL on phones and PC
         run: node qa/matching-guide.cjs
+      - name: Verify HORENOVA TECH storefront, local POS inventory and NFC menu in FR EN AR
+        run: node qa/tech-system.cjs
       - name: Verify candidate, job and shift email visual layout across 3 languages
         run: node qa/email-visual.cjs
       - name: Verify the real horenova.com and Render pages show the current support and admin printing release
