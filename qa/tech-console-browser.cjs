@@ -3,7 +3,7 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const {chromium}=require('playwright');
 const root=path.resolve(__dirname,'..');
-const fakeHub=String.raw\`
+const fakeHub=`
 const vid='bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',pid='cccccccc-cccc-4ccc-8ccc-cccccccccccc';
 let venues=[],products=[],sales=[],moves=[];
 function result(){return {venue:venues[0],products:products.map(x=>({...x})),summary:{salesCount:sales.length,revenueCentimes:sales.reduce((n,s)=>n+s.totalCentimes,0),stockAlerts:products.filter(p=>p.stock<=5).length}};}
@@ -35,7 +35,7 @@ if(url.endsWith('/sales')&&method==='POST'){
 if(url.endsWith('/sales')&&method==='GET')return {sales};
 if(url.endsWith('/movements')&&method==='GET')return {movements:moves};
 throw Error('Unexpected mocked endpoint '+method+' '+url);
-}\`;
+}`;
 (async()=>{
 const browser=await chromium.launch({headless:true});
 try {
