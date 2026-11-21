@@ -1,0 +1,23 @@
+name: HORENOVA live deletion preflight
+on:
+  push:
+    branches:
+      - horenova-free-deploy-2026
+    paths:
+      - 'backend/server.cjs'
+      - 'qa/live-delete-cors.cjs'
+      - '.github/workflows/horenova-delete-cors.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  cors-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Confirm public DELETE CORS preflight without touching real offers
+        run: node qa/live-delete-cors.cjs
