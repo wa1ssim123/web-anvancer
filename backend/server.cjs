@@ -116,6 +116,8 @@ function present(a,user) {
 }
 const {createSupportHandler}=require('./support.cjs');
 const supportHandler=createSupportHandler({pool,json,read,rate,auth,error,limit,uuid});
+const {createTechHandler}=require('./tech.cjs');
+const techHandler=createTechHandler({pool,json,read,rate,auth,requireRole,error,limit,uuid});
 const {createTransactionalMailer}=require('./transactional-mail.cjs');
 const mailer=createTransactionalMailer({pool});
 const queueReceipt=async event=>{
@@ -128,6 +130,7 @@ const queueReceipt=async event=>{
 };
 async function api(req,res,path,method) {
   if(path.startsWith('/api/support/'))return supportHandler(req,res,path,method);
+  if(path.startsWith('/api/tech/'))return techHandler(req,res,path,method);
   if(path==='/health' && method==='GET'){
     const q=await pool.query('SELECT 1 AS ok');
     return json(res,200,{ok:q.rows[0].ok===1,service:'horenova-production-api'});
