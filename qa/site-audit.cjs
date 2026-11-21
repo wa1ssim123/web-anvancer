@@ -26,7 +26,9 @@ for(const file of files.filter(x=>/\.(?:js|cjs)$/.test(x))){
 for(const file of files.filter(x=>x.endsWith('.html'))){
   pages++;
   const html=own(file);
-  if(file!=='offline.html'&&!file.startsWith('email-templates/')&&!html.includes('horenova-i18n.js')&&!(file==='matching-guide.html'&&html.includes('matching-guide.js')))fail(file,'missing FR/EN/AR locale loader');
+  const dedicatedTechLocale=(file==='tech.html'&&html.includes('tech.js'))||
+    (file==='tech-demo.html'&&html.includes('tech-demo-i18n.js'));
+  if(file!=='offline.html'&&!file.startsWith('email-templates/')&&!html.includes('horenova-i18n.js')&&!dedicatedTechLocale&&!(file==='matching-guide.html'&&html.includes('matching-guide.js')))fail(file,'missing FR/EN/AR locale loader');
   for(const match of html.matchAll(/(?:src|href)\s*=\s*["'](\/[^"'\s]+)["']/gi)){
     let url=match[1];if(url.startsWith('//'))continue;
     const local=url.split(/[?#]/,1)[0].slice(1);
