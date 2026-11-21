@@ -14,7 +14,7 @@
   };
   const copy = {
     fr: {
-      navHome:'Accueil',navShop:'Shop',navBusiness:'Business',quote:'Mon devis',
+      navHome:'Accueil',navShop:'Shop',navBusiness:'Business',proConsole:'Espace Pro',openProConsole:'Ouvrir ma caisse connectée',quote:'Mon devis',
       heroTitle:'La technologie<br>au service <em>du service.</em>',
       heroCopy:'Une caisse élégante. Une gestion intelligente. Un menu accessible d’un simple geste. Tout un établissement, pensé comme un seul système.',
       exploreSolutions:'Explorer les solutions',tryDemo:'Essayer la démonstration',
@@ -49,7 +49,7 @@
       whatsappIntro:'Bonjour, je souhaite recevoir un devis HORENOVA TECH.',whatsappSelection:'Sélection de solutions',whatsappName:'Nom',whatsappBusiness:'Établissement / Ville',whatsappNotes:'Informations complémentaires',whatsappEnd:'Merci de confirmer la disponibilité, les fonctionnalités, les prix TTC, les délais et l’installation au Maroc.'
     },
     en: {
-      navHome:'Home',navShop:'Shop',navBusiness:'Business',quote:'My quote',
+      navHome:'Home',navShop:'Shop',navBusiness:'Business',proConsole:'Pro Console',openProConsole:'Open my connected POS',quote:'My quote',
       heroTitle:'Technology<br>made for <em>hospitality.</em>',
       heroCopy:'An elegant till. Intelligent operations. A menu at a single tap. Your entire venue, designed as one connected system.',
       exploreSolutions:'Explore solutions',tryDemo:'Try the interactive demo',
@@ -83,7 +83,7 @@
       whatsappIntro:'Hello, I would like a HORENOVA TECH quotation.',whatsappSelection:'Selected solutions',whatsappName:'Name',whatsappBusiness:'Venue / City',whatsappNotes:'Additional requirements',whatsappEnd:'Please confirm availability, features, tax-inclusive pricing, delivery time and installation in Morocco.'
     },
     ar: {
-      navHome:'الرئيسية',navShop:'المتجر',navBusiness:'الأعمال',quote:'طلب عرض سعر',
+      navHome:'الرئيسية',navShop:'المتجر',navBusiness:'الأعمال',proConsole:'فضاء المهنيين',openProConsole:'فتح الكاشير المتصل',quote:'طلب عرض سعر',
       heroTitle:'تكنولوجيا<br>في <em>خدمة الضيافة.</em>',
       heroCopy:'صندوق أداء أنيق، إدارة ذكية، وقائمة طعام بلمسة هاتف. نظام متكامل صُمّم لتسهيل عمل المؤسسة.',
       exploreSolutions:'اكتشف الحلول',tryDemo:'جرّب النسخة التوضيحية',
