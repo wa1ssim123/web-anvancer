@@ -9,6 +9,13 @@ const root=path.resolve(__dirname,'..');
 const html=fs.readFileSync(path.join(root,'support.html'),'utf8');
 const js=fs.readFileSync(path.join(root,'support.js'),'utf8');
 const css=fs.readFileSync(path.join(root,'support.css'),'utf8');
+const global=fs.readFileSync(path.join(root,'mihna-global.js'),'utf8');
+const artStart=global.indexOf('function initArtSystem(){');
+const artEnd=global.indexOf('function init(){',artStart);
+assert.ok(artStart>0&&artEnd>artStart,'Shared art-system function must be found');
+const sharedArtFunction=global.slice(artStart,artEnd);
+assert.match(sharedArtFunction,/slug==='support'/,'Support must explicitly skip global illustrations');
+assert.match(css,/\.hn-support-page>\.mihna-art-canvas/,'Legacy art must be hidden as a second safeguard');
 assert.ok(!html.includes('hs-hero-art'),'The big decorative drawing must be removed');
 assert.match(html,/hsQuickDemand/);
 assert.match(html,/tel:\+212648377009/);
@@ -47,6 +54,23 @@ async function test(browser,width,role){
    return route.fulfill({status:204,body:''});
  });
  await page.goto('https://horenova.test/support.html',{waitUntil:'domcontentloaded'});
+ // Reproduce the exact regression: the shared global module used to prepend
+ // four SVGs without their legacy stylesheet, creating a giant vertical block.
+ const check=await page.evaluate(fn=>{
+   const stale=document.createElement('div');stale.className='mihna-art-canvas';
+   stale.setAttribute('aria-hidden','true');
+   stale.innerHTML='<img src="/assets/art-whisk.svg" alt=""><img src="/assets/art-chefhat.svg" alt=""><img src="/assets/art-coffee.svg" alt=""><img src="/assets/art-zellige.svg" alt="">';
+   document.body.prepend(stale);
+   const fallbackHidden=getComputedStyle(stale).display==='none';
+   new Function(fn+';initArtSystem();')();
+   return {fallbackHidden,legacyCount:document.querySelectorAll('.mihna-art-canvas').length,top:document.querySelector('.hs-top').getBoundingClientRect().top,
+     oldClass:document.body.classList.contains('mihna-art-app')};
+ },sharedArtFunction);
+ assert.equal(check.fallbackHidden,true,'Cached SVG markup must not consume page space');
+ assert.equal(check.legacyCount,0,'Global art script must remove support SVG block');
+ assert.ok(Math.abs(check.top)<=2,'Support header must start at top of screen: '+JSON.stringify(check));
+ assert.equal(check.oldClass,false,'Legacy art styles must not activate on support');
+
  await page.locator('#hsConsole').waitFor({state:'visible',timeout:7000});
  const x=await page.evaluate(()=>({
   horizontal:document.documentElement.scrollWidth,viewport:innerWidth,
