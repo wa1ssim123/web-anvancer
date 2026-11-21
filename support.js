@@ -1,4 +1,4 @@
-import {requireRole,currentLang} from '/mihna-global.js';
+import {requireRole,currentLang} from '/mihna-global.js?v=support-no-art-v8';
 import {hub} from '/hn-api.js';
 const $=id=>document.getElementById(id);
 const gate=$('hsAuthGate'),consoleEl=$('hsConsole'),notice=$('hsNotice');
