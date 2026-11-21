@@ -4,6 +4,29 @@
   const menu = document.getElementById('menuBtn');
   if (!panel || !menu) return;
 
+  // Add Horenova Tech to the site-wide desktop and mobile navigation.
+  // Idempotent: pages already linking to Tech are left unchanged.
+  const nav = document.querySelector('.hn12-nav');
+  const lang = document.documentElement.lang.slice(0,2);
+  const label = lang === 'ar' ? 'التكنولوجيا' : 'Tech';
+  if (nav && !nav.querySelector('a[href="/tech.html"]')) {
+    const techLink = document.createElement('a');
+    techLink.href = '/tech.html';
+    techLink.textContent = label;
+    if (location.pathname === '/tech.html') techLink.classList.add('active');
+    nav.insertBefore(techLink, nav.querySelector('a[href="/explore.html"]'));
+  }
+  if (!panel.querySelector('a[href="/tech.html"]')) {
+    const techMobile = document.createElement('a');
+    techMobile.href = '/tech.html';
+    techMobile.append(document.createTextNode(label + ' '));
+    const arrow = document.createElement('span');
+    arrow.setAttribute('aria-hidden', 'true');
+    arrow.textContent = '↗';
+    techMobile.append(arrow);
+    panel.insertBefore(techMobile, panel.querySelector('a[href="/explore.html"]'));
+  }
+
   menu.dataset.bound = 'mobile-v15';
   menu.setAttribute('aria-controls', 'mobileMenu');
   menu.setAttribute('aria-expanded', 'false');
