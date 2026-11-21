@@ -8,7 +8,9 @@ const checks=[
  {path:'/version.json',verify:s=>{try{return JSON.parse(s).version===release}catch{return false}}},
  {path:'/support.html',verify:s=>s.includes('id="hsQuickDemand"')&&s.includes('support.js?v='+asset)&&s.includes('Assistance 24 h/24')},
  {path:'/admin.html',verify:s=>s.includes('admin.js?v=admin-delete-scroll-v1')&&s.includes('horenova-admin-cases-v2.css?v=admin-delete-scroll-v1')},
- {path:'/admin.js',verify:s=>s.includes('data-quickprint-id')&&s.includes('Imprimer la candidature avec photo')},
+ {path:'/admin.js',verify:s=>s.includes('data-quickprint-id')&&s.includes('Imprimer la candidature avec photo')&&s.includes('data-request-remove')},
+ {path:'/admin-overview.js',verify:s=>s.includes('data-remove-id')&&s.includes('hn-admin-listing-removed')},
+ {path:'/horenova-admin-cases-v2.css',verify:s=>s.includes('#adminGate #hubRecruiterRequests.hub-stack')&&s.includes('hn-admin-remove-btn')},
  {path:'/pwa-register.js',verify:s=>s.includes("const BUILD='"+release+"'")&&s.includes("link.href='/support.html'")}
 ];
 const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
