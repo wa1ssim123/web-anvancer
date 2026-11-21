@@ -64,3 +64,5 @@ jobs:
         run: node qa/email-visual.cjs
       - name: Verify the real horenova.com and Render pages show the current support and admin printing release
         run: node qa/live-domain-release.cjs
+      - name: Diagnose actual support artwork and header position on mobile
+        run: node qa/live-support-dom.cjs
