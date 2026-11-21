@@ -6,7 +6,7 @@
   const PHONE = '212648377009'; // Same public business phone shown on Horenova's website.
   const catalog = {
     POS: 'Horenova POS',
-    ERP: 'Horenova Gestion',
+    ERP: 'HORENSA ERP',
     NFC: 'Horenova Tap Menu',
     TERMINAL: 'Terminal de caisse tactile',
     PERIPHERALS: 'Périphériques de caisse',
