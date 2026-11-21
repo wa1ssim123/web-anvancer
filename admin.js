@@ -208,5 +208,5 @@ catch(e){showError(e.message+' Les dossiers privés restent accessibles dans le 
 }
 document.addEventListener('hn-admin-listing-removed',()=>{void refresh()});
 $('hubSearch').oninput=list;$('hubRefresh').onclick=refresh;await refresh();
-try{const {mountAdminOverview}=await import('/admin-overview.js?v=mail-stats-20261120-r1');await mountAdminOverview();}catch(error){console.error('Contrôle des publications indisponible',error);}
+try{const {mountAdminOverview}=await import('/admin-overview.js?v=admin-delete-scroll-v1');await mountAdminOverview();}catch(error){console.error('Contrôle des publications indisponible',error);}
 }

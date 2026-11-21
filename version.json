@@ -1,5 +1,5 @@
 {
-  "version": "2026.11.21.support-no-art-v8",
+  "version": "2026.11.21.admin-delete-scroll-v9",
   "releasedAt": "2026-11-21",
-  "message": "Suppression définitive des quatre illustrations introduites par le script global devant l'assistance HORENOVA. Support immédiat en haut de page et impression des dossiers."
+  "message": "Administration : supprimer annonces et shifts avec confirmation, retrait immédiat de l'affichage public, défilement mobile rétabli, candidatures historiques conservées."
 }

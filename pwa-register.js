@@ -38,7 +38,7 @@
  */
 (function(){
   'use strict';
-  const BUILD='2026.11.21.support-no-art-v8';
+  const BUILD='2026.11.21.admin-delete-scroll-v9';
   const CHECK_EVERY_MS=90000;
   const SUPPORT_CSS='/support.css?v=spv7-20261120';
   const tr={
