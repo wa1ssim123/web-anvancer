@@ -170,3 +170,20 @@ test('Only administrator can modify candidate case status',async()=>{
  assert.equal((await h.request('PATCH','/api/applications/'+requestId+'/status','admin-token',{status:'ENTRETIEN'})).status,200);
  assert.ok(h.log.db.some(x=>x.sql.startsWith('UPDATE hr_applications')&&x.args[0]==='ENTRETIEN'));
 });
+
+test('CORS preflight permits authorized admin DELETE requests from horenova.com',async()=>{
+ const h=harness();
+ const response=await h.request('OPTIONS','/api/recruiter-requests/'+requestId);
+ assert.equal(response.status,204);
+ assert.match(response.data===null?'':JSON.stringify(response.data),/^$/);
+ assert.match(String(response.headers['Access-Control-Allow-Methods']),/\bDELETE\b/);
+ assert.match(String(response.headers['Access-Control-Allow-Headers']),/Authorization/);
+ assert.equal(response.headers['Access-Control-Allow-Origin'],'https://horenova.com');
+ assert.equal(h.log.db.length,0,'Preflight must not query or change the database');
+});
+test('Candidates and recruiters remain unauthorized to delete any announcement',async()=>{
+ const h=harness();
+ assert.equal((await h.request('DELETE','/api/recruiter-requests/'+requestId,'candidate-token')).status,403);
+ assert.equal((await h.request('DELETE','/api/recruiter-requests/'+requestId,'recruiter-token')).status,403);
+ assert.ok(!h.log.db.some(x=>x.sql.includes('WITH changed AS')),'No deletion SQL for unauthorized callers');
+});
