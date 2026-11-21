@@ -142,7 +142,7 @@ async function api(req,res,path,method) {
   // Public vacancies: only HORENOVA-approved requests, never recruiter identity/contact fields.
   if(path==='/api/jobs/public' && method==='GET'){
     const approved=await pool.query(
-      "SELECT r.id,r.business_name,r.business_type,r.workplace_address,r.job_title,r.job_role,r.city,r.kind,r.contract_type,r.requirements,r.openings,r.start_date,r.salary_text,r.schedule_text,r.description,r.created_at,EXISTS(SELECT 1 FROM hr_job_photos p WHERE p.request_id=r.id) AS has_photo FROM hr_recruiter_requests r WHERE r.status='VALIDEE' ORDER BY r.created_at DESC LIMIT 200"
+      "SELECT r.id,r.business_name,r.business_type,r.workplace_address,r.job_title,r.job_role,r.city,r.kind,r.contract_type,r.requirements,r.openings,r.start_date,r.salary_text,r.schedule_text,r.description,r.created_at,EXISTS(SELECT 1 FROM hr_job_photos p WHERE p.request_id=r.id) AS has_photo FROM hr_recruiter_requests r WHERE r.status='VALIDEE' AND r.removed_at IS NULL ORDER BY r.created_at DESC LIMIT 200"
     );
     // Defense in depth: employer contact details are never meant to appear on public offers.
     // The admin must still manually review each title and description before approval.
@@ -162,17 +162,17 @@ async function api(req,res,path,method) {
       photoUrl:row.has_photo?'/api/jobs/public/'+row.id+'/workplace-photo':null,
       hasWorkplacePhoto:!!row.has_photo,createdAt:row.created_at
     }));
-    return json(res,200,{items},{'Cache-Control':'public, max-age=45'});
+    return json(res,200,{items},{'Cache-Control':'no-store'});
   }
   const publicWorkplace=path.match(/^\/api\/jobs\/public\/([0-9a-f-]+)\/workplace-photo$/i);
   if(publicWorkplace && method==='GET'){
     if(!uuid(publicWorkplace[1]))throw error(400,'Identifiant d’annonce invalide.');
     const response=await pool.query(
-      "SELECT p.image FROM hr_job_photos p JOIN hr_recruiter_requests r ON r.id=p.request_id WHERE r.id=$1 AND r.status='VALIDEE' LIMIT 1",
+      "SELECT p.image FROM hr_job_photos p JOIN hr_recruiter_requests r ON r.id=p.request_id WHERE r.id=$1 AND r.status='VALIDEE' AND r.removed_at IS NULL LIMIT 1",
       [publicWorkplace[1]]
     );
     if(!response.rows[0])throw error(404,'Aucune photo validée pour cette annonce.');
-    res.writeHead(200,{'Content-Type':'image/jpeg','Cache-Control':'public, max-age=120','X-Content-Type-Options':'nosniff'});
+    res.writeHead(200,{'Content-Type':'image/jpeg','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'});
     res.end(response.rows[0].image);return;
   }
   const user=await auth(req);
@@ -312,12 +312,36 @@ async function api(req,res,path,method) {
   if(path==='/api/recruiter-requests' && method==='GET') {
     requireRole(user,['recruiter','admin']);
     const q=user.role==='admin' ?
-      await pool.query('SELECT r.*, EXISTS(SELECT 1 FROM hr_job_photos p WHERE p.request_id=r.id) AS has_workplace_photo FROM hr_recruiter_requests r ORDER BY r.created_at DESC LIMIT 150') :
-      await pool.query('SELECT r.*, EXISTS(SELECT 1 FROM hr_job_photos p WHERE p.request_id=r.id) AS has_workplace_photo FROM hr_recruiter_requests r WHERE r.recruiter_wix_id=$1 ORDER BY r.created_at DESC LIMIT 150',[user.id]);
+      await pool.query('SELECT r.*, EXISTS(SELECT 1 FROM hr_job_photos p WHERE p.request_id=r.id) AS has_workplace_photo FROM hr_recruiter_requests r WHERE r.removed_at IS NULL ORDER BY r.created_at DESC LIMIT 150') :
+      await pool.query('SELECT r.*, EXISTS(SELECT 1 FROM hr_job_photos p WHERE p.request_id=r.id) AS has_workplace_photo FROM hr_recruiter_requests r WHERE r.recruiter_wix_id=$1 AND r.removed_at IS NULL ORDER BY r.created_at DESC LIMIT 150',[user.id]);
     return json(res,200,{items:q.rows});
   }
   // Only the verified HORENOVA administrator can moderate employer requests.
-  const recruiterStatus=path.match(/^\/api\/recruiter-requests\/([0-9a-f-]+)\/status$/i);
+  const removeRecruiterRequest=path.match(/^\/api\/recruiter-requests\/([0-9a-f-]+)$/i);
+   if(removeRecruiterRequest && method==='DELETE'){
+     requireRole(user,['admin']);
+     const id=removeRecruiterRequest[1];
+     if(!uuid(id))throw error(400,'Identifiant de demande invalide.');
+     // Reversible soft removal: all public links, shifts and vacancy application gates
+     // exclude this record; historical applications, private photos and audits remain intact.
+     // The audit and change are one SQL statement/transaction.
+     const removed=await pool.query(`
+       WITH changed AS (
+         UPDATE hr_recruiter_requests
+         SET removed_at=NOW(),updated_at=NOW()
+         WHERE id=$1 AND removed_at IS NULL
+         RETURNING id,job_title,kind
+       ), trace AS (
+         INSERT INTO hr_audit(actor_wix_id,event_type,detail)
+         SELECT $2,'RECRUITER_REQUEST_REMOVED',
+           json_build_object('requestId',id,'title',job_title,'kind',kind)::text
+         FROM changed RETURNING id
+       )
+       SELECT id,job_title,kind FROM changed`,[id,user.id]);
+     if(!removed.rows[0])throw error(404,'Annonce introuvable ou déjà supprimée.');
+     return json(res,200,{ok:true,removed:true,id:removed.rows[0].id});
+   }
+   const recruiterStatus=path.match(/^\/api\/recruiter-requests\/([0-9a-f-]+)\/status$/i);
   if(recruiterStatus && method==='PATCH'){
     requireRole(user,['admin']);
     const requestId=recruiterStatus[1];
@@ -326,7 +350,7 @@ async function api(req,res,path,method) {
     const statuses=['A_EXAMINER','VALIDEE','REFUSEE'];
     if(!statuses.includes(d.status))throw error(422,'Statut de demande invalide.');
     const updated=await pool.query(
-      'UPDATE hr_recruiter_requests SET status=$1,updated_at=now() WHERE id=$2 RETURNING id,status',
+      'UPDATE hr_recruiter_requests SET status=$1,updated_at=now() WHERE id=$2 AND removed_at IS NULL RETURNING id,status',
       [d.status,requestId]
     );
     if(!updated.rows[0])throw error(404,'Demande introuvable.');
@@ -348,7 +372,7 @@ async function api(req,res,path,method) {
   if(path==='/api/admin/recruitment-overview' && method==='GET'){
     requireRole(user,['admin']);
     const [overall,publicJobs]=await Promise.all([
-      pool.query("SELECT kind,status,COUNT(*)::integer AS total FROM hr_recruiter_requests GROUP BY kind,status"),
+      pool.query("SELECT kind,status,COUNT(*)::integer AS total FROM hr_recruiter_requests WHERE removed_at IS NULL GROUP BY kind,status"),
       pool.query("SELECT COUNT(*)::integer AS total FROM hr_applications")
     ]);
     return json(res,200,{requests:overall.rows,applicationCount:publicJobs.rows[0]?.total||0});
@@ -362,7 +386,7 @@ async function api(req,res,path,method) {
     // Do not accept unapproved requests, do not expose private employer data.
     if(uuid(id)){
       const central=await pool.query(
-        "SELECT id,job_title,job_role FROM hr_recruiter_requests WHERE id=$1 AND status='VALIDEE'",
+        "SELECT id,job_title,job_role FROM hr_recruiter_requests WHERE id=$1 AND status='VALIDEE' AND removed_at IS NULL",
         [id]
       );
       if(central.rows[0]){
@@ -481,7 +505,7 @@ async function api(req,res,path,method) {
       if(!a.consent_to_intro) throw error(403,'Le candidat n’a pas consenti à la mise en relation.');
       const d=await read(req);
       if(!uuid(d.requestId)) throw error(422,'Demande recruteur invalide.');
-      const q=await pool.query('SELECT * FROM hr_recruiter_requests WHERE id=$1',[d.requestId]);
+      const q=await pool.query('SELECT * FROM hr_recruiter_requests WHERE id=$1 AND removed_at IS NULL',[d.requestId]);
       const request=q.rows[0];
       if(!request) throw error(404,'Demande de recrutement introuvable.');
       if(request.status!=='VALIDEE') throw error(409,'Validez la demande avant de mettre en relation le candidat.');
