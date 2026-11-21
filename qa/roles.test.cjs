@@ -87,7 +87,7 @@ function harness(){
    end(value){this.body=value==null?null:String(value);}
   };
   await handler(req,res);
-  return {status:res.status,data:res.body?JSON.parse(res.body):null};
+  return {status:res.status,data:res.body?JSON.parse(res.body):null,headers:res.headers};
  }
  return {request,log};
 }
