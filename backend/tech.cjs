@@ -144,14 +144,21 @@ function createTechHandler({pool,json,read,rate,auth,requireRole,error,limit,uui
         const price=ensurePositiveMoney(d.priceCentimes);
         const stock=ensureStock(d.stock);
         if(name.length<2)throw error(422,'Nom d’article trop court.');
+        const client=await pool.connect();
         try {
-          const q=await pool.query(
+          await client.query('BEGIN');
+          const q=await client.query(
             'INSERT INTO ht_products(venue_id,sku,name,category,price_centimes,stock_qty,menu_visible) VALUES($1,$2,$3,$4,$5,$6,$7) RETURNING *',
             [venueId,sku,name,category,price,stock,d.menuVisible!==false]);
-          if(stock>0)await pool.query('INSERT INTO ht_stock_movements(venue_id,product_id,actor_wix_id,delta,reason) VALUES($1,$2,$3,$4,$5)',
+          if(stock>0)await client.query('INSERT INTO ht_stock_movements(venue_id,product_id,actor_wix_id,delta,reason) VALUES($1,$2,$3,$4,$5)',
             [venueId,q.rows[0].id,user.id,stock,'STOCK INITIAL']);
+          await client.query('COMMIT');
           return json(res,201,{ok:true,product:pickProduct(q.rows[0])});
-        }catch(e){if(e.code==='23505')throw error(409,'Cette référence SKU existe déjà.');throw e;}
+        }catch(e){
+          await client.query('ROLLBACK').catch(()=>{});
+          if(e.code==='23505')throw error(409,'Cette référence SKU existe déjà.');
+          throw e;
+        }finally{client.release();}
       }
       if(action==='products' && productId && method==='PATCH'){
         if(!uuid(productId))throw error(400,'Produit invalide.');
