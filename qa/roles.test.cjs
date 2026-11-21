@@ -67,6 +67,7 @@ function harness(){
    if(name==='pg')return {Pool};
     if(name==='./support.cjs')return {createSupportHandler:()=>async()=>{throw Error('Support is tested separately.')}};
    if(name==='./transactional-mail.cjs')return {createTransactionalMailer:()=>({start:async()=>{},enqueue:async()=>({queued:true}),stats:async()=>({enabled:false,states:[]}),configured:()=>false})};
+   if(name==='./tech.cjs')return {createTechHandler:()=>async()=>{throw Error('Tech API is tested separately.')}};
    throw Error('Unexpected require '+name);
   },
   fetch:fakeFetch,console,Buffer,URL,AbortSignal,
