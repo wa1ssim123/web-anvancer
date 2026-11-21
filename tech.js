@@ -141,6 +141,12 @@
     document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
     document.body.dir = document.documentElement.dir;
     $('techLanguage').value = lang;
+    const placeholders = {
+      fr: {name:'Nom et prénom',business:'Restaurant, Casablanca',notes:'Nombre de caisses, nombre de tables...'},
+      en: {name:'Full name',business:'Restaurant, Casablanca',notes:'Number of tills, number of tables...'},
+      ar: {name:'الاسم الكامل',business:'مطعم، الدار البيضاء',notes:'عدد أجهزة الكاشير والطاولات...'}
+    };
+    ['name','business','notes'].forEach(field => { $('quoteForm').elements[field].placeholder = placeholders[lang][field]; });
     document.querySelectorAll('[data-i18n]').forEach(el => {
       const key = el.dataset.i18n;
       if(!copy[lang][key]) return;
@@ -224,7 +230,7 @@
     lines.push('',t('whatsappEnd'));
     const url='https://wa.me/'+PHONE+'?text='+encodeURIComponent(lines.join('\n'));
     // Navigation is triggered only by explicit submission; no server-side transaction is claimed.
-    const link=document.createElement('a');link.href=url;link.target='_blank';link.rel='noopener noreferrer';document.body.append(link);link.click();link.remove();
+    window.location.assign(url);
   });
   applyLanguage(locale);
 })();
