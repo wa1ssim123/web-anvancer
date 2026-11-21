@@ -299,3 +299,60 @@ body[data-hn12="admin"] .hn-support-admin-row>.hn-support-print{flex:none;min-wi
 .hn-case-list-item>.hub-case.active{background:#f4f8f4!important}
 @media(max-width:690px){.hn-case-list-item>.hub-case{padding:15px 14px 11px!important}.hn-case-list-item>.hn-case-quickprint{min-height:48px!important}}
 @media(prefers-reduced-motion:reduce){.hn-case-list-item>.hn-case-quickprint{transition:none;transform:none!important}}
+
+
+/* Recruitment administration: uninterrupted iOS/Android page scroll and
+   a protected native confirmation control for removing live announcements. */
+body[data-hn12="admin"] .hn-admin-remove-btn,
+body[data-hn12="admin"] .hn-pub-remove{
+ display:inline-flex!important;align-items:center;justify-content:center;
+ min-height:46px!important;min-width:0;max-width:100%;
+ padding:11px 15px!important;border:1px solid #b85b49!important;
+ background:#fff5f1!important;color:#903621!important;
+ border-radius:11px!important;cursor:pointer;font-size:12px!important;
+ font-weight:800!important;line-height:1.4;text-align:center;
+ text-decoration:none!important;transition:background-color .18s ease,border-color .18s ease;
+}
+body[data-hn12="admin"] .hn-admin-remove-btn:hover,
+body[data-hn12="admin"] .hn-pub-remove:hover{background:#ffe2da!important;border-color:#963822!important}
+body[data-hn12="admin"] .hn-admin-remove-btn:focus-visible,
+body[data-hn12="admin"] .hn-pub-remove:focus-visible{outline:3px solid #cc6750!important;outline-offset:2px}
+body[data-hn12="admin"] .hn-admin-remove-btn:disabled,
+body[data-hn12="admin"] .hn-pub-remove:disabled{cursor:progress;opacity:.6}
+body[data-hn12="admin"] #hnPublicationFeedback:not([hidden]){color:#922d23;font-weight:700;line-height:1.55;background:#fff1e9;border:1px solid #d99487;border-radius:12px;padding:12px}
+@media(max-width:820px){
+ html:has(body[data-hn12="admin"]),body[data-hn12="admin"]{
+  min-height:100%!important;height:auto!important;
+  overflow-y:auto!important;overflow-x:hidden!important;
+  -webkit-overflow-scrolling:touch!important;
+  overscroll-behavior-y:auto!important;
+ }
+ body[data-hn12="admin"] .hn12-page{height:auto!important;max-height:none!important;
+  min-height:100dvh!important;overflow:visible!important;
+  padding-bottom:calc(170px + env(safe-area-inset-bottom,0px))!important}
+ body[data-hn12="admin"] .hn12-section.hn12-paper{
+  height:auto!important;max-height:none!important;overflow:visible!important;
+ }
+ body[data-hn12="admin"] #adminGate,
+ body[data-hn12="admin"] #adminGate .hub-root,
+ body[data-hn12="admin"] #adminRecruiterRequests,
+ body[data-hn12="admin"] #hubRecruiterRequests{
+  height:auto!important;max-height:none!important;overflow:visible!important;
+  -webkit-overflow-scrolling:touch!important;touch-action:pan-y!important;
+ }
+ body[data-hn12="admin"] #adminRecruiterRequests{padding-bottom:35px!important;scroll-margin-top:105px}
+ body[data-hn12="admin"] #hubRecruiterRequests>.hub-case,
+ body[data-hn12="admin"] #hubRecruiterRequests>.hub-case details{
+  touch-action:pan-y!important;overscroll-behavior-y:auto!important;
+ }
+ body[data-hn12="admin"] #hubRecruiterRequests .hub-request-actions>.hn-admin-remove-btn{
+  width:100%!important;min-height:48px!important
+ }
+ body[data-hn12="admin"] .hn-pub-row-actions .hn-pub-remove{
+  width:100%!important;min-height:45px!important
+ }
+}
+@media(prefers-reduced-motion:reduce){
+ body[data-hn12="admin"] .hn-admin-remove-btn,
+ body[data-hn12="admin"] .hn-pub-remove{transition:none!important}
+}
