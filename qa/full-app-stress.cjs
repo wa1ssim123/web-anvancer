@@ -64,7 +64,13 @@ const server=http.createServer((req,res)=>{
         hasMain:!!document.querySelector('main, [role="main"]'),
         visible:!!document.body?.getClientRects().length};
      });}catch(e){
-       const current=new URL(page.url()).pathname;
+       let current=new URL(page.url()).pathname;
+       if(gated.has(name)&&!['/enter.html','/login.html'].includes(current)){
+         // Some role guards redirect on a microtask between navigation and
+         // DOM inspection. Wait for the expected sign-in URL before failing.
+         await page.waitForURL(url=>['/enter.html','/login.html'].includes(new URL(url).pathname),{timeout:1800}).catch(()=>{});
+         current=new URL(page.url()).pathname;
+       }
        if(gated.has(name)&&['/enter.html','/login.html'].includes(current)){
          console.log('PASS safe role redirect during transition '+name+' -> '+current);
          visited++;continue;
@@ -81,7 +87,15 @@ const server=http.createServer((req,res)=>{
      if(scriptErrors.length)
        warnings.push(name+' @ '+size.width+'px: '+scriptErrors.slice(0,2).join(' | '));
      visited++;
-    }catch(e){failures.push(name+' @ '+size.width+'px: '+e.message.slice(0,350));}
+    }catch(e){
+      let expectedGate=false;
+      if(gated.has(name)){
+        await page.waitForURL(url=>['/enter.html','/login.html'].includes(new URL(url).pathname),{timeout:1800}).catch(()=>{});
+        expectedGate=['/enter.html','/login.html'].includes(new URL(page.url()).pathname);
+      }
+      if(expectedGate){visited++;console.log('PASS protected navigation redirects to sign-in: '+name);}
+      else failures.push(name+' @ '+size.width+'px: '+e.message.slice(0,350));
+    }
     finally{page.off('pageerror',pageError);await page.close().catch(()=>{});}
    }
    await context.close();
