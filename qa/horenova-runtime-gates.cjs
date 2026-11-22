@@ -67,7 +67,7 @@ const pg={Pool:class{
     }
     if(sql.includes('UPDATE hr_applications SET recruiter_wix_id=')){
       const row=db.applications.find(row=>row.id===params[2]);
-      if(row){row.recruiter_wix_id=params[0];row.recruiter_request_id=params[1];}
+      if(row&&!row.recruiter_wix_id){row.recruiter_wix_id=params[0];row.recruiter_request_id=params[1];row.match_started_at='2026-11-18T00:00:00Z';return {rows:[{id:row.id}]};}
       return {rows:[]};
     }
     if(sql.includes('SELECT id,sender_wix_id,sender_role,body,created_at FROM hr_messages'))
