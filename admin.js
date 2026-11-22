@@ -70,12 +70,20 @@ function listRequests(){
       '</div></details>'+
       '<div class="hub-request-actions"><label>Décision administrative <select class="hub-select" data-request-status>'+options+'</select></label>'+
       '<button type="button" class="hub-action secondary" data-request-save>Enregistrer</button>'+
-      '<button type="button" class="hn-admin-print-btn" data-request-print>⎙ Imprimer la demande</button>'+'<button type="button" class="hn-admin-remove-btn" data-request-remove aria-label="Supprimer cette annonce">🗑 Supprimer l’annonce</button></div>'+
+      '<button type="button" class="hn-admin-print-btn" data-request-print>⎙ Imprimer la demande</button>'+'<button type="button" class="hub-action secondary" data-request-private>✉ Contacter le recruteur</button>'+'<button type="button" class="hn-admin-remove-btn" data-request-remove aria-label="Supprimer cette annonce">🗑 Supprimer l’annonce</button></div>'+
       '<p class="hub-muted" data-request-feedback role="status"></p></article>';
   }).join(''):'<div class="hub-detail hub-muted">Aucune demande de recrutement dans le suivi central.</div>';
   target.querySelectorAll('[data-request-print]').forEach(button=>button.addEventListener('click',()=>{
     const card=button.closest('[data-request-id]'),record=requests.find(r=>r.id===card?.dataset.requestId);
     if(record)void printRecruiter(record,record.has_workplace_photo?()=>hubPhoto('/api/recruiter-requests/'+encodeURIComponent(record.id)+'/workplace-photo'):null);
+  }));
+  target.querySelectorAll('[data-request-private]').forEach(button=>button.addEventListener('click',async()=>{
+    const card=button.closest('[data-request-id]'),id=card?.dataset.requestId;
+    if(!id||button.disabled)return;
+    button.disabled=true;const feedback=card.querySelector('[data-request-feedback]');
+    try{const room=await hub('/api/chat/direct-threads',{method:'POST',body:{kind:'recruiter',sourceId:id}});
+      location.assign('/conversations.html?id='+encodeURIComponent(room.id));
+    }catch(e){if(feedback)feedback.textContent=e?.message||'Messagerie indisponible.';button.disabled=false;}
   }));
   target.querySelectorAll('[data-request-remove]').forEach(button=>button.addEventListener('click',async()=>{
     const card=button.closest('[data-request-id]');
@@ -170,7 +178,8 @@ async function detail(id,scrollToDetail=false){
   '<button class="hub-action" type="button" id="saveStatus">Enregistrer le statut</button>'+
   '<label>Associer une demande d’établissement<select class="hub-select" id="recruitRequest">'+reqOptions+'</select></label>'+
   '<button class="hub-action secondary" type="button" id="assignRequest" '+(a.recruiterWixId?'disabled':'')+'>Autoriser la mise en relation</button>'+
-  '<a class="hub-action secondary" href="/conversations.html?id='+encodeURIComponent(id)+'">Ouvrir la conversation à trois ↗</a>'+
+  '<button type="button" class="hub-action secondary" id="hnPrivateCandidateMessage">✉ Contacter le candidat en privé</button>'+
+   (a.recruiterWixId?'<a class="hub-action secondary" href="/conversations.html?id='+encodeURIComponent(id)+'">Ouvrir la conversation à trois ↗</a>':'<a class="hub-action secondary" href="/conversations.html?mode=matching">✦ Rechercher un recruteur compatible ↗</a>')+
   '<p class="hub-error" id="caseError" role="alert"></p></div></section></div>';
  const target=$('hubDetail');
  target.innerHTML=markup;
@@ -186,7 +195,13 @@ async function detail(id,scrollToDetail=false){
   catch(e){error.textContent=e?.message||String(e);}
   finally{button.disabled=false;}
  };
- $('assignRequest').onclick=async()=>{
+ $('hnPrivateCandidateMessage').onclick=async()=>{
+    const button=$('hnPrivateCandidateMessage'),error=$('caseError');button.disabled=true;
+    try{const room=await hub('/api/chat/direct-threads',{method:'POST',body:{kind:'candidate',sourceId:id}});
+      location.assign('/conversations.html?id='+encodeURIComponent(room.id));
+    }catch(e){error.textContent=e?.message||'Messagerie indisponible.';button.disabled=false;}
+  };
+  $('assignRequest').onclick=async()=>{
   const button=$('assignRequest'),error=$('caseError');button.disabled=true;
   try{const requestId=$('recruitRequest').value;if(!requestId)throw Error('Sélectionnez une demande.');if(!a.consentToIntro)throw Error('Consentement candidat requis.');await hub('/api/applications/'+encodeURIComponent(id)+'/assign',{method:'PATCH',body:{requestId}});await refresh();}
   catch(e){error.textContent=e?.message||String(e);}
