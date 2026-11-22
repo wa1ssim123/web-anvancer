@@ -70,6 +70,7 @@ function harness({wixDelayMs=0}={}){
    if(name==='./transactional-mail.cjs')return {createTransactionalMailer:()=>({start:async()=>{},enqueue:async()=>({queued:true}),stats:async()=>({enabled:false,states:[]}),configured:()=>false})};
    if(name==='./tech.cjs')return {createTechHandler:()=>async()=>{throw Error('Tech API is tested separately.')}};
    if(name==='./analytics.cjs')return {createAnalyticsHandler:()=>async()=>{throw Error('Analytics API is tested separately.')}};
+   if(name==='./social-publisher.cjs')return {createSocialPublisher:()=>({start:async()=>{},kick(){},status:async()=>({configured:false,rows:[]}),retry:async()=>false})};
    if(name==='./community.cjs')return {createCommunityHandler:()=>async()=>{throw Error('Community API has separate protected tests.')}};
    if(name==='./chat.cjs')return {createChatHandler:()=>async()=>{throw Error('Chat API is tested separately.')},rolesOverlap:()=>true};
    throw Error('Unexpected require '+name);
