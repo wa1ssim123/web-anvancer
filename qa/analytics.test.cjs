@@ -94,7 +94,7 @@ test('same visitor across multiple sessions is one estimated unique browser',asy
 });
 test('foreign and missing origin cannot forge visitor metrics',async()=>{
  const h=harness();
- for(const origin of ['https://attacker.invalid',undefined,'']){
+ for(const origin of ['https://attacker.invalid',null,'']){
   await assert.rejects(h.handler(h.req({browserId:MEMBER,sessionId:SESSION},origin),{},'/api/analytics/visit','POST'),{status:403});
  }
  assert.equal(h.sessions.size,0);
