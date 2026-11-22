@@ -51,7 +51,7 @@ const server=http.createServer((req,res)=>{
    assert.equal(await page.locator('#haLiveTab').getAttribute('aria-pressed'),'true');
    await page.evaluate(()=>{document.documentElement.lang='ar';document.documentElement.dir='rtl'});
    await page.waitForFunction(()=>document.querySelector('#haTitle')?.textContent.includes('الزوار'),null,{timeout:2500});
-   assert.equal(await page.locator('#haCandidates').innerText(),'٢٧');
+   assert.equal(await page.locator('#haCandidates').innerText(),new Intl.NumberFormat('ar-MA').format(27));
    await page.evaluate(()=>{document.documentElement.lang='en';document.documentElement.dir='ltr'});
    await page.waitForFunction(()=>document.querySelector('#haTitle')?.textContent.includes('Audience'),null,{timeout:2500});
    const dims=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,width:innerWidth}));
