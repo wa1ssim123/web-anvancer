@@ -39,7 +39,7 @@ function harness({role='admin',id='admin-test',rejectAuth=false}={}){
   requireRole:(u,allowed)=>{if(!allowed.includes(u.role))throw fail(403,'Non autorisé');},
   error:fail,uuid:validUUID
  });
- const req=body=>({body,socket:{remoteAddress:'127.0.0.1'}});
+ const req=(body,origin='https://horenova.com')=>({body,headers:{origin},socket:{remoteAddress:'127.0.0.1'}});
  return {handler,req,calls,sessions,roles,get response(){return response;}};
 }
 test('historical Wix member roles and traffic are returned to a real admin without merging sources',async()=>{
@@ -91,6 +91,13 @@ test('same visitor across multiple sessions is one estimated unique browser',asy
  const status=await h.handler(h.req(),{},'/api/analytics/admin','GET');
  assert.equal(status.data.firstParty.sessions,2);
  assert.equal(status.data.firstParty.uniqueBrowsers,1);
+});
+test('foreign and missing origin cannot forge visitor metrics',async()=>{
+ const h=harness();
+ for(const origin of ['https://attacker.invalid',undefined,'']){
+  await assert.rejects(h.handler(h.req({browserId:MEMBER,sessionId:SESSION},origin),{},'/api/analytics/visit','POST'),{status:403});
+ }
+ assert.equal(h.sessions.size,0);
 });
 test('malformed browser IDs cannot contaminate the analytics totals',async()=>{
  for(const bad of ['not-uuid','<svg/onload=alert(1)>','','0'.repeat(200),null,15]){
