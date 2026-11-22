@@ -86,6 +86,8 @@ jobs:
         run: node qa/admin-deletion-scroll.cjs
       - name: Check email verification, existing-account recovery, and shared-offer continuation
         run: node qa/candidate-journey.cjs
+      - name: Verify recruiter shift date on mobile and desktop with simulated submission
+        run: node qa/recruiter-shift-browser.cjs
       - name: Test direct candidature with private photo and FR EN AR
         run: node qa/easy-apply-browser.cjs
       - name: Check multilingual career quiz with preserved answers
