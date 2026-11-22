@@ -31,9 +31,15 @@
   if (!panel.querySelector('a[href="/communaute.html"]')) {
     const community = document.createElement('a');
     community.href = '/communaute.html';
-    community.append(document.createTextNode(
-      lang === 'ar' ? 'قناة واتساب وأخبار هورينوفا ' : lang === 'en' ? 'News & WhatsApp Channel ' : 'Actualités & Canal WhatsApp '
-    ));
+    const communityLabel=document.createTextNode('');
+    community.append(communityLabel);
+    const setCommunityLanguage=()=>{
+      const current=document.documentElement.lang.slice(0,2);
+      communityLabel.nodeValue=current==='ar'?'قناة واتساب وأخبار هورينوفا ':current==='en'?'News & WhatsApp Channel ':'Actualités & Canal WhatsApp ';
+    };
+    setCommunityLanguage();
+    const communityObserver=new MutationObserver(setCommunityLanguage);
+    communityObserver.observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
     const arrow = document.createElement('span');
     arrow.setAttribute('aria-hidden', 'true');
     arrow.textContent = '↗';
