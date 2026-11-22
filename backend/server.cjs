@@ -404,7 +404,7 @@ async function api(req,res,path,method) {
     // DB trigger atomically inserts one outbox row per channel on the first
     // transition to VALIDEE. Never send to social media in this HTTP request.
     if(d.status==='VALIDEE')publisher.kick();
-    return json(res,200,{ok:true,item:updated.rows[0],socialPublicationsQueued:d.status==='VALIDEE'});
+    return json(res,200,{ok:true,item:updated.rows[0],socialPublicationChecked:d.status==='VALIDEE',telegramAutomaticConfigured:publisher.configured()});
   }
   if(path==='/api/profile/photo' && method==='POST') {
     requireRole(user,['candidate']);rate(user.id+':photo',10,3600);
