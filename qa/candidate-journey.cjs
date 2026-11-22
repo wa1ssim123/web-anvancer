@@ -53,6 +53,11 @@ async function one(browser,scenario){
  const url='https://horenova.test/enter.html?mode=signup&returnTo='+encodeURIComponent('/apply.html?id=offer-001&role=Serveur');
  await page.goto(url);
  await page.locator('#signupForm').waitFor({state:'visible'});
+ await page.locator('#signupForm [data-role="recruiter"]').click();
+ assert.equal(await page.locator('#signupForm [data-role="recruiter"]').getAttribute('aria-pressed'),'true','Recruiter role must be selectable');
+ assert.equal(await page.locator('#signupForm [data-role="recruiter"]').evaluate(x=>x.classList.contains('active')),true,'Recruiter selection must be visible');
+ await page.locator('#signupForm [data-role="candidate"]').click();
+ assert.equal(await page.locator('#signupForm [data-role="candidate"]').getAttribute('aria-pressed'),'true','Candidate must remain selectable');
  for(const [name,value] of Object.entries({firstName:'Samira',lastName:'Candidate',email:'candidate@example.com',password:'ExempleMotDePasse123'})){
   await page.locator('#signupForm [name="'+name+'"]').fill(value);
  }
