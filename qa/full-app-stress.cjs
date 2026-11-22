@@ -37,9 +37,11 @@ const server=http.createServer((req,res)=>{
     if(host==='127.0.0.1')return route.continue();
     return route.fulfill({status:204,body:'',headers:{'Access-Control-Allow-Origin':'*'}});
    });
-   const page=await context.newPage();
    for(const name of htmlPages){
     if(size.width===320 && !sensitive.has(name))continue;
+    // Each page gets a fresh isolated tab. A protected page may schedule a login
+    // redirect; its asynchronous redirect must never interrupt the next page.
+    const page=await context.newPage();
     const scriptErrors=[];
     const pageError=e=>scriptErrors.push(e.message.slice(0,180));
     page.on('pageerror',pageError);
@@ -80,7 +82,7 @@ const server=http.createServer((req,res)=>{
        warnings.push(name+' @ '+size.width+'px: '+scriptErrors.slice(0,2).join(' | '));
      visited++;
     }catch(e){failures.push(name+' @ '+size.width+'px: '+e.message.slice(0,350));}
-    finally{page.off('pageerror',pageError);}
+    finally{page.off('pageerror',pageError);await page.close().catch(()=>{});}
    }
    await context.close();
   }
