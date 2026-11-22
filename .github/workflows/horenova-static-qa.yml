@@ -22,6 +22,8 @@ jobs:
         run: node --test qa/analytics.test.cjs
       - name: Verify only administrators can publish an actual official WhatsApp Channel URL
         run: node --test qa/community-channel.test.cjs
+      - name: Reject fake Telegram channels and protect the original WhatsApp settings
+        run: node --test qa/telegram-channel.test.cjs
       - name: Exercise adversarial cross-account PostgreSQL and Wix API simulations
         run: node qa/horenova-runtime-gates.cjs
       - name: Verify recruiter and candidate onboarding isolation
@@ -60,6 +62,8 @@ jobs:
         run: node qa/admin-analytics-browser.cjs
       - name: Test HORENOVA public news, approved jobs, Channel activation and admin setup across FR EN AR
         run: node qa/community-browser.cjs
+      - name: Assert iPhone header remains unobstructed and TECH/CANAUX align on splash
+        run: node qa/home-social-browser.cjs
       - name: Prove malicious vacancy and talent HTML never executes in the browser
         run: node qa/xss-injection-browser.cjs
       - name: Verify mobile layout, readability, support and role dashboards
