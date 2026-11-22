@@ -21,7 +21,26 @@ const pool = new Pool({
   connectionTimeoutMillis: 10000
 });
 const RATE = new Map();
+// Keep rate limit state bounded without resetting active protection under attack.
+const RATE_MAX_KEYS=20000;
+const MAX_INFLIGHT=80;
+let inFlight=0;
 const error = (status, message) => Object.assign(new Error(message), { status });
+function secureHeaders(res){
+  res.setHeader('X-Content-Type-Options','nosniff');
+  res.setHeader('X-Frame-Options','DENY');
+  res.setHeader('Referrer-Policy','no-referrer');
+  res.setHeader('Permissions-Policy','camera=(), microphone=(), geolocation=(), payment=()');
+  res.setHeader('Content-Security-Policy',"default-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'none'");
+  res.setHeader('Strict-Transport-Security','max-age=31536000');
+}
+function rateCapacity(now){
+  for(const [key,entries] of RATE){
+    const seconds=Number(key.slice(key.lastIndexOf(':')+1))||60;
+    if(!entries.length||entries[entries.length-1]<=now-seconds*1000)RATE.delete(key);
+  }
+  if(RATE.size>=RATE_MAX_KEYS)throw error(429,'Le service reçoit trop de demandes. Réessayez plus tard.');
+}
 function json(res, status, value, headers = {}) {
   res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store',
     'X-Content-Type-Options': 'nosniff', ...headers });
@@ -33,11 +52,17 @@ function rate(id, count, seconds) {
   const key = id + ':' + seconds;
   const now = Date.now(), old = RATE.get(key) || [];
   const next = old.filter(x => x > now - seconds * 1000);
-  if (next.length >= count) throw error(429, 'Trop de demandes. Réessayez dans un instant.');
+  if (next.length >= count) {
+    const e=error(429,'Trop de demandes. Réessayez dans un instant.');
+    e.retryAfter=Math.max(1,Math.ceil((next[0]+seconds*1000-now)/1000));
+    throw e;
+  }
+  if(!RATE.has(key)&&RATE.size>=RATE_MAX_KEYS)rateCapacity(now);
   next.push(now); RATE.set(key, next);
-  if (RATE.size > 10000) RATE.clear();
 }
 async function read(req, max = 100000, binary = false) {
+  const declared=Number(req.headers?.['content-length']);
+  if(Number.isFinite(declared)&&declared>max)throw error(413,'Fichier ou message trop volumineux.');
   const parts=[]; let len=0;
   for await (const chunk of req) {
     len += chunk.length;
@@ -537,6 +562,10 @@ async function api(req,res,path,method) {
   throw error(404,'Route introuvable.');
 }
 const server=http.createServer(async(req,res)=>{
+  secureHeaders(res);
+  if(inFlight>=MAX_INFLIGHT)
+    return json(res,503,{error:'Service momentanément chargé. Réessayez dans quelques instants.'},{'Retry-After':'3'});
+  inFlight++;
   try {
   const origin=req.headers.origin;
   if(origin && !origins.has(origin)) return json(res,403,{error:'Origine non autorisée.'});
@@ -561,9 +590,16 @@ const server=http.createServer(async(req,res)=>{
   } catch(e){
     const status=e.status || 500;
     if(status===500) console.error('HORENOVA API internal error:',e.code||e.name||'unknown');
-    if(!res.headersSent) json(res,status,{error:status===500?'Service temporairement indisponible.':e.message});
+    if(!res.headersSent) json(res,status,{error:status===500?'Service temporairement indisponible.':e.message},
+      status===429?{'Retry-After':String(e.retryAfter||5)}:{});
     else res.end();
+  } finally {
+    inFlight--;
   }
 });
+server.headersTimeout=12000;
+server.requestTimeout=30000;
+server.keepAliveTimeout=5000;
+server.maxHeadersCount=80;
 mailer.start().catch(e=>console.error('HORENOVA notification system initialization failed',e.code||e.name||'error'));
 server.listen(PORT,'0.0.0.0',()=>console.log('HORENOVA API ready on port '+PORT));
