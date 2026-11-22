@@ -327,7 +327,11 @@ async function api(req,res,path,method) {
     if(!photo.rows[0])throw error(422,'Ajoutez une photo du lieu de travail avant d’envoyer l’annonce.');
     const openings=Number(d.openings||1);
     if(!Number.isInteger(openings)||openings<1||openings>200)throw error(422,'Nombre de postes invalide.');
-    const startDate=/^\d{4}-\d{2}-\d{2}$/.test(d.startDate||'')?d.startDate:null;
+    const requestedDate=d.kind==='shift'?(d.shiftDate||d.startDate):d.startDate;
+    const validDate=value=>{if(!/^\d{4}-\d{2}-\d{2}$/.test(value||''))return false;
+      const parsed=new Date(value+'T12:00:00Z');return Number.isFinite(parsed.getTime())&&parsed.toISOString().slice(0,10)===value;};
+    if(d.kind==='shift'&&!validDate(requestedDate))throw error(422,'La date du shift est obligatoire et doit être valide.');
+    const startDate=validDate(requestedDate)?requestedDate:null;
     const values=[user.id,business,limit(d.contactName,120),limit(d.phone,40),
       title,limit(d.role,90),limit(d.city,80),limit(d.kind,12),limit(d.salaryText,100),
       limit(d.scheduleText,120),limit(d.description,1500),wixRequestId,
