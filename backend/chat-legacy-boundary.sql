@@ -1,0 +1,2 @@
+-- Initialize a privacy boundary for legacy already-assigned applications so no older candidate-admin discussion becomes visible to employers.
+UPDATE hr_applications SET match_started_at=now() WHERE recruiter_wix_id IS NOT NULL AND match_started_at IS NULL;
