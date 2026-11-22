@@ -46,8 +46,12 @@ async function read(req, max = 100000, binary = false) {
   }
   const body=Buffer.concat(parts);
   if (binary) return body;
-  try { return body.length ? JSON.parse(body.toString('utf8')) : {}; }
+  let data;
+  try { data=body.length ? JSON.parse(body.toString('utf8')) : {}; }
   catch { throw error(400, 'Données JSON invalides.'); }
+  if(data===null||typeof data!=='object'||Array.isArray(data))
+    throw error(400, 'Un objet JSON est requis.');
+  return data;
 }
 async function wixFetch(token, endpoint, body) {
   const opts={headers:{Authorization:token,'Content-Type':'application/json'},signal:AbortSignal.timeout(12000)};
@@ -386,7 +390,7 @@ async function api(req,res,path,method) {
   if(path==='/api/applications' && method==='POST') {
     requireRole(user,['candidate']);rate(user.id+':applications',8,3600);
     const d=await read(req),id=limit(d.jobId,100);
-    if(!id || !d.consentToIntro) throw error(422,'Choisissez une offre réelle et acceptez les modalités de mise en relation.');
+    if(!id || d.consentToIntro!==true) throw error(422,'Choisissez une offre réelle et acceptez explicitement les modalités de mise en relation.');
     let job=null;
     // Central approved recruiter requests are directly publishable after admin validation.
     // Do not accept unapproved requests, do not expose private employer data.
@@ -480,7 +484,9 @@ async function api(req,res,path,method) {
     const id=m[1],action=m[2]||'',a=await application(id,user);
     if(!action && method==='GET') return json(res,200,{item:present(a,user)});
     if(action==='messages' && method==='GET'){
-      const r=await pool.query('SELECT id,sender_wix_id,sender_role,body,created_at FROM hr_messages WHERE application_id=$1 AND ($2::timestamptz IS NULL OR created_at >= $2::timestamptz) ORDER BY id DESC LIMIT 150',[id,a.match_started_at||null]);
+      // Pre-introduction messages are private to the candidate and HORENOVA.
+      // A recruiter can only see messages from an explicitly timestamped introduction onward.
+      const r=await pool.query('SELECT id,sender_wix_id,sender_role,body,created_at FROM hr_messages WHERE application_id=$1 AND ($2::boolean OR ($3::timestamptz IS NOT NULL AND created_at >= $3::timestamptz)) ORDER BY id DESC LIMIT 150',[id,user.role!=='recruiter',a.match_started_at||null]);
       return json(res,200,{items:r.rows.reverse()});
     }
     if(action==='messages' && method==='POST'){
