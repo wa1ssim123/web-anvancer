@@ -7,6 +7,7 @@ const root=path.resolve(__dirname,'..');
 const excluded=new Set(['offline.html']);
 const htmlPages=fs.readdirSync(root).filter(p=>p.endsWith('.html')&&!excluded.has(p)).sort();
 const sensitive=new Set(['index.html','jobs.html','shifts.html','shop.html','explore.html','academy.html','conversations.html','support.html','account.html','admin.html','apply.html','recruit.html','tech.html','tech-demo.html','tech-console.html','tech-menu.html']);
+const gated=new Set(['admin.html','account.html','apply.html','recruit.html','recruiter-setup.html','trip.html','candidate-setup.html','onboarding.html','quiz.html','profile.html','matches.html','favorites.html']);
 const mime={'.html':'text/html','.js':'application/javascript','.css':'text/css','.svg':'image/svg+xml','.json':'application/json','.jpg':'image/jpeg','.jpeg':'image/jpeg','.png':'image/png','.webp':'image/webp','.woff2':'font/woff2','.ico':'image/x-icon','.mp4':'video/mp4','.webm':'video/webm'};
 const server=http.createServer((req,res)=>{
  try{
@@ -45,14 +46,29 @@ const server=http.createServer((req,res)=>{
     try{
      const response=await page.goto(base+'/'+name,{waitUntil:'domcontentloaded',timeout:12000});
      assert.equal(response.status(),200,'Page unavailable');
-     const state=await page.evaluate(()=>{
+     // Signed-out role-gated routes may redirect to the legitimate authentication portal.
+     // This is a protection, not a blank-page failure.
+     const destination=new URL(page.url()).pathname;
+     if(destination!=='/'+name && gated.has(name) && ['/enter.html','/login.html'].includes(destination)){
+       console.log('PASS role-gated redirect '+name+' -> '+destination);
+       visited++;continue;
+     }
+     let state;
+     try{state=await page.evaluate(()=>{
       const root=document.documentElement;
       return {title:document.title,bodyLength:document.body?.innerText?.trim().length||0,
         scrollWidth:root.scrollWidth,clientWidth:innerWidth,lang:root.lang,
         hasViewport:!!document.querySelector('meta[name="viewport"]'),
         hasMain:!!document.querySelector('main, [role="main"]'),
         visible:!!document.body?.getClientRects().length};
-     });
+     });}catch(e){
+       const current=new URL(page.url()).pathname;
+       if(gated.has(name)&&['/enter.html','/login.html'].includes(current)){
+         console.log('PASS safe role redirect during transition '+name+' -> '+current);
+         visited++;continue;
+       }
+       throw e;
+     }
      assert.ok(state.title.length>=3,'Missing title');
      assert.ok(state.hasViewport,'Missing responsive viewport');
      assert.ok(state.visible,'Page body not rendered');
