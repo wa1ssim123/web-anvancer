@@ -534,6 +534,7 @@ async function api(req,res,path,method) {
   throw error(404,'Route introuvable.');
 }
 const server=http.createServer(async(req,res)=>{
+  try {
   const origin=req.headers.origin;
   if(origin && !origins.has(origin)) return json(res,403,{error:'Origine non autorisée.'});
   if(origin) {
@@ -545,9 +546,14 @@ const server=http.createServer(async(req,res)=>{
     res.setHeader('Access-Control-Allow-Methods','GET, POST, PATCH, DELETE, OPTIONS');
   }
   if(req.method==='OPTIONS'){res.writeHead(204);return res.end();}
+  if(!['GET','POST','PATCH','DELETE','HEAD'].includes(req.method))
+    throw error(405,'Méthode HTTP non autorisée.');
+  if(typeof req.url!=='string'||req.url.length>4096)
+    throw error(414,'Chemin de requête trop long.');
   const path=new URL(req.url,'http://localhost').pathname;
-  try { await api(req,res,path,req.method); }
-  catch(e){
+  if(path.length>2048)throw error(414,'Chemin de requête trop long.');
+  await api(req,res,path,req.method);
+  } catch(e){
     const status=e.status || 500;
     if(status===500) console.error('HORENOVA API internal error:',e.code||e.name||'unknown');
     if(!res.headersSent) json(res,status,{error:status===500?'Service temporairement indisponible.':e.message});
