@@ -321,7 +321,7 @@ function init(){
      restoreSignupForVisitor();
    }
  }));
- $('[data-role]').forEach(b=>{
+ document.querySelectorAll('[data-role]').forEach(b=>{
   const chosen=b.dataset.role===selectedRole;
   b.classList.toggle('active',chosen);
   b.setAttribute('aria-pressed',String(chosen));
@@ -329,7 +329,7 @@ function init(){
    if(working)return;
    selectedRole=b.dataset.role;
    rememberJourney({role:selectedRole});
-   $('[data-role]').forEach(x=>{const on=x===b;x.classList.toggle('active',on);x.setAttribute('aria-pressed',String(on));});
+   document.querySelectorAll('[data-role]').forEach(x=>{const on=x===b;x.classList.toggle('active',on);x.setAttribute('aria-pressed',String(on));});
   });
  });
  signin.addEventListener('submit',async event=>{
