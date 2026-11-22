@@ -35,9 +35,9 @@ function injectLang(){const html='<div class="lang-switch"><button data-lang="fr
 // Authenticated role-specific navigation. Never infer a role from URL/localStorage.
 const HN_ROLE_NAV={
   candidate:{
-    fr:[['Mon espace','/account.html','♙'],['Offres','/jobs.html','⌕'],['Shifts','/shifts.html','◷'],['Mes matchs','/matches.html','★'],['Academy','/academy.html','✦'],['Shop','/shop.html','◇'],['Explore','/explore.html','◉'],['Assistance','/support.html','✉']],
-    ar:[['حسابي','/account.html','♙'],['الوظائف','/jobs.html','⌕'],['المهام','/shifts.html','◷'],['مطابقاتي','/matches.html','★'],['الأكاديمية','/academy.html','✦'],['المتجر','/shop.html','◇'],['استكشف','/explore.html','◉'],['الدعم','/support.html','✉']],
-    en:[['My account','/account.html','♙'],['Jobs','/jobs.html','⌕'],['Shifts','/shifts.html','◷'],['Matches','/matches.html','★'],['Academy','/academy.html','✦'],['Shop','/shop.html','◇'],['Explore','/explore.html','◉'],['Support','/support.html','✉']]
+    fr:[['Mon espace','/account.html','♙'],['Offres','/jobs.html','⌕'],['Shifts','/shifts.html','◷'],['Mes matchs','/matches.html','★'],['Messages','/conversations.html','✉'],['Academy','/academy.html','✦'],['Shop','/shop.html','◇'],['Explore','/explore.html','◉'],['Assistance','/support.html','✉']],
+    ar:[['حسابي','/account.html','♙'],['الوظائف','/jobs.html','⌕'],['المهام','/shifts.html','◷'],['مطابقاتي','/matches.html','★'],['الرسائل','/conversations.html','✉'],['الأكاديمية','/academy.html','✦'],['المتجر','/shop.html','◇'],['استكشف','/explore.html','◉'],['الدعم','/support.html','✉']],
+    en:[['My account','/account.html','♙'],['Jobs','/jobs.html','⌕'],['Shifts','/shifts.html','◷'],['Matches','/matches.html','★'],['Messages','/conversations.html','✉'],['Academy','/academy.html','✦'],['Shop','/shop.html','◇'],['Explore','/explore.html','◉'],['Support','/support.html','✉']]
   },
   recruiter:{
     fr:[['Tableau de bord','/account.html','⌂'],['Annonces & shifts','/recruit.html','▣'],['Talents','/talents.html','★'],['Candidatures','/account.html#recruitment','◷'],['Chat','/conversations.html','✉'],['Shop','/shop.html','◇'],['Explore','/explore.html','◉'],['Assistance','/support.html','✉']],
@@ -58,7 +58,7 @@ function roleNavMarkup(links,variant,role=''){
     const short={
       admin:{fr:['Admin','Demandes','Dossiers','Chat','Profil'],en:['Admin','Requests','Cases','Chat','Profile'],ar:['إدارة','طلبات','ملفات','دردشة','حسابي']},
       recruiter:{fr:['Accueil','Annonces','Talents','Dossiers','Chat'],en:['Home','Jobs','Talents','Cases','Chat'],ar:['الرئيسية','إعلانات','مواهب','ملفات','دردشة']},
-      candidate:{fr:['Profil','Offres','Shifts','Matchs','Academy'],en:['Profile','Jobs','Shifts','Matches','Academy'],ar:['حسابي','وظائف','مهمات','تطابق','أكاديمية']}
+      candidate:{fr:['Profil','Offres','Shifts','Matchs','Chat'],en:['Profile','Jobs','Shifts','Matches','Chat'],ar:['حسابي','وظائف','مهمات','تطابق','رسائل']}
     };
     return links.slice(0,5).map(([label,href,icon],i)=>{
       const display=short[role]?.[lang]?.[i]||label;
