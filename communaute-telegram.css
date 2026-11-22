@@ -1,0 +1,35 @@
+/* Two official networks, displayed after the hero rather than over the header. */
+.hc-social-layout{
+ max-width:1240px;margin:0 auto clamp(38px,6vw,86px);
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;
+ padding:0 14px;align-items:stretch
+}
+.hc-social-layout .hc-channel-band{
+ min-width:0;margin:0;max-width:none;display:flex;flex-direction:column;
+ align-items:flex-start;gap:17px;box-shadow:0 22px 65px #020b1950;
+ padding:clamp(22px,3.5vw,36px);
+}
+.hc-social-layout .hc-channel-copy h2{font-size:clamp(27px,2.8vw,37px)}
+.hc-social-layout .hc-channel-copy p{font-size:13px;line-height:1.66}
+.hc-social-layout .hc-channel-action{width:100%;margin-top:auto}
+.hc-social-layout .hc-channel-symbol{width:62px;height:62px;min-height:62px;flex-shrink:0;font-size:29px}
+.hc-social-layout .hc-channel-action small{line-height:1.5}
+.hc-social-layout .hc-channel-pending{min-height:66px;display:flex;align-items:center;justify-content:center}
+.hc-telegram-band{
+ background:linear-gradient(125deg,#eaf6fd,#e1f1fa)!important;
+ color:#154261!important;border:1px solid #b1d9ef;
+}
+.hc-telegram-band .hc-channel-symbol{background:#209bd2}
+.hc-telegram-band .hc-channel-copy .hc-minilabel{color:#087db5}
+.hc-telegram-band .hc-channel-copy p{color:#426a7f}
+.hc-telegram-band .hc-telegram-button{background:#238fc4;color:white;box-shadow:0 7px 17px #1884b630;width:100%}
+.hc-telegram-band .hc-channel-action small{color:#4d748a}
+.hc-telegram-band .hc-channel-pending{border-color:#a7cce1;background:#fff;color:#356888}
+.hc-social-layout [hidden]{display:none!important}
+@media(max-width:790px){
+ .hc-social-layout{grid-template-columns:1fr;gap:14px;max-width:570px;padding:0 15px;margin-bottom:42px}
+ .hc-social-layout .hc-channel-band{padding:23px 21px;border-radius:20px}
+ .hc-social-layout .hc-channel-copy h2{font-size:30px}
+ .hc-social-layout .hc-channel-action{grid-column:auto}
+}
+html[dir=rtl] .hc-social-layout{direction:rtl;text-align:right}
