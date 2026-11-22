@@ -61,6 +61,14 @@ function createTechHandler({pool,json,read,rate,auth,requireRole,error,limit,uui
         'SELECT id,name,price_centimes,stock_qty,active FROM ht_products WHERE venue_id=$1 AND id=ANY($2::uuid[]) ORDER BY id FOR UPDATE',
         [venueId,ids]);
       if(q.rows.length!==ids.length)throw error(422,'Un article n’appartient pas à cet établissement.');
+      // Concurrent retries may wait for another transaction's inventory locks.
+      // Re-check the receipt reference once those locks have been acquired.
+      // Otherwise a repeated sale may incorrectly be rejected for low stock.
+      const committedRetry=await client.query('SELECT id,total_centimes FROM ht_sales WHERE venue_id=$1 AND client_reference=$2',[venueId,reference]);
+      if(committedRetry.rows.length){
+        await client.query('COMMIT');
+        return json(res,200,await verifyDuplicate(client,committedRetry.rows[0]));
+      }
       let total=0;
       const lines=[];
       for(const p of q.rows){
