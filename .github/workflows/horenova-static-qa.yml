@@ -18,6 +18,8 @@ jobs:
         run: node qa/site-audit.cjs
       - name: Simulate candidate, recruiter and administrator permissions
         run: node --test qa/roles.test.cjs
+      - name: Security test historical Wix statistics, protected counts and anonymous session deduplication
+        run: node --test qa/analytics.test.cjs
       - name: Exercise adversarial cross-account PostgreSQL and Wix API simulations
         run: node qa/horenova-runtime-gates.cjs
       - name: Verify recruiter and candidate onboarding isolation
@@ -52,6 +54,8 @@ jobs:
         run: node qa/browser-smoke.cjs
       - name: Exhaustively open all application pages on small phones, phones and desktop
         run: node qa/full-app-stress.cjs
+      - name: Verify admin analytics interface and Wix historical registration totals on mobile in all languages
+        run: node qa/admin-analytics-browser.cjs
       - name: Prove malicious vacancy and talent HTML never executes in the browser
         run: node qa/xss-injection-browser.cjs
       - name: Verify mobile layout, readability, support and role dashboards
