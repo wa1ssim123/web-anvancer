@@ -69,7 +69,7 @@ function resumeRole(){
 }
 const HINT_KEY='horenova-session-hint-v1';
 const ADMIN_MEMBER_IDS=new Set(['d0158d67-a1cc-4b65-b3d3-67e20c84fdb3','d9be4582-6401-48d6-b68c-77c6e268d3bd','9f0ec78b-0150-4be9-9daf-8b874a7caa18','854202b1-66c0-4c31-9dff-862bda95f9b0','1711eb68-181b-465c-95ef-3d78b25fdd14']);
-let selectedRole='candidate',pendingRole=null,working=false,navigating=false,initialCheckComplete=false;
+let selectedRole=params.get('role')==='recruiter'?'recruiter':'candidate',pendingRole=null,working=false,navigating=false,initialCheckComplete=false;
 let existingCompletionMode=false,registeredSession=false;
 let activeMode=requestedMode;
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
@@ -321,12 +321,17 @@ function init(){
      restoreSignupForVisitor();
    }
  }));
- $$('[data-role]').forEach(b=>b.addEventListener('click',()=>{
+ $('[data-role]').forEach(b=>{
+  const chosen=b.dataset.role===selectedRole;
+  b.classList.toggle('active',chosen);
+  b.setAttribute('aria-pressed',String(chosen));
+  b.addEventListener('click',()=>{
    if(working)return;
    selectedRole=b.dataset.role;
    rememberJourney({role:selectedRole});
-   $('[data-role]').forEach(x=>x.classList.toggle('active',x===b));
- }));
+   $('[data-role]').forEach(x=>{const on=x===b;x.classList.toggle('active',on);x.setAttribute('aria-pressed',String(on));});
+  });
+ });
  signin.addEventListener('submit',async event=>{
    event.preventDefault();if(working||navigating||!signin.reportValidity())return;
    working=true;err(signin,'');const btn=signin.querySelector('button[type="submit"]');const old=btn.textContent;updateButton(signin,'Connexion…');
