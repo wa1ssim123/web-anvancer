@@ -124,6 +124,8 @@ const {createTechHandler}=require('./tech.cjs');
 const techHandler=createTechHandler({pool,json,read,rate,auth,requireRole,error,limit,uuid});
 const {createChatHandler,rolesOverlap}=require('./chat.cjs');
 const chatHandler=createChatHandler({pool,json,read,rate,auth,requireRole,error,limit,uuid,application});
+const {createAnalyticsHandler}=require('./analytics.cjs');
+const analyticsHandler=createAnalyticsHandler({pool,json,read,rate,auth,requireRole,error,uuid});
 const {createTransactionalMailer}=require('./transactional-mail.cjs');
 const mailer=createTransactionalMailer({pool});
 const queueReceipt=async event=>{
@@ -135,6 +137,7 @@ const queueReceipt=async event=>{
   }
 };
 async function api(req,res,path,method) {
+  if(path.startsWith('/api/analytics/'))return analyticsHandler(req,res,path,method);
   if(path.startsWith('/api/support/'))return supportHandler(req,res,path,method);
   if(path.startsWith('/api/tech/'))return techHandler(req,res,path,method);
   if(path.startsWith('/api/chat/')||path==='/api/admin/match-directory')return chatHandler(req,res,path,method);
