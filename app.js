@@ -3,7 +3,9 @@ const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const state=(()=>{try{const value=JSON.parse(localStorage.getItem('mihna-v3-temp')||'{}');return value&&typeof value==='object'&&!Array.isArray(value)?value:{}}catch{return {}}})();
 state.intent=state.intent||'job'; state.role=state.role||'Barista'; state.city=state.city||'Casablanca'; state.saved=Array.isArray(state.saved)?state.saved:[]; state.trip=Array.isArray(state.trip)?state.trip:[]; state.customJobs=Array.isArray(state.customJobs)?state.customJobs:[];
 const persist=()=>{try{localStorage.setItem('mihna-v3-temp',JSON.stringify(state))}catch{/* Allow session use when storage is restricted. */}};
-const escapeHTML=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+// Data ingested by live-data.js already escapes ampersands. Preserve existing
+// HTML entities while blocking raw markup and attribute delimiters at DOM sinks.
+const escapeHTML=value=>String(value??'').replace(/[<>"']/g,ch=>({'<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 const safeImg=value=>{
   const raw=String(value||'');
   if((raw.startsWith('/')&&!raw.startsWith('//'))||/^https:\/\//i.test(raw))return escapeHTML(raw);
