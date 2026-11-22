@@ -151,8 +151,10 @@ const {createChatHandler,rolesOverlap}=require('./chat.cjs');
 const chatHandler=createChatHandler({pool,json,read,rate,auth,requireRole,error,limit,uuid,application});
 const {createAnalyticsHandler}=require('./analytics.cjs');
 const analyticsHandler=createAnalyticsHandler({pool,json,read,rate,auth,requireRole,error,uuid});
+const {createSocialPublisher}=require('./social-publisher.cjs');
+const publisher=createSocialPublisher({pool});
 const {createCommunityHandler}=require('./community.cjs');
-const communityHandler=createCommunityHandler({pool,json,read,rate,auth,requireRole,error});
+const communityHandler=createCommunityHandler({pool,json,read,rate,auth,requireRole,error,publisher});
 const {createTransactionalMailer}=require('./transactional-mail.cjs');
 const mailer=createTransactionalMailer({pool});
 const queueReceipt=async event=>{
@@ -399,7 +401,10 @@ async function api(req,res,path,method) {
       "INSERT INTO hr_audit(actor_wix_id,event_type,detail) VALUES($1,'RECRUITER_REQUEST_MODERATION',$2)",
       [user.id,JSON.stringify({requestId,status:d.status})]
     );
-    return json(res,200,{ok:true,item:updated.rows[0]});
+    // DB trigger atomically inserts one outbox row per channel on the first
+    // transition to VALIDEE. Never send to social media in this HTTP request.
+    if(d.status==='VALIDEE')publisher.kick();
+    return json(res,200,{ok:true,item:updated.rows[0],socialPublicationsQueued:d.status==='VALIDEE'});
   }
   if(path==='/api/profile/photo' && method==='POST') {
     requireRole(user,['candidate']);rate(user.id+':photo',10,3600);
@@ -613,4 +618,5 @@ server.requestTimeout=30000;
 server.keepAliveTimeout=5000;
 server.maxHeadersCount=80;
 mailer.start().catch(e=>console.error('HORENOVA notification system initialization failed',e.code||e.name||'error'));
+publisher.start().catch(e=>console.error('HORENOVA social publisher initialization failed',e.code||e.name||'error'));
 server.listen(PORT,'0.0.0.0',()=>console.log('HORENOVA API ready on port '+PORT));
