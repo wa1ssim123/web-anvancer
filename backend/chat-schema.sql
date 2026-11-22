@@ -1,4 +1,4 @@
--- HORENOVA recruitment: admin-supervised one-to-one threads; introduction chats use existing hr_applications/hr_messages.
+-- HORENOVA recruitment: admin-supervised one-to-one threads, introduction chats use existing hr_applications/hr_messages.
 CREATE TABLE IF NOT EXISTS hr_direct_threads (
  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
  application_id uuid REFERENCES hr_applications(id),
