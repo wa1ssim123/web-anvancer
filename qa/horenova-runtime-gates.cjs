@@ -110,7 +110,9 @@ const dependencies=name=>{
   if(name==='node:crypto')return require('node:crypto');
   if(name==='./support.cjs')return {createSupportHandler:()=>async()=>{throw Error('Support has its own QA mock tests.')}};
   if(name==='./transactional-mail.cjs')return {createTransactionalMailer:()=>({start:async()=>{},enqueue:async()=>({queued:true}),stats:async()=>({enabled:false,states:[]}),configured:()=>false})};
-  throw Error('Unexpected dependency '+name);
+  if(name==='./tech.cjs')return {createTechHandler:()=>async()=>{throw Error('Tech route has its own regression tests.')}};
+   if(name==='./chat.cjs')return {createChatHandler:()=>async()=>{throw Error('Recruitment chat has its own regression tests.')},rolesOverlap:require('../backend/chat.cjs').rolesOverlap};
+   throw Error('Unexpected dependency '+name);
 };
 const {api}=new Function('require','process','fetch','AbortSignal','Buffer','console',
   source+'\nreturn {api};')(dependencies,
