@@ -96,5 +96,7 @@ jobs:
         run: node qa/live-tech-release.cjs
       - name: Verify live private recruitment inbox and access-protected matching APIs
         run: node qa/live-chat-release.cjs
+      - name: Verify deployed anti-clickjacking headers, CORS and protected routes without writes
+        run: node qa/live-security-release.cjs
       - name: Diagnose actual support artwork and header position on mobile
         run: node qa/live-support-dom.cjs
