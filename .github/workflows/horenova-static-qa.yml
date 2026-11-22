@@ -52,6 +52,8 @@ jobs:
         run: node qa/browser-smoke.cjs
       - name: Exhaustively open all application pages on small phones, phones and desktop
         run: node qa/full-app-stress.cjs
+      - name: Prove malicious vacancy and talent HTML never executes in the browser
+        run: node qa/xss-injection-browser.cjs
       - name: Verify mobile layout, readability, support and role dashboards
         run: node qa/adaptive-layout.cjs
       - name: Verify compact support button and single-row role navigation
