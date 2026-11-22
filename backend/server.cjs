@@ -151,6 +151,8 @@ const {createChatHandler,rolesOverlap}=require('./chat.cjs');
 const chatHandler=createChatHandler({pool,json,read,rate,auth,requireRole,error,limit,uuid,application});
 const {createAnalyticsHandler}=require('./analytics.cjs');
 const analyticsHandler=createAnalyticsHandler({pool,json,read,rate,auth,requireRole,error,uuid});
+const {createCommunityHandler}=require('./community.cjs');
+const communityHandler=createCommunityHandler({pool,json,read,rate,auth,requireRole,error});
 const {createTransactionalMailer}=require('./transactional-mail.cjs');
 const mailer=createTransactionalMailer({pool});
 const queueReceipt=async event=>{
@@ -162,6 +164,7 @@ const queueReceipt=async event=>{
   }
 };
 async function api(req,res,path,method) {
+  if(path.startsWith('/api/community/'))return communityHandler(req,res,path,method);
   if(path.startsWith('/api/analytics/'))return analyticsHandler(req,res,path,method);
   if(path.startsWith('/api/support/'))return supportHandler(req,res,path,method);
   if(path.startsWith('/api/tech/'))return techHandler(req,res,path,method);
