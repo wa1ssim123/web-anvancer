@@ -53,7 +53,7 @@ test('historical Wix member roles and traffic are returned to a real admin witho
  assert.equal(r.data.wixHistory.sessions,318);
  assert.equal(r.data.firstParty.sessions,0);
  assert.equal(r.data.wixHistory.daily[0].sessions,160);
- assert.match(r.data.precision,/non additionnés/);
+ assert.match(r.data.precision,/pas additionnés/);
 });
 test('candidate and recruiter cannot retrieve aggregate private admin dashboard',async()=>{
  for(const role of ['candidate','recruiter','none']){
