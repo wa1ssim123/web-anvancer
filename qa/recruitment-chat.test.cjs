@@ -106,6 +106,15 @@ test('empty messages are blocked',async()=>{
  const u='/api/chat/direct/'+THREAD+'/messages';
  await assert.rejects(h.handler(h.request(u),{},u,'POST'),{status:422});
 });
+test('three-way inbox preview and timestamps exclude messages before introduction',async()=>{
+ const h=harness({role:'recruiter',id:REC});
+ await h.handler(h.request('/api/chat/threads'),{},'/api/chat/threads','GET');
+ const q=h.calls.find(x=>x.sql.includes('FROM hr_applications a')&&x.sql.includes(' AS preview'));
+ assert.ok(q,'group-thread overview SQL must exist');
+ assert.match(q.sql,/a\.match_started_at IS NOT NULL/,'must require a known introduction timestamp');
+ assert.match(q.sql,/m\.created_at>=a\.match_started_at/,'preview must exclude pre-introduction messages');
+});
+
 // Regression: a recruiter joining later must never receive historic admin-candidate messages.
 test('three-way message history excludes pre-introduction private messages',async()=>{
  const h=harness({role:'recruiter',id:REC});
