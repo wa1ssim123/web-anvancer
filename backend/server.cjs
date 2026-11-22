@@ -550,7 +550,9 @@ const server=http.createServer(async(req,res)=>{
     throw error(405,'Méthode HTTP non autorisée.');
   if(typeof req.url!=='string'||req.url.length>4096)
     throw error(414,'Chemin de requête trop long.');
-  const path=new URL(req.url,'http://localhost').pathname;
+  let path;
+  try{path=new URL(req.url,'http://localhost').pathname;}
+  catch{throw error(400,'URL de requête invalide.');}
   if(path.length>2048)throw error(414,'Chemin de requête trop long.');
   await api(req,res,path,req.method);
   } catch(e){
