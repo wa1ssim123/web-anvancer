@@ -33,12 +33,13 @@ const server=http.createServer((req,res)=>{
  try{
   for(const width of [320,390,1280]){
    const context=await browser.newContext({viewport:{width,height:830},serviceWorkers:'block',isMobile:width<500,hasTouch:width<500});
-   let officialUrl=null;
+   let officialUrl=null,telegramUrl=null;
    await context.route('**/js/wix/items.js',route=>route.fulfill({status:200,contentType:'application/javascript',body:'export async function queryItems(collection){return {items:'+JSON.stringify(wixJobs)+'};}'}));
    await context.route('https://horenova-hub-api.onrender.com/**',route=>{
     const p=new URL(route.request().url()).pathname;
     let data,status=200;
     if(p==='/api/community/channel')data={active:!!officialUrl,url:officialUrl};
+    else if(p==='/api/community/telegram')data={active:!!telegramUrl,url:telegramUrl};
     else if(p==='/api/jobs/public')data={items:centralJobs};
     else{status=404;data={error:'mock only'}};
     return route.fulfill({status,contentType:'application/json',headers:{'Access-Control-Allow-Origin':'*'},body:JSON.stringify(data)});
@@ -50,6 +51,8 @@ const server=http.createServer((req,res)=>{
    await page.waitForFunction(()=>document.querySelectorAll('.hc-offer').length===9,{timeout:12000});
    assert.equal(await page.locator('.hc-offer').count(),9,'Only first 9 visible by default');
    assert.equal(await page.locator('#hcFollow').isHidden(),true,'No fake WhatsApp channel links');
+   assert.equal(await page.locator('#hcTelegramFollow').isHidden(),true,'No imaginary Telegram link');
+   assert.equal(await page.locator('#hcTelegramWaiting').isVisible(),true);
    assert.equal(await page.locator('#hcWaiting').isVisible(),true);
    assert.equal(await page.locator('#hcPager').isHidden(),false);
    await page.locator('#hcMore').click();
@@ -74,9 +77,12 @@ const server=http.createServer((req,res)=>{
    assert.equal(await page.locator('html').getAttribute('lang'),'en');
    await page.waitForFunction(()=>document.querySelector('h1').textContent.includes('Opportunities'));
    officialUrl='https://whatsapp.com/channel/0029VaABCDEFGH12345';
+   telegramUrl='https://t.me/Horenova_Maroc';
    await page.reload({waitUntil:'load'});
    await page.waitForFunction(()=>!document.querySelector('#hcFollow').hidden,{timeout:12000});
    assert.equal(await page.locator('#hcFollow').getAttribute('href'),officialUrl);
+   await page.waitForFunction(()=>!document.querySelector('#hcTelegramFollow').hidden,{timeout:12000});
+   assert.equal(await page.locator('#hcTelegramFollow').getAttribute('href'),telegramUrl);
    assert.equal(await page.locator('#hcFollow').getAttribute('target'),'_blank');
    assert.equal(await page.locator('#hcWaiting').isHidden(),true);
    const dims=await page.evaluate(()=>({w:innerWidth,scroll:document.documentElement.scrollWidth}));
@@ -115,7 +121,29 @@ const server=http.createServer((req,res)=>{
   await page.locator('#hcaRemove').click();
   await page.waitForFunction(()=>window.__saved.length===2);
   assert.equal(await page.locator('#hcaCurrentLink').isHidden(),true);
+  await page.evaluate(async()=>{
+    const m=await import('/telegram-admin.js');
+    let channel=null;window.__telegramSaved=[];window.confirm=()=>true;
+    m.mountTelegramAdmin(document.getElementById('adminRoot'),async(path,options)=>{
+      if(!options)return {active:!!channel,url:channel};
+      window.__telegramSaved.push({method:options.method,url:options.body?.url||null});
+      if(options.method==='PATCH'){channel=options.body.url;return {ok:true,active:true,url:channel}}
+      if(options.method==='DELETE'){channel=null;return {ok:true,active:false,url:null}}
+    });
+  });
+  await page.locator('#htgTitle').waitFor();
+  assert.equal(await page.locator('#htgRemove').isDisabled(),true);
+  await page.locator('#htgUrl').fill('https://evil.invalid/fakechannel');
+  await page.locator('#htgSave').click();
+  assert.equal(await page.evaluate(()=>window.__telegramSaved.length),0,'Fake Telegram links never persist');
+  await page.locator('#htgUrl').fill('https://telegram.me/Horenova_Maroc');
+  await page.locator('#htgSave').click();
+  await page.waitForFunction(()=>window.__telegramSaved.length===1);
+  assert.equal(await page.locator('#htgCurrent').getAttribute('href'),'https://t.me/Horenova_Maroc');
+  await page.locator('#htgRemove').click();
+  await page.waitForFunction(()=>window.__telegramSaved.length===2);
+  assert.equal(await page.locator('#htgCurrent').isHidden(),true);
   await page.close();await context.close();
-  console.log('PASS admin WhatsApp channel setup: reject forged links, activate and remove official channel URL');
+  console.log('PASS admin WhatsApp and Telegram channel setup: reject forged links, activate and remove official URLs');
  }finally{await browser.close();server.close()}
 })().catch(e=>{console.error('FAIL HORENOVA community browser regression: '+e.stack);process.exitCode=1;});
