@@ -112,6 +112,7 @@ const dependencies=name=>{
   if(name==='./transactional-mail.cjs')return {createTransactionalMailer:()=>({start:async()=>{},enqueue:async()=>({queued:true}),stats:async()=>({enabled:false,states:[]}),configured:()=>false})};
   if(name==='./tech.cjs')return {createTechHandler:()=>async()=>{throw Error('Tech route has its own regression tests.')}};
   if(name==='./analytics.cjs')return {createAnalyticsHandler:()=>async()=>{throw Error('Analytics has a dedicated security test suite.')}};
+  if(name==='./community.cjs')return {createCommunityHandler:()=>async()=>{throw Error('Community has a dedicated security test suite.')}};
    if(name==='./chat.cjs')return {createChatHandler:()=>async()=>{throw Error('Recruitment chat has its own regression tests.')},rolesOverlap:require('../backend/chat.cjs').rolesOverlap};
    throw Error('Unexpected dependency '+name);
 };
