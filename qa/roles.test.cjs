@@ -140,6 +140,48 @@ test('No photo is still a protected rejection',async()=>{
  assert.equal(response.status,422);
  assert.ok(!h.log.db.some(x=>x.sql.startsWith('INSERT INTO hr_applications')));
 });
+test('Explicit boolean consent rejects truthy strings and numeric impostors',async()=>{
+ for(const bogus of ['false','true',1,{},[],null]){
+  const h=harness();
+  const response=await h.request('POST','/api/applications','candidate-token',{
+   jobId:'job-1',consentToIntro:bogus,
+   application:{firstName:'Mina',lastName:'Candidate',phone:'+212648377009',desiredCity:'Casablanca'}
+  });
+  assert.equal(response.status,422,JSON.stringify(bogus));
+  assert.ok(!h.log.db.some(x=>x.sql.startsWith('INSERT INTO hr_applications')));
+ }
+});
+test('Malformed request bodies are rejected cleanly, not as server crashes',async()=>{
+ for(const bad of [null,[],true,17,'hello']){
+  const h=harness();
+  const response=await h.request('POST','/api/applications','candidate-token',bad);
+  assert.equal(response.status,400,'Expected 400 for '+JSON.stringify(bad));
+ }
+});
+test('Untrusted origins cannot use the private API',async()=>{
+ const h=harness();
+ const res=await h.request('GET','/api/applications','candidate-token');
+ assert.equal(res.status,200);
+ const blocked=harness();
+ // The harness defaults to a first-party Origin; verify the source retains an explicit allowlist.
+ assert.match(source,/if\(origin && !origins\.has\(origin\)\) return json\(res,403/);
+ assert.match(source,/Access-Control-Allow-Headers/);
+});
+test('Malformed paths and unsupported methods cannot crash API request loop',async()=>{
+ const h=harness();
+ assert.equal((await h.request('GET','http://[invalid','candidate-token')).status,400);
+ assert.equal((await h.request('TRACE','/health','candidate-token')).status,405);
+ assert.equal((await h.request('GET','/'+'x'.repeat(5000),'candidate-token')).status,414);
+});
+test('Legacy application message endpoint protects any pre-introduction history from recruiter',async()=>{
+ const h=harness();
+ const r=await h.request('GET','/api/applications/'+requestId+'/messages','recruiter-token');
+ assert.equal(r.status,200);
+ const q=h.log.db.find(x=>x.sql.includes('FROM hr_messages')&&x.sql.includes('created_at >= $3'));
+ assert.ok(q,'History read must enforce introduction timestamp');
+ assert.equal(q.args[1],false,'Recruiter cannot bypass timestamp filter');
+ assert.equal(q.args[2],null,'Missing introduction boundary must return no historic messages');
+});
 test('Consent remains mandatory even with complete candidate information',async()=>{
  const h=harness();
  const response=await h.request('POST','/api/applications','candidate-noquiz-token',{jobId:'job-1',consentToIntro:false,application:{firstName:'Omar',lastName:'Candidate',desiredCity:'Rabat',phone:'+212648377009'}});
