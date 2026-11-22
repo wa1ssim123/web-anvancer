@@ -1,0 +1,58 @@
+/* HORENOVA splash: TECH and official channels share one aligned row.
+   No banner is inserted above or behind the fixed homepage header. */
+.hn-intro-shortcut-social{
+  border-color:rgba(146,205,215,.58);
+  background:linear-gradient(135deg,rgba(9,29,36,.88),rgba(21,42,50,.78));
+  min-width:0;
+}
+.hn-intro-shortcut-social::before{background:radial-gradient(circle at 95% 0%,rgba(43,176,189,.25),transparent 65%)}
+.hn-intro-shortcut-social .hn-intro-shortcut-overline{color:#a9e7dc}
+.hn-intro-shortcut-social strong{display:block;min-width:0;margin:7px 0 8px!important}
+.hn-intro-shortcut-social .hn-social-title{
+  display:flex;align-items:center;justify-content:space-between;gap:4px;
+  color:#fff;text-decoration:none;font:inherit;letter-spacing:inherit;
+  width:100%;min-width:0
+}
+.hn-intro-shortcut-social .hn-social-title:hover{color:#b8f0e8}
+.hn-intro-shortcut-social .hn-intro-shortcut-arrow{font-size:18px;color:#9ee4e0}
+.hn-social-buttons{width:100%;min-width:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;align-items:stretch}
+.hn-intro-shortcut-social .hn-social-button,.hn-social-pending{
+  min-height:30px;min-width:0;border-radius:9px;display:flex;
+  justify-content:center;align-items:center;padding:7px 5px;
+  line-height:1.2;font:750 10px/1.25 Inter,Arial,sans-serif;
+  text-align:center;white-space:nowrap;
+  border:1px solid rgba(255,255,255,.19);color:white!important;
+  text-decoration:none!important;transition:transform .2s,border-color .2s
+}
+.hn-intro-shortcut-social .hn-social-button:hover{transform:translateY(-2px)}
+.hn-intro-shortcut-social .hn-social-button:focus-visible,
+.hn-intro-shortcut-social .hn-social-title:focus-visible{outline:3px solid #ffc17b;outline-offset:3px}
+.hn-intro-shortcut-social .hn-social-wa{background:rgba(20,155,90,.32);border-color:rgba(59,224,143,.55);color:#defbe8!important}
+.hn-intro-shortcut-social .hn-social-tg{background:rgba(0,136,204,.36);border-color:rgba(96,202,255,.6);color:#dbf5ff!important}
+.hn-intro-shortcut-social .hn-social-pending{
+  background:rgba(76,116,132,.18);color:#d4e1e8!important;border-color:rgba(176,198,217,.3);
+  font-weight:600;font-size:9px
+}
+.hn-intro-shortcut-social [hidden]{display:none!important}
+/* Respect the existing 3-column desktop and 2-column phone intro grid. */
+@media(max-width:650px){
+ .hn-intro-shortcut-social{padding:13px 11px;min-height:113px}
+ .hn-intro-shortcut-social .hn-intro-shortcut-overline{letter-spacing:.045em;font-size:8px}
+ .hn-intro-shortcut-social strong{margin:5px 0 7px!important;font-size:clamp(22px,5.5vw,30px)}
+ .hn-social-buttons{gap:5px}
+ .hn-intro-shortcut-social .hn-social-button,.hn-social-pending{font-size:9px;min-height:29px;padding:6px 3px}
+ .hn-social-pending{font-size:8px!important}
+}
+@media(max-width:360px){
+ .hn-intro-shortcut-social{padding:11px 8px;min-height:104px}
+ .hn-intro-shortcut-social strong{font-size:22px}
+ .hn-intro-shortcut-social .hn-social-button,.hn-social-pending{font-size:8px;min-height:26px}
+ .hn-social-pending{font-size:7.5px!important}
+}
+@media(max-height:740px) and (max-width:900px){
+ .hn-intro-shortcut-social{min-height:87px;padding:9px}
+ .hn-intro-shortcut-social strong{margin:3px 0 5px!important;font-size:clamp(19px,5vw,27px)}
+ .hn-social-buttons .hn-social-button,.hn-social-pending{min-height:25px;padding:4px 2px}
+}
+@media(prefers-reduced-motion:reduce){.hn-intro-shortcut-social .hn-social-button{transition:none}}
+html[dir="rtl"] .hn-intro-shortcut-social{text-align:right}
