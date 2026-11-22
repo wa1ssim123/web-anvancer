@@ -77,7 +77,7 @@ const LOCAL={
  }
 };
 const root=document,element=id=>root.getElementById(id);
-let locale='fr',allJobs=[],selected='all',visibleCount=9,loaded=false,failed=false;
+let locale='fr',allJobs=[],selected='all',visibleCount=9,loaded=false,failed=false,channelFailed=false;
 const phrase=key=>LOCAL[locale][key];
 const localeFromStorage=()=>{try{return localStorage.getItem('mihna-lang')||'fr'}catch{return 'fr'}};
 function setLocale(code){
@@ -95,7 +95,7 @@ function setLocale(code){
   if(typeof translation==='string')el.placeholder=translation;
  }
  root.title=locale==='ar'?'مجتمع هورينوفا · الوظائف وقناة واتساب':locale==='en'?'HORENOVA Community · Jobs and WhatsApp Channel':'Communauté HORENOVA — Offres, shifts et canal WhatsApp';
- element('hcWaiting').textContent=failed?phrase('waUnavailable'):phrase('waPending');
+ element('hcWaiting').textContent=channelFailed?phrase('waUnavailable'):phrase('waPending');
  render();
 }
 function validChannel(value){
@@ -112,10 +112,12 @@ async function loadChannel(){
   const response=await fetch(API+'/api/community/channel',{cache:'no-store',signal:AbortSignal.timeout(12500)});
   if(!response.ok)throw Error('Channel not readable');
   const data=await response.json();
+  channelFailed=false;
   const canonical=data.active?validChannel(data.url):null;
   if(canonical){button.href=canonical;button.hidden=false;waiting.hidden=true;}
   else{button.removeAttribute('href');button.hidden=true;waiting.hidden=false;}
  }catch{
+  channelFailed=true;
   button.hidden=true;button.removeAttribute('href');waiting.hidden=false;
   waiting.textContent=phrase('waUnavailable');
  }
