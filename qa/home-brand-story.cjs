@@ -44,7 +44,11 @@ async function scenario(browser,lang,width,height){
  assert.equal(await page.locator('.hn-intro-shortcut-academy').getAttribute('href'),'/academy.html');
  assert.equal(await page.locator('.hn-intro-shortcut-matching').getAttribute('href'),'/matching-guide.html');
  assert.equal(await page.locator('.hn-intro-shortcut-tech').getAttribute('href'),'/tech.html');
- assert.equal(await page.locator('.hn-intro-shortcut').count(),4);
+ assert.equal(await page.locator('.hn-intro-shortcut').count(),5,'SHOP, ACADEMY, MATCHING, TECH and CANAUX');
+ assert.equal(await page.locator('.hn-home-channel-strip').count(),0,'Old mobile banner cannot overlap the header');
+ assert.equal(await page.locator('.hn-intro-shortcut-social').count(),1);
+ assert.equal(await page.locator('#hnSocialWA').getAttribute('href'),'https://whatsapp.com/channel/0029Vb9VLZ5A2pLGFYQA6s2u');
+ assert.equal(await page.locator('#hnSocialTG').isHidden(),true,'Future Telegram link must remain disabled');
  const translated={
   fr:['POUR S’ÉQUIPER','POUR APPRENDRE','POUR TROUVER SA PLACE','POUR INNOVER','Deux horizons.'],
   en:['TO EQUIP YOURSELF','TO LEARN','FIND YOUR PLACE','TO INNOVATE','Two horizons.'],
