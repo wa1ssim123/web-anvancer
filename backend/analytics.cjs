@@ -39,14 +39,15 @@ function createAnalyticsHandler({pool,json,read,rate,auth,requireRole,error,uuid
    const user=await auth(req);
    requireRole(user,['admin']);
    rate(user.id+':analytics-read',45,60);
-   const [roles,visits,wix,history,signups]=await Promise.all([
+   const [roles,visits,wix,history,signups,wixDaily]=await Promise.all([
     pool.query("SELECT role,COUNT(*)::integer AS total FROM hr_analytics_roles GROUP BY role"),
     pool.query(
      "SELECT COUNT(*)::integer AS sessions,COUNT(DISTINCT browser_hash)::integer AS unique_browsers,COUNT(*) FILTER(WHERE started_at>=date_trunc('day',now()))::integer AS today_sessions,COUNT(*) FILTER(WHERE started_at>=now()-interval '7 days')::integer AS last_7_days,MIN(started_at) AS first_recorded FROM hr_analytics_sessions"
     ),
     pool.query('SELECT first_day,through_day,sessions,unique_visitors,imported_at FROM hr_analytics_wix_summary WHERE id=true'),
     pool.query("SELECT started_at::date AS day,COUNT(*)::integer AS sessions,COUNT(DISTINCT browser_hash)::integer AS unique_browsers FROM hr_analytics_sessions WHERE started_at>=now()-interval '30 days' GROUP BY started_at::date ORDER BY day"),
-    pool.query("SELECT registered_at::date AS day,role,COUNT(*)::integer AS total FROM hr_analytics_roles WHERE registered_at>=now()-interval '30 days' GROUP BY registered_at::date,role ORDER BY day")
+    pool.query("SELECT registered_at::date AS day,role,COUNT(*)::integer AS total FROM hr_analytics_roles WHERE registered_at>=now()-interval '30 days' GROUP BY registered_at::date,role ORDER BY day"),
+    pool.query("SELECT day,sessions,daily_unique_visitors FROM hr_analytics_wix_daily ORDER BY day")
    ]);
    const byRole=Object.fromEntries(roles.rows.map(row=>[row.role,Number(row.total)]));
    const stat=visits.rows[0]||{},old=wix.rows[0]||null;
@@ -61,7 +62,8 @@ function createAnalyticsHandler({pool,json,read,rate,auth,requireRole,error,uuid
     wixHistory:old?{
      from:old.first_day,through:old.through_day,sessions:old.sessions,
      uniqueVisitors:old.unique_visitors,importedAt:old.imported_at,
-     source:'Wix Analytics (historique du site Wix, couverture Render non garantie)'
+     source:'Wix Analytics (historique du site Wix, couverture Render non garantie)',
+     daily:wixDaily.rows.map(r=>({date:r.day,sessions:Number(r.sessions),uniqueVisitors:Number(r.daily_unique_visitors)}))
     }:null,
     firstParty:{
      sessions:Number(stat.sessions||0),
