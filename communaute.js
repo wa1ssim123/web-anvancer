@@ -13,7 +13,12 @@ const LOCAL={
   updatesCategory:'Actualités & formations',updatesSubtitle:'Conseils · nouveautés · Academy',waLabel:'LE CANAL WHATSAPP OFFICIEL',waTitle:'Ne manquez pas la prochaine opportunité.',
   waDesc:'Abonnez-vous pour voir les annonces et les nouvelles publications HORENOVA directement dans WhatsApp.',
   follow:'Suivre sur WhatsApp ↗',waPending:'Le lien du canal officiel sera publié ici dès son activation.',waUnavailable:'Le lien du canal est temporairement indisponible. Consultez nos offres ci-dessous.',
-  waPrivacy:"Canal d'informations · pas de discussion publique",latest:'OPPORTUNITÉS PUBLIÉES',opportunities:'Les offres réelles, au même endroit.',
+  waPrivacy:"Canal d'informations · pas de discussion publique",
+  tgLabel:'LE CANAL TELEGRAM HORENOVA',tgTitle:'Les nouvelles opportunités sur Telegram.',
+  tgDesc:"Un deuxième espace pour suivre nos offres d'emploi, shifts et informations officielles.",
+  tgFollow:'Suivre sur Telegram ↗',tgPending:'Le canal Telegram sera disponible ici après sa création.',tgUnavailable:'Telegram est momentanément indisponible.',
+  tgPrivacy:'Canal officiel · consultez les offres sans abonnement',
+  latest:'OPPORTUNITÉS PUBLIÉES',opportunities:'Les offres réelles, au même endroit.',
   opportunitiesDesc:'Uniquement les offres ouvertes ou validées sur HORENOVA. Aucune annonce fictive.',searchLabel:'Rechercher une opportunité',searchPlaceholder:'Métier, établissement ou ville…',
   cityLabel:'Ville',allCities:'Toutes les villes',all:'Tout voir',jobs:'Emplois',shifts:'Shifts',loading:'Chargement des offres publiées…',
   count:n=>n+' opportunité'+(n>1?'s':'')+' publiée'+(n>1?'s':''),none:'Aucune offre publiée ne correspond à votre recherche.',
@@ -36,7 +41,12 @@ const LOCAL={
   updatesCategory:'News & training',updatesSubtitle:'Tips · updates · Academy',waLabel:'OFFICIAL WHATSAPP CHANNEL',waTitle:'Never miss your next opportunity.',
   waDesc:'Follow our official updates on jobs, shifts and HORENOVA news directly in WhatsApp.',
   follow:'Follow on WhatsApp ↗',waPending:'Our official WhatsApp channel link will appear here after activation.',waUnavailable:'Channel link temporarily unavailable. Browse our open positions below.',
-  waPrivacy:'One-way information channel · not a group chat',latest:'PUBLISHED OPPORTUNITIES',opportunities:'Real opportunities, together.',
+  waPrivacy:'One-way information channel · not a group chat',
+  tgLabel:'HORENOVA TELEGRAM CHANNEL',tgTitle:'Your next opportunities on Telegram.',
+  tgDesc:'Another way to follow HORENOVA job offers, shifts and official news.',
+  tgFollow:'Follow on Telegram ↗',tgPending:'Our Telegram channel will appear here once created.',tgUnavailable:'Telegram is temporarily unavailable.',
+  tgPrivacy:'Official channel · browse jobs without subscribing',
+  latest:'PUBLISHED OPPORTUNITIES',opportunities:'Real opportunities, together.',
   opportunitiesDesc:'Only active or approved HORENOVA vacancies. No invented jobs.',searchLabel:'Find an opportunity',searchPlaceholder:'Job, business or city…',
   cityLabel:'City',allCities:'All cities',all:'All',jobs:'Jobs',shifts:'Shifts',loading:'Loading published jobs…',
   count:n=>n+' published opportunit'+(n===1?'y':'ies'),none:'No published openings match your search.',
@@ -60,7 +70,12 @@ const LOCAL={
   updatesCategory:'الأخبار والتكوين',updatesSubtitle:'نصائح · مستجدات · أكاديمي',waLabel:'قناة واتساب الرسمية',waTitle:'لا تفوّت فرصة عمل جديدة.',
   waDesc:'تابع إعلانات العمل والمهام وآخر أخبار هورينوفا مباشرة عبر واتساب.',
   follow:'تابع على واتساب ↗',waPending:'سيظهر رابط قناة واتساب الرسمية هنا بعد تفعيلها.',waUnavailable:'رابط القناة غير متاح مؤقتاً. يمكنك تصفح فرص العمل أدناه.',
-  waPrivacy:'قناة لنشر الأخبار · وليست دردشة جماعية',latest:'الفرص المنشورة',opportunities:'عروض حقيقية في مكان واحد.',
+  waPrivacy:'قناة لنشر الأخبار · وليست دردشة جماعية',
+  tgLabel:'قناة هورينوفا على تيليغرام',tgTitle:'تابع الفرص الجديدة على تيليغرام.',
+  tgDesc:'مساحة ثانية لمتابعة فرص العمل والمهام وآخر الأخبار الرسمية.',
+  tgFollow:'تابع على تيليغرام ↗',tgPending:'سيظهر رابط قناة تيليغرام فور إنشائها.',tgUnavailable:'قناة تيليغرام غير متاحة مؤقتاً.',
+  tgPrivacy:'قناة رسمية · تصفح فرص العمل بدون اشتراك',
+  latest:'الفرص المنشورة',opportunities:'عروض حقيقية في مكان واحد.',
   opportunitiesDesc:'نعرض فقط الإعلانات النشطة أو المعتمدة في هورينوفا، بدون عروض وهمية.',searchLabel:'ابحث عن فرصة',searchPlaceholder:'المهنة أو المؤسسة أو المدينة…',
   cityLabel:'المدينة',allCities:'جميع المدن',all:'الكل',jobs:'وظائف',shifts:'مهام',loading:'جارٍ تحميل الفرص المنشورة…',
   count:n=>n+' من الفرص المنشورة',none:'لا توجد عروض تطابق البحث.',
@@ -77,7 +92,7 @@ const LOCAL={
  }
 };
 const root=document,element=id=>root.getElementById(id);
-let locale='fr',allJobs=[],selected='all',visibleCount=9,loaded=false,failed=false,channelFailed=false;
+let locale='fr',allJobs=[],selected='all',visibleCount=9,loaded=false,failed=false,channelFailed=false,telegramFailed=false;
 const phrase=key=>LOCAL[locale][key];
 const localeFromStorage=()=>{try{return localStorage.getItem('mihna-lang')||'fr'}catch{return 'fr'}};
 function setLocale(code){
@@ -96,6 +111,7 @@ function setLocale(code){
  }
  root.title=locale==='ar'?'مجتمع هورينوفا · الوظائف وقناة واتساب':locale==='en'?'HORENOVA Community · Jobs and WhatsApp Channel':'Communauté HORENOVA — Offres, shifts et canal WhatsApp';
  element('hcWaiting').textContent=channelFailed?phrase('waUnavailable'):phrase('waPending');
+ element('hcTelegramWaiting').textContent=telegramFailed?phrase('tgUnavailable'):phrase('tgPending');
  render();
 }
 function validChannel(value){
@@ -120,6 +136,30 @@ async function loadChannel(){
   channelFailed=true;
   button.hidden=true;button.removeAttribute('href');waiting.hidden=false;
   waiting.textContent=phrase('waUnavailable');
+ }
+}
+function validTelegram(value){
+ try{
+  const u=new URL(value),match=u.pathname.match(/^\/([A-Za-z][A-Za-z0-9_]{4,31})\/?$/);
+  return u.protocol==='https:'&&['t.me','telegram.me','www.t.me','www.telegram.me'].includes(u.hostname)&&
+     !u.port&&!u.username&&!u.password&&!u.search&&!u.hash&&match
+     ?'https://t.me/'+match[1]:null;
+ }catch{return null}
+}
+async function loadTelegram(){
+ const button=element('hcTelegramFollow'),waiting=element('hcTelegramWaiting');
+ try{
+  const response=await fetch(API+'/api/community/telegram',{cache:'no-store',signal:AbortSignal.timeout(12500)});
+  if(!response.ok)throw Error('Telegram unavailable');
+  const data=await response.json();
+  telegramFailed=false;
+  const url=data.active?validTelegram(data.url):null;
+  if(url){button.href=url;button.hidden=false;waiting.hidden=true}
+  else{button.removeAttribute('href');button.hidden=true;waiting.hidden=false}
+ }catch{
+  telegramFailed=true;
+  button.hidden=true;button.removeAttribute('href');waiting.hidden=false;
+  waiting.textContent=phrase('tgUnavailable');
  }
 }
 const clean=v=>String(v??'').trim();
@@ -227,4 +267,4 @@ element('hcCity').addEventListener('change',()=>{visibleCount=9;render()});
 root.querySelectorAll('[data-kind]').forEach(b=>b.addEventListener('click',()=>{selected=b.dataset.kind;visibleCount=9;render()}));
 element('hcMore').addEventListener('click',()=>{visibleCount+=9;render()});
 setLocale(control.value);
-void Promise.allSettled([loadChannel(),loadJobs()]);
+void Promise.allSettled([loadChannel(),loadTelegram(),loadJobs()]);
