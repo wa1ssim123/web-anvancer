@@ -13,7 +13,7 @@ const formatDate=(v,language)=>{const s=dateOnly(v);if(!/^\d{4}-\d\d-\d\d$/.test
 const formatNumber=(n,language)=>new Intl.NumberFormat(language==='ar'?'ar-MA':language==='en'?'en-GB':'fr-MA').format(Number(n||0));
 
 export function mountAdminAnalytics(root,request=hub){
- if(!root||root.querySelector('#hnAdminAnalytics'))return;
+ if(!root||document.getElementById('hnAdminAnalytics'))return;
  const section=document.createElement('section');
  section.className='hn-audience';
  section.id='hnAdminAnalytics';
@@ -35,7 +35,9 @@ export function mountAdminAnalytics(root,request=hub){
  </div><p class="hn-audience-period" id="haStart"></p></div>
  <div class="hn-audience-group"><div class="hn-audience-graph-head"><h3 id="haHistory"></h3><div class="hn-audience-tabs"><button type="button" id="haWixTab" aria-pressed="true"></button><button type="button" id="haLiveTab" aria-pressed="false"></button></div></div><div class="hn-audience-chart" role="img" id="haChart" aria-label="Graphique de fréquentation"></div></div>
  <p class="hn-audience-info" id="haInfo"></p><p id="haError" role="status" class="hn-audience-error" hidden></p>`;
- root.prepend(section);
+ // Place above the legacy two-column admin grid. Otherwise its direct-child
+ // light-card CSS would squeeze the metrics into one column and override colors.
+ root.before(section);
  let state=null,mode='wix',loading=false;
  const lang=()=>['fr','en','ar'].includes(document.documentElement.lang)?document.documentElement.lang:'fr';
  const say=(id,value)=>{const element=one(section,id);if(element)element.textContent=String(value)};
