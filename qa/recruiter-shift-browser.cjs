@@ -14,7 +14,7 @@ const mocks={
   for(const width of [375,390,1280]){
    const context=await browser.newContext({viewport:{width,height:844},serviceWorkers:'block'});
    await context.route('https://horenova.qa/**',route=>{
-    const url=new URL(route.request().url),p=url.pathname;
+    const url=new URL(route.request().url()),p=url.pathname;
     const body=p==='/recruit.html'?markup:p==='/recruit-live.js'?read('recruit-live.js'):p==='/recruit-shift-calendar.js'?read('recruit-shift-calendar.js'):p==='/recruit-shift-calendar.css'?read('recruit-shift-calendar.css'):mocks[p]||'Not found';
     return route.fulfill({status:body==='Not found'?404:200,contentType:p.endsWith('.js')?'text/javascript':p.endsWith('.css')?'text/css':'text/html',body});
    });
