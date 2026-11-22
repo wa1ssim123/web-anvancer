@@ -1,0 +1,43 @@
+.hn-social-publication-admin{grid-column:1/-1;max-width:100%;min-width:0;margin:0 0 24px;padding:clamp(20px,3vw,36px);border:1px solid #243a4b;border-radius:23px;background:linear-gradient(130deg,#101e2a,#172c32);color:#eaf5f5;box-shadow:0 15px 45px #07122022}
+.hn-social-publication-admin *{box-sizing:border-box}
+.hspa-heading{display:flex;gap:18px;justify-content:space-between;align-items:flex-start;flex-wrap:wrap}
+.hspa-heading>div{max-width:730px}
+.hspa-heading span{display:block;font-weight:900;letter-spacing:.18em;font-size:11px;color:#86d6c2}
+.hspa-heading h2{margin:10px 0 14px;color:#fff;font:500 clamp(29px,3.8vw,48px)/1.1 Georgia,serif;letter-spacing:-.03em}
+.hspa-heading p{color:#becdd3;line-height:1.65;font-size:13px}
+.hspa-heading button{border:1px solid #83cbbc;background:#0f413f;color:#f2fcfa;border-radius:13px;padding:12px 17px;font-size:12px;font-weight:850;min-height:44px;cursor:pointer}
+.hspa-heading button:disabled{opacity:.5}
+.hspa-connections{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px;margin:26px 0 21px}
+.hspa-connection{border:1px solid #385364;border-radius:15px;background:#ffffff09;padding:16px;display:grid;align-content:start;gap:9px}
+.hspa-connection b{font-size:13px;color:#fff;line-height:1.4}
+.hspa-connection span{font-size:12px;color:#ffc39e;line-height:1.4}
+.hspa-connection.hspa-ready{border-color:#498a75;background:#153b37}
+.hspa-connection.hspa-ready span{color:#9be5bc}
+.hspa-guide{padding:14px 16px;border:1px solid #35606e;border-radius:13px;background:#173444;color:#d8e5e9;font-size:12px;line-height:1.75}
+.hspa-guidelinks{display:flex;flex-wrap:wrap;gap:12px;margin:15px 0 26px}
+.hspa-guidelinks a{color:#8bdacc;font-size:12px;font-weight:800;text-underline-offset:3px}
+.hspa-list{display:grid;gap:14px}
+.hspa-post{padding:20px;border:1px solid #38516a;border-radius:16px;background:#fbfaf7;color:#142738;min-width:0}
+.hspa-post-head{display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;align-items:baseline}
+.hspa-post-head strong{font-size:17px;line-height:1.4;color:#132637;overflow-wrap:anywhere}
+.hspa-post-head span{font-size:12px;color:#5a7282}
+.hspa-post-state{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 18px}
+.hspa-pill{display:inline-flex;align-items:center;border:1px solid #d2dbe1;border-radius:30px;background:#e7eef3;color:#375367;padding:7px 12px;font-size:11px;font-weight:800}
+.hspa-pill.hspa-published{background:#dff7e8;color:#17683d;border-color:#a6d9b4}
+.hspa-pill.hspa-manual{background:#e4f1ff;color:#145f94;border-color:#a3caef}
+.hspa-pill.hspa-needs_review{background:#fff0e8;color:#ae4b20;border-color:#ffd2b4}
+.hspa-pill.hspa-cancelled{background:#f2e9e9;color:#8b4646}
+.hspa-post-actions{display:flex;align-items:center;flex-wrap:wrap;gap:9px}
+.hspa-action{border:1px solid #bdd4d6;border-radius:10px;padding:10px 12px;display:inline-flex;align-items:center;justify-content:center;min-height:41px;max-width:100%;background:#eaf3f2;color:#184f52;font-size:12px;line-height:1.35;font-weight:750;text-align:center;cursor:pointer;text-decoration:none}
+.hspa-action:hover{background:#dcefed}
+.hspa-whatsapp{background:#e0f6e5;color:#136835;border-color:#b7d9be}
+.hspa-post-actions .hspa-action:disabled{opacity:.5;cursor:wait}
+.hspa-empty{color:#c9d7dd;line-height:1.5;padding:16px;border:1px dashed #45616d;border-radius:14px}
+.hspa-error{font-size:12px;color:#a13623;padding:10px;background:#ffeee9;border-radius:10px;overflow-wrap:anywhere}
+.hspa-fallback{display:block;width:100%;min-height:160px;margin-top:12px;padding:10px;border-radius:10px;border:1px solid #ccc;white-space:pre-wrap;color:#132637;background:#fff}
+.hn-social-publication-admin #hspaFeedback{color:#9be7c4;font-size:12px;font-weight:700;line-height:1.6;min-height:1em}
+.hn-social-publication-admin #hspaInfo{display:block;color:#9eb3bc;line-height:1.5}
+.hn-social-publication-admin button:focus-visible,.hn-social-publication-admin a:focus-visible{outline:3px solid #ffc285;outline-offset:3px}
+html[dir=rtl] .hn-social-publication-admin{direction:rtl;text-align:right}
+@media(max-width:790px){.hspa-connections{grid-template-columns:1fr}.hspa-post{padding:16px}}
+@media(max-width:430px){.hn-social-publication-admin{padding:18px 14px;border-radius:17px}.hspa-post-actions .hspa-action{width:100%}}
