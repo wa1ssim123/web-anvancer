@@ -35,18 +35,26 @@ function createTechHandler({pool,json,read,rate,auth,requireRole,error,limit,uui
     if(!Array.isArray(d.items)||d.items.length<1||d.items.length>80)throw error(422,'Ajoutez de 1 à 80 articles.');
     const merged=new Map();
     for(const item of d.items){
-      const id=String(item.productId||'');
-      if(!uuid(id)||!int(item.quantity,1,1000))throw error(422,'Produit ou quantité invalide.');
+      const id=String(item?.productId||'').toLowerCase();
+      if(!uuid(id)||!int(item?.quantity,1,1000))throw error(422,'Produit ou quantité invalide.');
       merged.set(id,(merged.get(id)||0)+item.quantity);
     }
     if([...merged.values()].some(n=>n>10000))throw error(422,'Quantité excessive.');
+    // A reused reference is idempotent only for the exact same set of items/quantities.
+    // Never silently acknowledge a different cart as though it were recorded.
+    const verifyDuplicate=async (db,sale)=>{
+      const items=await db.query('SELECT product_id,quantity FROM ht_sale_lines WHERE sale_id=$1',[sale.id]);
+      if(items.rows.length!==merged.size || items.rows.some(line=>merged.get(String(line.product_id).toLowerCase())!==line.quantity))
+        throw error(409,'Cette référence de vente correspond à un ticket différent.');
+      return {ok:true,duplicate:true,id:sale.id,totalCentimes:Number(sale.total_centimes)};
+    };
     const client=await pool.connect();
     try{
       await client.query('BEGIN');
       const existing=await client.query('SELECT id,total_centimes FROM ht_sales WHERE venue_id=$1 AND client_reference=$2',[venueId,reference]);
       if(existing.rows.length){
         await client.query('COMMIT');
-        return json(res,200,{ok:true,duplicate:true,id:existing.rows[0].id,totalCentimes:Number(existing.rows[0].total_centimes)});
+        return json(res,200,await verifyDuplicate(client,existing.rows[0]));
       }
       const ids=[...merged.keys()].sort();
       const q=await client.query(
@@ -83,7 +91,7 @@ function createTechHandler({pool,json,read,rate,auth,requireRole,error,limit,uui
       await client.query('ROLLBACK').catch(()=>{});
       if(e.code==='23505'){
         const q=await pool.query('SELECT id,total_centimes FROM ht_sales WHERE venue_id=$1 AND client_reference=$2',[venueId,reference]);
-        if(q.rows.length)return json(res,200,{ok:true,duplicate:true,id:q.rows[0].id,totalCentimes:Number(q.rows[0].total_centimes)});
+        if(q.rows.length)return json(res,200,await verifyDuplicate(pool,q.rows[0]));
       }
       throw e;
     } finally {client.release();}
@@ -114,6 +122,9 @@ function createTechHandler({pool,json,read,rate,auth,requireRole,error,limit,uui
         return json(res,200,{venues:q.rows.map(pickVenue)});
       }
       if(method==='POST'){
+        rate(user.id+':tech-create-venue',12,3600);
+        const count=await pool.query('SELECT COUNT(*)::int AS total FROM ht_venues WHERE owner_wix_id=$1',[user.id]);
+        if(Number(count.rows[0]?.total||0)>=12)throw error(409,'Limite de 12 établissements par compte pilote atteinte.');
         const d=await read(req,6000);
         const name=str(d.name,120),city=str(d.city,90);
         if(name.length<2)throw error(422,'Nom d’établissement trop court.');
@@ -139,6 +150,8 @@ function createTechHandler({pool,json,read,rate,auth,requireRole,error,limit,uui
       if(action==='products' && !productId && method==='GET')return json(res,200,{products:await listVenueProducts(venueId)});
       if(action==='products' && !productId && method==='POST'){
         rate(user.id+':tech-products',35,60);
+        const count=await pool.query('SELECT COUNT(*)::int AS total FROM ht_products WHERE venue_id=$1',[venueId]);
+        if(Number(count.rows[0]?.total||0)>=500)throw error(409,'Limite de 500 articles pour cet établissement atteinte.');
         const d=await read(req,9000);
         const name=str(d.name,140),category=str(d.category,80)||'Autres',sku=str(d.sku,60)||null;
         const price=ensurePositiveMoney(d.priceCentimes);
