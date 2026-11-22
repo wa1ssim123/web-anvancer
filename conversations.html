@@ -1,1 +1,109 @@
-<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>HORENOVA · Conversations de recrutement</title><link rel="stylesheet" href="/styles.css"><link rel="stylesheet" href="/horenova-v12.css"><link rel="stylesheet" href="/hn-hub.css"></head><body style="background:#f2f4f6;color:#152536"><header style="background:#152233;padding:20px clamp(16px,4vw,50px);display:flex;justify-content:space-between;align-items:center"><a href="/" style="color:#fff;font-weight:800;font-size:23px;text-decoration:none">HORENOVA.</a><a href="/account.html" style="color:#fff;text-decoration:none">Mon espace ↗</a></header><main class="hub-root" style="padding-top:35px"><div class="hub-head"><div><span class="hub-small">CONFIDENTIEL · RECRUTEMENT</span><h1 style="font:500 clamp(31px,5vw,56px)/1.06 Georgia,serif;margin:12px 0">Conversations HORENOVA</h1><p class="hub-muted">Le candidat, le recruteur autorisé et HORENOVA partagent le même fil. Tous les échanges restent visibles par HORENOVA.</p></div></div><div class="hub-error" id="conversationError"></div><div class="hub-layout"><section class="hub-panel"><div class="hub-panel-head"><h3>Mes dossiers</h3><p class="hub-muted">Candidatures et mises en relation</p></div><div class="hub-stack" id="conversationList"><div class="hub-detail hub-muted">Chargement des dossiers…</div></div></section><section class="hub-panel"><div class="hub-panel-head"><h3 id="conversationTitle">Conversation</h3><p class="hub-muted">HORENOVA supervise chaque conversation.</p></div><div class="hub-chat" id="conversationMessages"><p class="hub-muted">Sélectionnez un dossier à gauche.</p></div><form id="conversationForm" class="hub-chat-form" hidden><textarea id="conversationText" required maxlength="2000" placeholder="Écrire à HORENOVA et aux participants autorisés…"></textarea><button type="submit" class="hub-action">Envoyer ↗</button></form></section></div></main><script type="module" src="/conversations.js?v=launch-20261111"></script><script defer src="/horenova-i18n.js?v=20261120-i18n-v4"></script><script src="/pwa-register.js?v=support-direct-print-20261120-r1" defer></script></body></html>
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#112133">
+<meta name="robots" content="noindex,nofollow">
+<meta name="description" content="Messagerie privée et mises en relation HORENOVA entre candidats, entreprises et l'équipe de recrutement.">
+<title>HORENOVA — Messagerie & matching privé</title>
+<link rel="icon" href="/favicon.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="stylesheet" href="/styles.css">
+<link rel="stylesheet" href="/hn-hub.css">
+<link rel="stylesheet" href="/conversations-v2.css?v=20261122">
+</head>
+<body class="hc-page">
+<header class="hc-topbar">
+  <a class="hc-logo" href="/index.html" aria-label="HORENOVA accueil">HORENOVA<span>.</span></a>
+  <nav class="hc-main-nav" aria-label="Navigation principale">
+    <a href="/account.html" data-t="space">Mon espace</a>
+    <a href="/support.html" data-t="support">Assistance</a>
+    <div class="hn12-actions"></div>
+  </nav>
+</header>
+<main class="hc-shell" id="hcMain">
+<section class="hc-hero">
+  <div>
+    <span class="hc-eyebrow" data-t="eyebrow">HORENOVA / RELATIONS HUMAINES</span>
+    <h1 data-t="hero">Les bonnes rencontres.<br>De vraies conversations.</h1>
+    <p data-t="intro">Une messagerie professionnelle encadrée par HORENOVA. Échangez en privé avec notre équipe et, après validation, réunissez candidat, recruteur et administrateur dans un même fil.</p>
+  </div>
+  <div class="hc-hero-mark" aria-hidden="true"><span>H</span><span>◌</span><span>↗</span></div>
+</section>
+<div class="hc-notice" id="conversationError" role="status" aria-live="polite" hidden></div>
+<div class="hc-switcher" id="hcModes">
+  <button type="button" id="hcTabMessages" data-mode="messages" aria-pressed="true" class="active"><span>◌</span><span data-t="tabMessages">Mes messages</span><b id="hcThreadCount" hidden>0</b></button>
+  <button type="button" id="hcTabMatching" data-mode="matching" aria-pressed="false" hidden><span>✦</span><span data-t="tabMatching">Recherche & Matching</span></button>
+</div>
+<section class="hc-messages-view" id="hcMessagesView" aria-label="Messagerie privée">
+  <div class="hc-chat-layout">
+    <aside class="hc-inbox hc-surface" aria-label="Conversations disponibles">
+      <div class="hc-inbox-heading">
+        <div><span class="hc-kicker" data-t="myDiscussions">MES DISCUSSIONS</span><h2 data-t="myThreads">Conversations</h2></div>
+        <button type="button" id="hcRefresh" class="hc-icon-btn" aria-label="Actualiser les conversations" title="Actualiser">↻</button>
+      </div>
+      <div class="hc-search-wrap"><span aria-hidden="true">⌕</span><input id="hcThreadSearch" type="search" maxlength="90" data-t-placeholder="threadSearch" placeholder="Rechercher une discussion…" aria-label="Rechercher une discussion"></div>
+      <div class="hc-thread-list" id="conversationList" role="list"><div class="hc-empty" data-t="loading">Chargement…</div></div>
+      <div class="hc-inbox-footer"><span class="hc-shield" aria-hidden="true">✧</span><span data-t="privateInbox">Vos messages ne sont visibles que par les participants autorisés.</span></div>
+    </aside>
+    <section class="hc-room hc-surface" aria-label="Fil de discussion">
+      <div class="hc-room-head">
+        <div class="hc-avatar" id="hcRoomAvatar" aria-hidden="true">H</div>
+        <div class="hc-room-copy"><span class="hc-kicker" id="hcRoomKicker" data-t="supervised">CONVERSATION SUPERVISÉE</span><h2 id="conversationTitle" data-t="chooseConversation">Choisir une conversation</h2><p id="hcParticipants" data-t="chooseHint">Sélectionnez un dossier pour voir les échanges.</p></div>
+      </div>
+      <div class="hc-room-status" id="hcRoomStatus" hidden></div>
+      <div class="hc-chat" id="conversationMessages" role="log" aria-live="polite" aria-relevant="additions text"><div class="hc-chat-blank"><span aria-hidden="true">✉</span><p data-t="welcome">Vos messages avec HORENOVA seront affichés ici.</p></div></div>
+      <form class="hc-composer" id="conversationForm" hidden>
+        <label for="conversationText" class="hc-sr-only" data-t="writeMessage">Votre message</label>
+        <textarea id="conversationText" maxlength="2000" rows="2" required data-t-placeholder="compose" placeholder="Écrivez votre message privé…" aria-label="Message privé"></textarea>
+        <button type="submit" id="hcSend" class="hc-send"><span data-t="send">Envoyer</span><span aria-hidden="true">↗</span></button>
+      </form>
+      <div class="hc-composer-note" id="hcComposerNote" data-t="confidentialNote">Les échanges sont supervisés par HORENOVA. Ne partagez pas de mot de passe ni de données bancaires.</div>
+    </section>
+  </div>
+</section>
+<section class="hc-matching-view" id="hcMatchingView" hidden aria-label="Espace de recherche et de mise en relation administrateur">
+  <div class="hc-matching-head hc-surface">
+    <div><span class="hc-kicker" data-t="adminOnly">ADMINISTRATION HORENOVA · ACCÈS PRIVÉ</span><h2 data-t="matchingTitle">Trouvez le bon profil.</h2><p data-t="matchingDesc">Recherchez dans les candidatures et les demandes des recruteurs. Écrivez à chacun en privé ou créez une mise en relation à trois avec leur autorisation.</p></div>
+    <span class="hc-privacy-mark"><span aria-hidden="true">◈</span><span data-t="verified">Accès vérifié</span></span>
+  </div>
+  <div class="hc-directory-toolbar hc-surface">
+    <div class="hc-directory-roles" role="group" aria-label="Rechercher des profils">
+      <button type="button" data-kind="candidate" aria-pressed="true" class="active"><span data-t="candidates">Candidats</span></button>
+      <button type="button" data-kind="recruiter" aria-pressed="false"><span data-t="employers">Recruteurs</span></button>
+    </div>
+    <form id="hcSearchForm" class="hc-filters">
+      <label><span data-t="search">Nom, établissement ou mot-clé</span><input type="search" id="hcSearchQuery" maxlength="90" data-t-placeholder="searchPlaceholder" placeholder="Nom, prénom, établissement…" autocomplete="off"></label>
+      <label><span data-t="job">Métier</span><input type="search" id="hcSearchRole" maxlength="80" data-t-placeholder="jobPlaceholder" placeholder="Serveur, barista, chef…" autocomplete="off"></label>
+      <label><span data-t="city">Ville</span><input type="search" id="hcSearchCity" maxlength="80" data-t-placeholder="cityPlaceholder" placeholder="Casablanca, Marrakech…" autocomplete="off"></label>
+      <label><span data-t="status">Statut</span><select id="hcSearchStatus"><option value="" data-t="allStatuses">Tous</option><option value="EN_ETUDE" data-t="inReview">En étude</option><option value="PRESELECTION" data-t="preselected">Présélection</option><option value="MISE_EN_RELATION" data-t="introduced">Mis en relation</option><option value="VALIDEE" data-t="approved">Validée</option><option value="A_EXAMINER" data-t="pending">À examiner</option><option value="REFUSEE" data-t="declined">Refusée</option></select></label>
+      <button class="hc-search-btn" type="submit"><span aria-hidden="true">⌕</span><span data-t="filter">Filtrer</span></button>
+    </form>
+  </div>
+  <div class="hc-match-grid">
+    <div class="hc-results hc-surface">
+      <div class="hc-result-header"><div><span class="hc-kicker" data-t="directory">ANNUAIRE PRIVÉ</span><h3 id="hcResultTitle" data-t="resultCandidates">Candidatures</h3></div><span id="hcResultCount" class="hc-count">—</span></div>
+      <div id="hcDirectoryResults" class="hc-result-list" role="list"><p class="hc-empty" data-t="loading">Chargement…</p></div>
+    </div>
+    <div class="hc-assembly hc-surface">
+      <span class="hc-kicker" data-t="supervisedMatch">MATCHING SUPERVISÉ</span>
+      <h3 data-t="createRoom">Créer une discussion à trois</h3>
+      <p data-t="selectBoth">Choisissez un candidat et une demande recruteur validée pour les réunir dans une conversation privée.</p>
+      <div class="hc-person-slot"><span class="hc-number">01</span><div><small data-t="candidate">CANDIDAT</small><strong id="hcSelectedCandidate" data-t="notSelected">Non sélectionné</strong><span id="hcCandidateMeta"></span></div><button type="button" id="hcRemoveCandidate" aria-label="Retirer le candidat" class="hc-slot-remove" hidden>×</button></div>
+      <div class="hc-join">↕</div>
+      <div class="hc-person-slot"><span class="hc-number">02</span><div><small data-t="employer">RECRUTEUR</small><strong id="hcSelectedRecruiter" data-t="notSelected">Non sélectionné</strong><span id="hcRecruiterMeta"></span></div><button type="button" id="hcRemoveRecruiter" aria-label="Retirer le recruteur" class="hc-slot-remove" hidden>×</button></div>
+      <div class="hc-join">＋</div>
+      <div class="hc-person-slot hc-hn-slot"><span class="hc-number">03</span><div><small>ADMINISTRATION</small><strong>HORENOVA</strong><span data-t="alwaysPresent">Présente dans toute mise en relation</span></div></div>
+      <p class="hc-validation" id="hcMatchValidation" role="status" aria-live="polite"></p>
+      <button type="button" id="hcStartMatch" class="hc-start-match" disabled><span data-t="openGroup">Créer le chat privé à trois</span><span aria-hidden="true">↗</span></button>
+      <p class="hc-small" data-t="consentNote">La demande doit être validée et le candidat doit avoir accepté la mise en relation. Une candidature ne peut pas être réaffectée silencieusement.</p>
+    </div>
+  </div>
+</section>
+</main>
+<footer class="hc-footer"><span>HORENOVA © 2026</span><span data-t="footer">Respect, confidentialité, rencontre professionnelle.</span><a href="/support.html" data-t="support">Assistance</a></footer>
+<script type="module" src="/conversations.js?v=private-matching-20261122"></script>
+<script defer src="/horenova-i18n.js?v=private-matching-20261122"></script>
+<script defer src="/pwa-register.js?v=private-matching-20261122"></script>
+</body></html>
