@@ -20,11 +20,11 @@ function fakeApi(role){
  ].join('\n');
  return code.replaceAll('__ROLE__',role).replaceAll('__APP__',appId).replaceAll('__REQ__',requestId).replaceAll('__THREAD__',threadId);
 }
-async function scenario(browser,role,width){
+async function scenario(browser,role,width,language='fr'){
  const context=await browser.newContext({viewport:{width,height:844},reducedMotion:'reduce',serviceWorkers:'block'});
  const page=await context.newPage(),errors=[];
  page.on('pageerror',e=>errors.push(e.message));
- await page.addInitScript(()=>localStorage.setItem('mihna-lang','fr'));
+ await page.addInitScript(lang=>localStorage.setItem('mihna-lang',lang),language);
  await page.route('**/*',async route=>{
   const u=new URL(route.request().url());
   if(u.hostname!=='horenova.test')return route.fulfill({status:204,body:''});
@@ -38,9 +38,18 @@ async function scenario(browser,role,width){
  });
  await page.goto('https://horenova.test/conversations.html',{waitUntil:'load'});
  await page.locator('#hcTabMessages:visible').waitFor({timeout:12000});
+ assert.equal(await page.evaluate(()=>document.documentElement.lang),language);
+ assert.equal(await page.evaluate(()=>document.documentElement.dir),language==='ar'?'rtl':'ltr');
  if(role==='admin'){
   await page.locator('#hcTabMatching:visible').click();
   await page.locator('#hcDirectoryResults .hc-result').first().waitFor({timeout:8000});
+  // An administrator can first contact an applicant privately, before introducing them.
+  await page.locator('#hcDirectoryResults .hc-result button').nth(1).click();
+  await page.locator('#conversationForm:visible').waitFor({timeout:9000});
+  await page.locator('#conversationText').fill('Message privé préalable au candidat.');
+  await page.locator('#hcSend').click();
+  await page.locator('#conversationMessages').getByText('Message privé préalable au candidat.').waitFor({timeout:9000});
+  await page.locator('#hcTabMatching').click();
   await page.locator('#hcDirectoryResults .hc-result button').first().click();
   await page.locator('[data-kind="recruiter"]').click();
   await page.locator('#hcDirectoryResults .hc-result').first().waitFor({timeout:8000});
@@ -60,10 +69,13 @@ async function scenario(browser,role,width){
  const layout=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,width:innerWidth}));
  assert.ok(layout.scroll<=layout.width+2,'Mobile overflow '+JSON.stringify({role,layout}));
  assert.deepEqual(errors,[],'Browser errors '+errors.join(' | '));
- console.log('PASS HORENOVA chat '+role+' '+width+'px: private inbox and send'+(role==='admin'?' + matching group':''));
+ console.log('PASS HORENOVA chat '+role+' '+width+'px '+language+': private inbox and send'+(role==='admin'?' + private direct contact + matching group':''));
  await context.close();
 }
 (async()=>{const browser=await chromium.launch({headless:true});try{
  for(const role of ['admin','candidate','recruiter'])await scenario(browser,role,390);
  await scenario(browser,'admin',1280);
+ await scenario(browser,'candidate',390,'en');
+ await scenario(browser,'recruiter',390,'ar');
+ await scenario(browser,'admin',390,'ar');
 }finally{await browser.close()}})().catch(e=>{console.error('FAIL HORENOVA chat UI: '+e.stack);process.exitCode=1;});
