@@ -124,6 +124,20 @@ test('Repeated submission hits local bounded throttle and returns Retry-After wi
  }
  assert.deepEqual(values,[422,422,422,422,422,422,422,422,429,429,429]);
 });
+test('A repeated bearer token cannot generate unlimited Wix authentications',async()=>{
+ const h=harness();
+ const answers=[];
+ for(let i=0;i<244;i++){
+  answers.push((await h.request('GET','/api/me','candidate-token')).status);
+ }
+ assert.equal(answers.filter(x=>x===200).length,240);
+ assert.equal(answers.filter(x=>x===429).length,4);
+ const denied=await h.request('GET','/api/me','candidate-token');
+ assert.equal(denied.status,429);
+ assert.ok(Number(denied.headers['Retry-After'])>=1);
+ assert.equal(h.log.wix.filter(x=>x.collection==='AccountRoles').length,240,
+   'Rate rejection must happen BEFORE upstream Wix account verification');
+});
 test('Request backlog overload sheds excess traffic instead of exhausting the API',async()=>{
  const h=harness({wixDelayMs:50});
  const results=await Promise.all(Array.from({length:92},()=>h.request('GET','/api/me','candidate-token')));
