@@ -78,5 +78,7 @@ jobs:
         run: node qa/live-domain-release.cjs
       - name: Verify live Horenova Tech storefront, Pro UI, public menu and protected API
         run: node qa/live-tech-release.cjs
+      - name: Verify live private recruitment inbox and access-protected matching APIs
+        run: node qa/live-chat-release.cjs
       - name: Diagnose actual support artwork and header position on mobile
         run: node qa/live-support-dom.cjs
