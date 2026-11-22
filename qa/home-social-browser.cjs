@@ -57,7 +57,7 @@ const app=http.createServer((req,res)=>{
    await page.waitForFunction(()=>!document.querySelector('#hnSocialTG')?.hidden,{timeout:12000});
    assert.equal(await page.locator('#hnSocialTG').getAttribute('href'),telegram);
    assert.equal(await page.locator('#hnSocialTGPending').isHidden(),true);
-   await page.evaluate(()=>{document.documentElement.lang='ar'});
+   await page.evaluate(()=>{localStorage.setItem('mihna-lang','ar');document.documentElement.lang='ar'});
    await page.waitForFunction(()=>document.querySelector('#hnSocialTitle')?.textContent.includes('قنوات'));
    console.log('PASS HORENOVA intro '+width+'px: no overlapping banner, TECH+CANAUX adjacent, genuine WA/TG links, FR/AR');
    await context.close();
