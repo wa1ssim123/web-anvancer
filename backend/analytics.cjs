@@ -11,6 +11,9 @@ function createAnalyticsHandler({pool,json,read,rate,auth,requireRole,error,uuid
  const hash=value=>crypto.createHash('sha256').update(value).digest('hex');
  async function handler(req,res,path,method) {
   if(path==='/api/analytics/visit' && method==='POST') {
+   const origin=req.headers?.origin;
+   if(!['https://horenova.com','https://www.horenova.com','https://horenova-site-officiel.onrender.com'].includes(origin))
+    throw error(403,'Origine de visite non autorisée.');
    rate('analytics-ingest:'+String(req.socket?.remoteAddress||'unknown'),600,60);
    const data=await read(req,1200);
    const browserId=typeof data.browserId==='string'?data.browserId:'';
