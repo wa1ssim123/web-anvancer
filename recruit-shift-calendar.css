@@ -1,0 +1,16 @@
+/* Mobile-compatible date calendar for HORENOVA recruiter shifts. */
+body[data-hn12="recruit"] #recruitShiftFields[hidden],body[data-hn12="recruit"] #hnShiftCalendar[hidden],body[data-hn12="recruit"] #hnRecruitStartDateLabel[hidden]{display:none!important}
+body[data-hn12="recruit"] #recruitShiftFields{min-width:0;overflow:visible}
+body[data-hn12="recruit"] #hnShiftDate{width:100%;min-width:0;min-height:48px;touch-action:manipulation}
+body[data-hn12="recruit"] .hn-shift-date-hint{display:block;color:#415c51!important;font-size:12px!important;letter-spacing:normal!important;margin-top:7px;line-height:1.5}
+body[data-hn12="recruit"] .hn-shift-picker-wrap{display:grid;gap:9px;margin-top:12px;min-width:0}
+body[data-hn12="recruit"] .hn-shift-picker-toggle{width:100%;min-height:48px;background:#1c4e3e;border:0;border-radius:11px;color:#fff;padding:13px;font:750 14px/1.4 system-ui;cursor:pointer;touch-action:manipulation}
+body[data-hn12="recruit"] .hn-shift-calendar{max-width:430px;width:100%;box-sizing:border-box;background:#fff;border:1px solid #c1d5c9;border-radius:14px;padding:12px;box-shadow:0 12px 24px #142d2615}
+body[data-hn12="recruit"] .hn-shift-cal-head{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:12px;color:#183c2f}
+body[data-hn12="recruit"] .hn-shift-cal-head button{background:#edf5ef;color:#1c4d3b;border:1px solid #c6d8cb;border-radius:9px;min-width:42px;min-height:42px;font-size:26px}
+body[data-hn12="recruit"] .hn-shift-cal-days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px;align-items:center;text-align:center}
+body[data-hn12="recruit"] .hn-shift-cal-days>span{font:600 11px/1.4 system-ui;color:#425b4c;min-width:0;padding:5px 0}
+body[data-hn12="recruit"] .hn-shift-cal-days>button{min-width:0;min-height:40px;background:#f2f7f3;color:#173d31;border:1px solid transparent;border-radius:8px;font:700 13px system-ui;touch-action:manipulation;cursor:pointer}
+body[data-hn12="recruit"] .hn-shift-cal-days>button.is-picked{background:#1b5940;color:#fff}
+body[data-hn12="recruit"] .hn-shift-cal-days>button:focus-visible,body[data-hn12="recruit"] .hn-shift-cal-head button:focus-visible,body[data-hn12="recruit"] .hn-shift-picker-toggle:focus-visible{outline:3px solid #d8804c;outline-offset:2px}
+body[data-hn12="recruit"] #hnShiftDateSummary{font:650 13px/1.5 system-ui;color:#17513a!important;margin:0;min-height:20px}
