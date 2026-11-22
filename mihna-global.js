@@ -11,8 +11,49 @@ export function demoLogin(){return null;}
 const VERIFIED_ADMIN_MEMBER_IDS=new Set(['d0158d67-a1cc-4b65-b3d3-67e20c84fdb3','d9be4582-6401-48d6-b68c-77c6e268d3bd','9f0ec78b-0150-4be9-9daf-8b874a7caa18','854202b1-66c0-4c31-9dff-862bda95f9b0','1711eb68-181b-465c-95ef-3d78b25fdd14']);
 // Read role records belonging to the authenticated Wix member only.
 async function ownRoleQuery(){const owner=getMemberState().member?.id;if(!owner)return {items:[]};return queryItems('AccountRoles',{filters:[{field:'_owner',op:'eq',value:owner}],limit:1})}
-export async function getRole(){const st=getMemberState();if(st.loading)await new Promise(r=>{const u=subscribeMember(s=>{if(!s.loading){u();r()}})});const cur=getMemberState();if(!cur.loggedIn||!cur.member?.id)return null;if(VERIFIED_ADMIN_MEMBER_IDS.has(cur.member.id))return 'admin';try{const p=await ownRoleQuery();const role=p.items[0]?.role||null;return role==='admin'?null:role}catch{return null}}
-export async function ensureRole(role,locale='fr'){if(!['candidate','recruiter'].includes(role))throw new Error('Rôle non autorisé pour une inscription publique.');const q=await ownRoleQuery();if(q.items[0]){if(q.items[0].role==='admin')return q.items[0];if(q.items[0].role!==role){await patchItemFields('AccountRoles',q.items[0]._id,{role,locale});return {...q.items[0],role,locale}}return q.items[0]}return insertItem('AccountRoles',{role,onboardingDone:false,locale})}
+// Historical roles were backfilled once from Wix. Every newly verified member
+// is synchronized without allowing a caller to claim a role on the API.
+function syncVerifiedRole(memberId,force=false){
+ if(!memberId)return;
+ const key='horenova-role-metrics-v1:'+memberId;
+ try{
+  const last=Number(sessionStorage.getItem(key)||0);
+  if(!force&&last>0&&Date.now()-last<6*60*60*1000)return;
+  sessionStorage.setItem(key,String(Date.now()));
+ }catch{/* Session storage is optional. */}
+ void import('/hn-api.js').then(({hub})=>hub('/api/analytics/role-sync',{method:'POST'}))
+  .catch(()=>{try{sessionStorage.removeItem(key)}catch{}});
+}
+export async function getRole(){
+ const st=getMemberState();
+ if(st.loading)await new Promise(r=>{const u=subscribeMember(s=>{if(!s.loading){u();r()}})});
+ const cur=getMemberState();
+ if(!cur.loggedIn||!cur.member?.id)return null;
+ if(VERIFIED_ADMIN_MEMBER_IDS.has(cur.member.id))return 'admin';
+ try{
+  const p=await ownRoleQuery(),role=p.items[0]?.role||null;
+  if(role==='admin')return null;
+  if(role==='candidate'||role==='recruiter')syncVerifiedRole(cur.member.id);
+  return role;
+ }catch{return null}
+}
+export async function ensureRole(role,locale='fr'){
+ if(!['candidate','recruiter'].includes(role))throw new Error('Rôle non autorisé pour une inscription publique.');
+ const q=await ownRoleQuery(),memberId=getMemberState().member?.id;
+ if(q.items[0]){
+  if(q.items[0].role==='admin')return q.items[0];
+  if(q.items[0].role!==role){
+   await patchItemFields('AccountRoles',q.items[0]._id,{role,locale});
+   syncVerifiedRole(memberId,true);
+   return {...q.items[0],role,locale};
+  }
+  syncVerifiedRole(memberId);
+  return q.items[0];
+ }
+ const inserted=await insertItem('AccountRoles',{role,onboardingDone:false,locale});
+ syncVerifiedRole(memberId,true);
+ return inserted;
+}
 export async function roleRecord(){if(getDemoSession())return null;try{return (await ownRoleQuery()).items[0]||null}catch{return null}}
 export async function requireRole(allowed,redirect=true){const d=getDemoSession();if(d){if(allowed.includes(d.role))return {demo:true,role:d.role,member:{displayName:d.name,loginEmail:d.email}};if(redirect)location.replace('/account.html');return null}const st=getMemberState();if(st.loading)await new Promise(r=>{const u=subscribeMember(s=>{if(!s.loading){u();r()}})});const cur=getMemberState();if(!cur.loggedIn){if(redirect)location.replace('/login.html?returnTo='+encodeURIComponent(location.pathname+location.search));return null}const role=await getRole();if(!allowed.includes(role)){if(redirect)location.replace('/account.html');return null}return {demo:false,role,member:cur.member}}
 
