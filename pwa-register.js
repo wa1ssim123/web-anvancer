@@ -147,3 +147,29 @@
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});
   else start();
 })();
+
+/* HORENOVA — First-party, privacy-minimal site session counter.
+ * Browser UUID and session UUID remain in first-party localStorage; the API stores
+ * only SHA-256 hashes and no IP, user agent, visited URLs, account or email.
+ * A visit is one 30-minute session, not one page refresh or a real-world person.
+ */
+(function(){
+ 'use strict';
+ if(!['horenova.com','www.horenova.com','horenova-site-officiel.onrender.com'].includes(location.hostname.toLowerCase()))return;
+ try{
+  if(navigator.globalPrivacyControl===true || navigator.doNotTrack==='1' || localStorage.getItem('horenova-analytics-optout')==='1')return;
+  const makeId=()=>crypto.randomUUID();
+  let browserId=localStorage.getItem('horenova-analytics-browser-v1');
+  if(!/^[0-9a-f]{8}-[0-9a-f-]{27}$/i.test(browserId||'')){browserId=makeId();localStorage.setItem('horenova-analytics-browser-v1',browserId)}
+  const old=JSON.parse(localStorage.getItem('horenova-analytics-session-v1')||'null');
+  const now=Date.now();
+  const reusable=old&&typeof old.id==='string'&&/^[0-9a-f]{8}-[0-9a-f-]{27}$/i.test(old.id)&&Number(old.lastSeen)>0&&now-Number(old.lastSeen)<30*60*1000&&now>=Number(old.lastSeen);
+  const sessionId=reusable?old.id:makeId();
+  localStorage.setItem('horenova-analytics-session-v1',JSON.stringify({id:sessionId,lastSeen:now}));
+  fetch('https://horenova-hub-api.onrender.com/api/analytics/visit',{
+   method:'POST',mode:'cors',keepalive:true,cache:'no-store',
+   headers:{'Content-Type':'application/json'},
+   body:JSON.stringify({browserId,sessionId})
+  }).catch(()=>{/* Analytics must never block navigation, sign-in or checkout. */});
+ }catch{/* Storage is optional. Browsing is always possible without tracking. */}
+})();
