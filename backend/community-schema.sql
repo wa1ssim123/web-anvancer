@@ -1,7 +1,7 @@
--- HORENOVA official WhatsApp Channel link, activated only after an admin supplies
+-- HORENOVA official WhatsApp and Telegram channel links, activated only after an admin supplies
 -- the actual official channel URL through the protected HORENOVA admin interface.
 CREATE TABLE IF NOT EXISTS hr_social_channels (
-  channel_type TEXT PRIMARY KEY CHECK (channel_type='whatsapp'),
+  channel_type TEXT PRIMARY KEY CHECK (channel_type IN ('whatsapp','telegram')),
   url TEXT NOT NULL,
   updated_by TEXT NOT NULL,
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
