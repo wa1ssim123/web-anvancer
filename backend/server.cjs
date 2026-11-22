@@ -4,7 +4,7 @@ const crypto = require('node:crypto');
 const { Pool } = require('pg');
 const PORT = Number(process.env.PORT || 10000);
 const ADMIN_WIX_ID = process.env.ADMIN_WIX_ID || '';
-const ADDITIONAL_ADMIN_IDS=new Set(['d9be4582-6401-48d6-b68c-77c6e268d3bd','9f0ec78b-0150-4be9-9daf-8b874a7caa18','854202b1-66c0-4c31-9dff-862bda95f9b0','1711eb68-181b-465c-95ef-3d78b25fdd14']);
+const ADDITIONAL_ADMIN_IDS=new Set(['d0158d67-a1cc-4b65-b3d3-67e20c84fdb3','d9be4582-6401-48d6-b68c-77c6e268d3bd','9f0ec78b-0150-4be9-9daf-8b874a7caa18','854202b1-66c0-4c31-9dff-862bda95f9b0','1711eb68-181b-465c-95ef-3d78b25fdd14']);
 const isAdminId=id=>!!id&&(id===ADMIN_WIX_ID||ADDITIONAL_ADMIN_IDS.has(id));
 const origins = new Set([
   'https://horenova.com',
@@ -118,6 +118,8 @@ const {createSupportHandler}=require('./support.cjs');
 const supportHandler=createSupportHandler({pool,json,read,rate,auth,error,limit,uuid});
 const {createTechHandler}=require('./tech.cjs');
 const techHandler=createTechHandler({pool,json,read,rate,auth,requireRole,error,limit,uuid});
+const {createChatHandler,rolesOverlap}=require('./chat.cjs');
+const chatHandler=createChatHandler({pool,json,read,rate,auth,requireRole,error,limit,uuid,application});
 const {createTransactionalMailer}=require('./transactional-mail.cjs');
 const mailer=createTransactionalMailer({pool});
 const queueReceipt=async event=>{
@@ -131,6 +133,7 @@ const queueReceipt=async event=>{
 async function api(req,res,path,method) {
   if(path.startsWith('/api/support/'))return supportHandler(req,res,path,method);
   if(path.startsWith('/api/tech/'))return techHandler(req,res,path,method);
+  if(path.startsWith('/api/chat/')||path==='/api/admin/match-directory')return chatHandler(req,res,path,method);
   if(path==='/health' && method==='GET'){
     const q=await pool.query('SELECT 1 AS ok');
     return json(res,200,{ok:q.rows[0].ok===1,service:'horenova-production-api'});
@@ -512,9 +515,12 @@ async function api(req,res,path,method) {
       const request=q.rows[0];
       if(!request) throw error(404,'Demande de recrutement introuvable.');
       if(request.status!=='VALIDEE') throw error(409,'Validez la demande avant de mettre en relation le candidat.');
-      if(request.job_role && a.job_role && request.job_role!==a.job_role)
-        throw error(422,'Le métier du recruteur ne correspond pas à celui du candidat.');
-      await pool.query("UPDATE hr_applications SET recruiter_wix_id=$1,recruiter_request_id=$2,status='MISE_EN_RELATION',updated_at=now() WHERE id=$3",[request.recruiter_wix_id,request.id,id]);
+      if(request.job_role && a.job_role && !rolesOverlap(a.job_role,request.job_role))
+        throw error(422,'Le métier de la demande ne correspond pas aux métiers indiqués par le candidat.');
+      if(a.recruiter_wix_id)
+        throw error(409,'Ce candidat est déjà mis en relation sur cette candidature. Ouvrez la discussion existante.');
+      const changed=await pool.query("UPDATE hr_applications SET recruiter_wix_id=$1,recruiter_request_id=$2,status='MISE_EN_RELATION',updated_at=now() WHERE id=$3 AND recruiter_wix_id IS NULL RETURNING id",[request.recruiter_wix_id,request.id,id]);
+      if(!changed.rows.length)throw error(409,'Une mise en relation a déjà eu lieu pour cette candidature.');
       await pool.query('INSERT INTO hr_audit(actor_wix_id,event_type,application_id,detail) VALUES($1,$2,$3,$4)',[user.id,'ASSIGN_RECRUITER',id,JSON.stringify({requestId:request.id})]);
       return json(res,200,{ok:true});
     }
