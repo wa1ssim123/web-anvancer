@@ -18,6 +18,14 @@ jobs:
         run: node qa/site-audit.cjs
       - name: Simulate candidate, recruiter and administrator permissions
         run: node --test qa/roles.test.cjs
+      - name: Exercise adversarial cross-account PostgreSQL and Wix API simulations
+        run: node qa/horenova-runtime-gates.cjs
+      - name: Verify recruiter and candidate onboarding isolation
+        run: node qa/horenova-role-gates.cjs
+      - name: Audit production backend dependencies for high-severity vulnerabilities
+        run: |
+          npm install --prefix backend --package-lock-only --ignore-scripts --no-audit
+          npm audit --prefix backend --omit=dev --audit-level=high
       - name: Verify private chats, protected matching search and consent-based three-way conversations
         run: node --test qa/recruitment-chat.test.cjs
       - name: Test HORENOVA TECH multi-venue authorization and atomic POS inventory transactions
@@ -42,6 +50,8 @@ jobs:
         run: npx playwright install --with-deps chromium
       - name: Exercise FR, AR and EN on public pages
         run: node qa/browser-smoke.cjs
+      - name: Exhaustively open all application pages on small phones, phones and desktop
+        run: node qa/full-app-stress.cjs
       - name: Verify mobile layout, readability, support and role dashboards
         run: node qa/adaptive-layout.cjs
       - name: Verify compact support button and single-row role navigation
