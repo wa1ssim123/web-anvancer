@@ -10,9 +10,9 @@ const SALE='dddddddd-dddd-4ddd-8ddd-dddddddddddd';
 const makeError=(status,message)=>Object.assign(new Error(message),{status});
 const venue={id:VENUE,owner_wix_id:OWN,name:'Café test',slug:'cafe-test-1234567890',city:'Casablanca',status:'PILOT'};
 const product={id:PRODUCT,name:'Espresso',price_centimes:2200,stock_qty:10,active:true,category:'Café',sku:null,menu_visible:true};
-function createHarness({role='recruiter',userId=OWN,body={},respond,stock=10,existingSale=false}={}){
+function createHarness({role='recruiter',userId=OWN,body={},respond,stock=10,existingSale=false,delayedSale=false}={}){
  const calls=[];
- let jsonResponse=null,authCalls=0,updates=0,committed=false,rolledBack=false;
+ let jsonResponse=null,authCalls=0,updates=0,committed=false,rolledBack=false,saleReads=0;
  const user={id:userId,role};
  const pool={
   async query(sql,params){
@@ -29,7 +29,7 @@ function createHarness({role='recruiter',userId=OWN,body={},respond,stock=10,exi
       if(sql==='COMMIT'){committed=true;return {rows:[]};}
       if(sql==='ROLLBACK'){rolledBack=true;return {rows:[]};}
       if(sql==='BEGIN')return {rows:[]};
-      if(sql.includes('SELECT id,total_centimes FROM ht_sales'))return {rows:existingSale?[{id:SALE,total_centimes:4400}]:[]};
+      if(sql.includes('SELECT id,total_centimes FROM ht_sales'))return {rows:(existingSale||(delayedSale&&++saleReads>=2))?[{id:SALE,total_centimes:4400}]:[]};
       if(sql.includes('SELECT product_id,quantity FROM ht_sale_lines'))return {rows:[{product_id:PRODUCT,quantity:2}]};
       if(sql.includes('FROM ht_products')&&sql.includes('FOR UPDATE'))return {rows:[{...product,stock_qty:stock}]};
       if(sql.includes('INSERT INTO ht_sales'))return {rows:[{id:SALE,created_at:'2026-11-21'}]};
@@ -86,6 +86,12 @@ test('client reference deduplicates repeated sales before stock mutation',async(
  const h=createHarness({body:{reference:'test-sale-00002',items:[{productId:PRODUCT,quantity:2}]},existingSale:true});
  const r=await h.handler(h.req,{},'/api/tech/venues/'+VENUE+'/sales','POST');
  assert.equal(r.status,200);assert.equal(r.data.duplicate,true);assert.equal(h.updates,0);
+});
+test('concurrent identical sale retry is recognized after inventory lock even when stock depleted',async()=>{
+ const h=createHarness({body:{reference:'test-sale-00002',items:[{productId:PRODUCT,quantity:2}]},stock:0,delayedSale:true});
+ const r=await h.handler(h.req,{},'/api/tech/venues/'+VENUE+'/sales','POST');
+ assert.equal(r.status,200);assert.equal(r.data.duplicate,true);
+ assert.equal(h.updates,0,'Retry must not decrement inventory twice');
 });
 test('altered duplicate receipt cannot silently masquerade as previous sale',async()=>{
  const h=createHarness({body:{reference:'test-sale-00002',items:[{productId:PRODUCT,quantity:1}]},existingSale:true});
