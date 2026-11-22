@@ -13,7 +13,7 @@ const fakePool=(opts={})=>{
   calls,get state(){return state},get attempts(){return attempts},
   async query(sql,params=[]){
    calls.push({sql,params});
-   if(sql.includes('FROM hr_social_publications p JOIN hr_recruiter_requests r'))return {
+   if(!sql.includes('WITH claimed AS') && sql.includes('FROM hr_social_publications p JOIN hr_recruiter_requests r'))return {
     rows:[{...item,request_id:ID,channel:'telegram',status:state,attempts,
      telegram_message_id:state==='published'?42:null,last_error:null,sent_at:null}]};
    if(sql.includes('SELECT channel_type,url FROM hr_social_channels'))return {rows:[{channel_type:'telegram',url:item.url}]};
