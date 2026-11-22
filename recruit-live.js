@@ -1,6 +1,7 @@
 import { requireRole,currentLang } from '/mihna-global.js';
 import { queryItems, insertItem } from '/js/wix/items.js';
 import { hub, hubUploadWorkplacePhoto, hubPhoto } from '/hn-api.js?v=professional-20261119-r1';
+import {attachShiftCalendar} from '/recruit-shift-calendar.js?v=20261122-r1';
 const auth=await requireRole(['recruiter'],false);
 if(!auth){location.replace('/account.html');throw new Error('Espace réservé aux recruteurs');}
 const root=document.getElementById('recruitGate');
@@ -38,17 +39,18 @@ root.innerHTML=`<section class='hn-rec-command' aria-label='Tableau de bord recr
 <div class='wide' id='recruitShiftFields' hidden style='padding:12px;border-radius:14px;background:#ecefe9;margin-top:10px'>
   <strong style='display:block;margin-bottom:10px'>Détails de la mission / shift</strong>
   <div class='form-grid'>
-    <label><small>DATE DU SHIFT</small><input type='date' name='shiftDate'></label>
+    <label><small>DATE DU SHIFT *</small><input type='date' name='shiftDate' id='hnShiftDate' autocomplete='off'><small class='hn-shift-date-hint'>Touchez ici ou choisissez sur le calendrier.</small></label>
     <label><small>DÉBUT</small><input type='time' name='shiftStart'></label>
     <label><small>FIN</small><input type='time' name='shiftEnd'></label>
     <label><small>POSTES À POURVOIR</small><input type='number' name='shiftSlots' min='1' max='200' value='1'></label>
   </div>
+  <div class='hn-shift-picker-wrap'><button type='button' id='hnShiftCalendarToggle' class='hn-shift-picker-toggle' aria-controls='hnShiftCalendar' aria-expanded='false'>📅 Choisir la date du shift</button><div id='hnShiftCalendar' class='hn-shift-calendar' hidden></div><p id='hnShiftDateSummary' role='status' aria-live='polite'></p></div>
 </div>
 <label><small>TYPE D'ÉTABLISSEMENT</small><select name='businessType' required><option value=''>Choisir un établissement</option><option>Restaurant</option><option>Café</option><option>Hôtel / Riad</option><option>Complexe de loisirs</option><option>Traiteur / Événementiel</option><option>Boulangerie / Pâtisserie</option><option>Tourisme / Agence de voyages</option><option>Autre</option></select></label>
 <label><small>CONTRAT</small><select name='contractType' required><option value=''>Choisir un contrat</option><option value='CDI'>CDI</option><option value='CDD'>CDD</option><option value='Shift / mission'>Shift / mission</option><option value='Temps partiel'>Temps partiel</option><option value='Stage'>Stage</option><option value='Autre'>Autre</option></select></label>
 <label class='wide'><small>ADRESSE DU LIEU DE TRAVAIL · PUBLIQUE</small><input name='workplaceAddress' maxlength='180' required placeholder='Quartier, avenue, ville (sans téléphone ni e-mail)' value='${esc(prof?.businessAddress||'')}'></label>
 <label><small>NOMBRE DE POSTES</small><input type='number' name='openings' min='1' max='200' value='1' required></label>
-<label><small>DATE DE DÉBUT (SI CONNUE)</small><input type='date' name='startDate'></label>
+<label id='hnRecruitStartDateLabel'><small>DATE DE DÉBUT (SI CONNUE)</small><input type='date' name='startDate'></label>
 <label class='wide'><small>COMPÉTENCES & EXIGENCES *</small><textarea name='requirements' rows='3' maxlength='1200' minlength='15' required placeholder='Ex. Service en salle, 2 ans d’expérience, hygiène, langues, horaires…'></textarea></label>
 <label class='wide'><small>DESCRIPTION</small><textarea name='description' rows='4' maxlength='1500' placeholder='Compétences et conditions, sans coordonnées personnelles'></textarea></label>
 <div class='wide hn-workplace-uploader'>
@@ -121,11 +123,15 @@ async function optimizeWorkplacePhoto(file){
 }
 
 const shiftFields=document.getElementById('recruitShiftFields');
+const shiftCalendar=attachShiftCalendar(form,currentLang);
+const startDateLabel=document.getElementById('hnRecruitStartDateLabel');
 function updateShiftFields(){
  const isShift=form.elements.kind.value==='shift';
  if(isShift)form.elements.contractType.value='Shift / mission';
  else if(form.elements.contractType.value==='Shift / mission')form.elements.contractType.value='';
  shiftFields.hidden=!isShift;
+ startDateLabel.hidden=isShift;
+ if(isShift)shiftCalendar.sync();else shiftCalendar.close();
  ['shiftDate','shiftStart','shiftEnd','shiftSlots'].forEach(key=>{
   if(form.elements[key])form.elements[key].required=isShift;
  });
@@ -274,9 +280,10 @@ form.addEventListener('submit',async event=>{
    if(data.kind==='shift'){
      const day=data.shiftDate||'',start=data.shiftStart||'',end=data.shiftEnd||'';
      const slots=Number(data.shiftSlots);
-     if(!/^\d{4}-\d{2}-\d{2}$/.test(day)||!/^\d{2}:\d{2}$/.test(start)||!/^\d{2}:\d{2}$/.test(end))throw Error('Date et heures du shift obligatoires.');
+     if(!shiftCalendar.validDate(day)||!/^\d{2}:\d{2}$/.test(start)||!/^\d{2}:\d{2}$/.test(end))throw Error('Choisissez une date valide et les heures du shift.');
      if(!Number.isInteger(slots)||slots<1||slots>200)throw Error('Nombre de postes invalide (1 à 200).');
-     data.scheduleText=day+' · '+start+'–'+end+' · '+slots+' poste(s)';
+     data.startDate=day;
+    data.scheduleText=day+' · '+start+'–'+end+' · '+slots+' poste(s)';
      data.openings=slots;
      data.contractType='Shift / mission';
    }
