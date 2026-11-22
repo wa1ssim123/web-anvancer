@@ -139,7 +139,7 @@ else{
  const reqs=res[0].status==='fulfilled'?res[0].value.items||[]:null;
  const apps=res[1].status==='fulfilled'?res[1].value.items||[]:null;
  const pending=reqs?.filter(x=>x.status==='A_EXAMINER').length??null;
- const audience=res[2].status==='fulfilled'?res[2].value:null;
+ const audience=res[2].status==='fulfilled'&&res[2].value?.registrations?res[2].value:null;
  const langAudience=currentLang();
  const audienceText=({
   fr:{name:'STATISTIQUES DU SITE',label:'candidats',recruiters:'recruteurs',info:'Visiteurs et inscriptions historiques, avec compteurs séparés par source.',link:'Voir les statistiques'},
