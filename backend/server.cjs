@@ -480,7 +480,7 @@ async function api(req,res,path,method) {
     const id=m[1],action=m[2]||'',a=await application(id,user);
     if(!action && method==='GET') return json(res,200,{item:present(a,user)});
     if(action==='messages' && method==='GET'){
-      const r=await pool.query('SELECT id,sender_wix_id,sender_role,body,created_at FROM hr_messages WHERE application_id=$1 ORDER BY id DESC LIMIT 150',[id]);
+      const r=await pool.query('SELECT id,sender_wix_id,sender_role,body,created_at FROM hr_messages WHERE application_id=$1 AND ($2::timestamptz IS NULL OR created_at >= $2::timestamptz) ORDER BY id DESC LIMIT 150',[id,a.match_started_at||null]);
       return json(res,200,{items:r.rows.reverse()});
     }
     if(action==='messages' && method==='POST'){
@@ -519,7 +519,7 @@ async function api(req,res,path,method) {
         throw error(422,'Le métier de la demande ne correspond pas aux métiers indiqués par le candidat.');
       if(a.recruiter_wix_id)
         throw error(409,'Ce candidat est déjà mis en relation sur cette candidature. Ouvrez la discussion existante.');
-      const changed=await pool.query("UPDATE hr_applications SET recruiter_wix_id=$1,recruiter_request_id=$2,status='MISE_EN_RELATION',updated_at=now() WHERE id=$3 AND recruiter_wix_id IS NULL RETURNING id",[request.recruiter_wix_id,request.id,id]);
+      const changed=await pool.query("UPDATE hr_applications SET recruiter_wix_id=$1,recruiter_request_id=$2,status='MISE_EN_RELATION',match_started_at=now(),updated_at=now() WHERE id=$3 AND recruiter_wix_id IS NULL RETURNING id",[request.recruiter_wix_id,request.id,id]);
       if(!changed.rows.length)throw error(409,'Une mise en relation a déjà eu lieu pour cette candidature.');
       await pool.query('INSERT INTO hr_audit(actor_wix_id,event_type,application_id,detail) VALUES($1,$2,$3,$4)',[user.id,'ASSIGN_RECRUITER',id,JSON.stringify({requestId:request.id})]);
       return json(res,200,{ok:true});
