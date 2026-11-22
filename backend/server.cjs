@@ -586,6 +586,14 @@ const server=http.createServer(async(req,res)=>{
   try{path=new URL(req.url,'http://localhost').pathname;}
   catch{throw error(400,'URL de requête invalide.');}
   if(path.length>2048)throw error(414,'Chemin de requête trop long.');
+  // A stolen, replayed or abusive credential cannot generate unlimited Wix
+  // verification requests. Hash the token; never store credentials in counters.
+  const bearer=req.headers.authorization;
+  if(typeof bearer==='string'&&bearer){
+    if(bearer.length>10000)throw error(401,'Session invalide.');
+    const fingerprint=crypto.createHash('sha256').update(bearer).digest('hex').slice(0,32);
+    rate('credential:'+fingerprint,240,60);
+  }
   await api(req,res,path,req.method);
   } catch(e){
     const status=e.status || 500;
