@@ -106,3 +106,12 @@ test('empty messages are blocked',async()=>{
  const u='/api/chat/direct/'+THREAD+'/messages';
  await assert.rejects(h.handler(h.request(u),{},u,'POST'),{status:422});
 });
+// Regression: a recruiter joining later must never receive historic admin-candidate messages.
+test('three-way message history excludes pre-introduction private messages',async()=>{
+ const h=harness({role:'recruiter',id:REC});
+ const url='/api/chat/match/'+APP+'/messages';
+ await h.handler(h.request(url),{},url,'GET');
+ const query=h.calls.find(x=>x.sql.includes('FROM hr_messages m JOIN hr_applications a'));
+ assert.ok(query,'Match chat must join the application introduction boundary');
+ assert.match(query.sql,/m\.created_at>=a\.match_started_at/);
+});
