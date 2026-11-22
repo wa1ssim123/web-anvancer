@@ -7,7 +7,7 @@ const escapeHTML=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','
 const safeImg=value=>{
   const raw=String(value||'');
   if((raw.startsWith('/')&&!raw.startsWith('//'))||/^https:\/\//i.test(raw))return escapeHTML(raw);
-  return '/assets/restaurant.jpg';
+  return 'https://headless-tfcfvgrbhgw-xwassim04-1409.wix-site-host.com/assets/restaurant.jpg';
 };
 const jobForHTML=source=>{
   const job={...source};
