@@ -27,6 +27,20 @@
     panel.insertBefore(techMobile, panel.querySelector('a[href="/explore.html"]'));
   }
 
+  // Expose the public HORENOVA news and WhatsApp Channel in the mobile app.
+  if (!panel.querySelector('a[href="/communaute.html"]')) {
+    const community = document.createElement('a');
+    community.href = '/communaute.html';
+    community.append(document.createTextNode(
+      lang === 'ar' ? 'قناة واتساب وأخبار هورينوفا ' : lang === 'en' ? 'News & WhatsApp Channel ' : 'Actualités & Canal WhatsApp '
+    ));
+    const arrow = document.createElement('span');
+    arrow.setAttribute('aria-hidden', 'true');
+    arrow.textContent = '↗';
+    community.append(arrow);
+    panel.insertBefore(community, panel.querySelector('a[href="/account.html"]') || null);
+  }
+
   menu.dataset.bound = 'mobile-v15';
   menu.setAttribute('aria-controls', 'mobileMenu');
   menu.setAttribute('aria-expanded', 'false');
