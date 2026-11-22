@@ -63,6 +63,9 @@ if(auth.role==='candidate'){
   '<section class="dash-card wide"><span>'+esc(t.status)+'</span><h3>'+esc(t.my)+(apps===null?'': ' · '+apps.length)+'</h3>'+
   '<div class="mini-list">'+(apps===null?'<p>Suivi temporairement indisponible.</p>':apps.length?apps.map(a=>'<p><b>'+esc(a.jobTitle||'Candidature')+'</b><span>'+esc(a.status||'En étude')+'</span></p>').join(''):'<p>'+esc(t.none)+'</p>')+'</div>'+
   '<a href="/jobs.html">'+esc(t.start)+' ↗</a></section>'+
+  card('HORENOVA · MESSAGES',language==='en'?'My private conversations':language==='ar'?'رسائلي الخاصة':'Mes conversations privées',
+    language==='en'?'Reply to HORENOVA and join an approved three-way recruitment discussion.':language==='ar'?'تواصل مع هورينوفا وشارك في المحادثات المهنية الثلاثية بعد الموافقة.':'Répondez à HORENOVA et participez aux mises en relation à trois après validation.',
+    [[language==='en'?'Open my inbox':language==='ar'?'فتح الرسائل':'Ouvrir ma messagerie','/conversations.html']])+
   card(t.profile,profile?.jobFamily||t.profile,t.profileDesc,[[t.edit,'/candidate-setup.html']])+
   card(t.quiz,t.quiz,t.quizDesc,[[t.quiz,'/quiz.html?role='+encodeURIComponent(profile?.jobFamily||'Serveur')]]);
 }
@@ -118,8 +121,8 @@ else if(auth.role==='recruiter'){
  card('05 · CANDIDATURES',countOrUnavailable(candidates?.length??null),
    'Les dossiers deviennent visibles après validation et affectation par HORENOVA.',
    [['Mes candidatures','/conversations.html']])+
- card('06 · CONVERSATIONS','Espace sécurisé',
-   'Chat candidat + recruteur + administrateur, après accord et mise en relation.',
+ card('06 · CONVERSATIONS','Messagerie professionnelle',
+   'Échange privé avec HORENOVA, puis conversation à trois avec le candidat après autorisation.',
    [['Ouvrir le chat','/conversations.html']])+
  '<div id="recruitment" class="dash-card wide"><span>ÉTAT RÉEL DE MES ANNONCES</span><h3>Votre suivi HORENOVA.</h3>'+
  (requests===null?'<p>Le serveur des demandes est temporairement inaccessible. Aucun statut n’est présumé.</p>':
@@ -144,7 +147,7 @@ else{
  card('DOSSIERS CANDIDATS',apps===null?'Indisponible':String(apps.length),
    'Candidatures, statuts et affectations recruteurs.',[['Centre candidatures','/admin.html']])+
  card('CHATS SUPERVISÉS','Administration',
-   'Accès encadré aux conversations liées à chaque candidature.',[['Ouvrir les conversations','/conversations.html']])+
+   'Recherche par nom, métier et ville ; discussions privées et mises en relation à trois.',[['Ouvrir les conversations','/conversations.html'],['Matching & recherche','/conversations.html?mode=matching']])+
  card('ÉTABLISSEMENTS',reqs===null?'Indisponible':String(new Set(reqs.map(x=>x.recruiter_wix_id)).size),
    'Suivi des recruteurs actifs et de leurs demandes.',[['Gérer les recruteurs','/admin.html']])+
  card('SERVICES HORENOVA','Plateforme',
