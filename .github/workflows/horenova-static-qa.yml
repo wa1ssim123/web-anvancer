@@ -68,6 +68,8 @@ jobs:
         run: node qa/matching-guide.cjs
       - name: Verify HORENOVA TECH storefront, local POS inventory and NFC menu in FR EN AR
         run: node qa/tech-system.cjs
+      - name: Verify HORENOVA private inbox for candidate, recruiter and admin on mobile and desktop
+        run: node qa/chat-browser.cjs
       - name: Exercise authenticated TECH PRO pilot console on mobile with mock server
         run: node qa/tech-console-browser.cjs
       - name: Verify candidate, job and shift email visual layout across 3 languages
