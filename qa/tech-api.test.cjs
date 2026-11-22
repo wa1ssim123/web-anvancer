@@ -30,6 +30,7 @@ function createHarness({role='recruiter',userId=OWN,body={},respond,stock=10,exi
       if(sql==='ROLLBACK'){rolledBack=true;return {rows:[]};}
       if(sql==='BEGIN')return {rows:[]};
       if(sql.includes('SELECT id,total_centimes FROM ht_sales'))return {rows:existingSale?[{id:SALE,total_centimes:4400}]:[]};
+      if(sql.includes('SELECT product_id,quantity FROM ht_sale_lines'))return {rows:[{product_id:PRODUCT,quantity:2}]};
       if(sql.includes('FROM ht_products')&&sql.includes('FOR UPDATE'))return {rows:[{...product,stock_qty:stock}]};
       if(sql.includes('INSERT INTO ht_sales'))return {rows:[{id:SALE,created_at:'2026-11-21'}]};
       if(sql.includes('UPDATE ht_products')){updates++;return {rows:[{...product,stock_qty:stock+(params[0]||0)}]};}
@@ -85,6 +86,21 @@ test('client reference deduplicates repeated sales before stock mutation',async(
  const h=createHarness({body:{reference:'test-sale-00002',items:[{productId:PRODUCT,quantity:2}]},existingSale:true});
  const r=await h.handler(h.req,{},'/api/tech/venues/'+VENUE+'/sales','POST');
  assert.equal(r.status,200);assert.equal(r.data.duplicate,true);assert.equal(h.updates,0);
+});
+test('altered duplicate receipt cannot silently masquerade as previous sale',async()=>{
+ const h=createHarness({body:{reference:'test-sale-00002',items:[{productId:PRODUCT,quantity:1}]},existingSale:true});
+ await assert.rejects(h.handler(h.req,{},'/api/tech/venues/'+VENUE+'/sales','POST'),{status:409});
+ assert.equal(h.updates,0);
+});
+test('malformed item fails with validation error rather than internal crash',async()=>{
+ const h=createHarness({body:{reference:'test-sale-00002',items:[null]}});
+ await assert.rejects(h.handler(h.req,{},'/api/tech/venues/'+VENUE+'/sales','POST'),{status:422});
+ assert.equal(h.updates,0);
+});
+test('UUID case cannot corrupt the cart-to-inventory quantity mapping',async()=>{
+ const h=createHarness({body:{reference:'test-sale-00004',items:[{productId:PRODUCT.toUpperCase(),quantity:1}]}});
+ const result=await h.handler(h.req,{},'/api/tech/venues/'+VENUE+'/sales','POST');
+ assert.equal(result.status,201);assert.equal(result.data.totalCentimes,2200);
 });
 test('zero or negative sale quantities are rejected',async()=>{
  const h=createHarness({body:{reference:'test-sale-00003',items:[{productId:PRODUCT,quantity:0}]}});
