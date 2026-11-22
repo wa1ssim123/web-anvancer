@@ -76,8 +76,8 @@ function harness(){
   setTimeout,clearTimeout
  };
  vm.runInNewContext(source,sandbox,{filename:'backend/server.cjs'});
- async function request(method,route,token,body){
-  const headers={origin:'https://horenova.com'};
+ async function request(method,route,token,body,origin='https://horenova.com'){
+  const headers={origin};
   if(token)headers.authorization=token;
   if(body!==undefined)headers['content-type']='application/json';
   const payload=body===undefined?null:Buffer.from(JSON.stringify(body));
@@ -160,12 +160,10 @@ test('Malformed request bodies are rejected cleanly, not as server crashes',asyn
 });
 test('Untrusted origins cannot use the private API',async()=>{
  const h=harness();
- const res=await h.request('GET','/api/applications','candidate-token');
- assert.equal(res.status,200);
- const blocked=harness();
- // The harness defaults to a first-party Origin; verify the source retains an explicit allowlist.
- assert.match(source,/if\(origin && !origins\.has\(origin\)\) return json\(res,403/);
- assert.match(source,/Access-Control-Allow-Headers/);
+ assert.equal((await h.request('GET','/api/applications','candidate-token')).status,200);
+ const blocked=await h.request('GET','/api/applications','candidate-token',undefined,'https://attacker.invalid');
+ assert.equal(blocked.status,403);
+ assert.ok(!blocked.headers['Access-Control-Allow-Origin'],'Denied origin must never receive CORS approval');
 });
 test('Malformed paths and unsupported methods cannot crash API request loop',async()=>{
  const h=harness();
