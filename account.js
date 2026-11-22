@@ -135,10 +135,18 @@ else if(auth.role==='recruiter'){
 else{
  document.getElementById('accountTitle').innerHTML='Administration HORENOVA.<br><em>Supervision nationale.</em>';
  document.body.dataset.accountRole='admin';
- const res=await Promise.allSettled([hub('/api/recruiter-requests'),hub('/api/applications')]);
+ const res=await Promise.allSettled([hub('/api/recruiter-requests'),hub('/api/applications'),hub('/api/analytics/admin')]);
  const reqs=res[0].status==='fulfilled'?res[0].value.items||[]:null;
  const apps=res[1].status==='fulfilled'?res[1].value.items||[]:null;
  const pending=reqs?.filter(x=>x.status==='A_EXAMINER').length??null;
+ const audience=res[2].status==='fulfilled'?res[2].value:null;
+ const langAudience=currentLang();
+ const audienceText=({
+  fr:{name:'STATISTIQUES DU SITE',label:'candidats',recruiters:'recruteurs',info:'Visiteurs et inscriptions historiques, avec compteurs séparés par source.',link:'Voir les statistiques'},
+  en:{name:'SITE ANALYTICS',label:'candidates',recruiters:'recruiters',info:'Visitors and historical signups, with separate data sources.',link:'View analytics'},
+  ar:{name:'إحصائيات الموقع',label:'مرشحاً',recruiters:'مشغّلين',info:'الزوار والتسجيلات منذ البداية مع فصل بيانات كل مصدر.',link:'عرض الإحصائيات'}
+ })[langAudience]||{name:'STATISTIQUES DU SITE',label:'candidats',recruiters:'recruteurs',info:'Visiteurs et inscriptions.',link:'Voir les statistiques'};
+ const audienceSummary=audience?String(audience.registrations.candidates)+' '+audienceText.label+' · '+String(audience.registrations.recruiters)+' '+audienceText.recruiters:'—';
  document.getElementById('accountSubtitle').textContent='Gestion privée · modération · candidatures · mise en relation.';
  dash.innerHTML=
  '<div class="hn-role-welcome"><span>CENTRE DE CONTRÔLE</span><h3>Un seul objectif.<br>Des recrutements sérieux.</h3><p>Validez les offres, coordonnez les candidatures et supervisez les conversations tout en protégeant les données personnelles.</p><a class="hn-role-primary" href="/admin.html">Ouvrir l’administration ↗</a></div>'+
@@ -146,6 +154,7 @@ else{
    'Vérification des entreprises et des offres avant publication nationale.',[['Modérer les demandes','/admin.html']])+
  card('DOSSIERS CANDIDATS',apps===null?'Indisponible':String(apps.length),
    'Candidatures, statuts et affectations recruteurs.',[['Centre candidatures','/admin.html']])+
+ card(audienceText.name,audienceSummary,audienceText.info,[[audienceText.link,'/admin.html#hnAdminAnalytics']])+
  card('CHATS SUPERVISÉS','Administration',
    'Recherche par nom, métier et ville ; discussions privées et mises en relation à trois.',[['Ouvrir les conversations','/conversations.html'],['Matching & recherche','/conversations.html?mode=matching']])+
  card('ÉTABLISSEMENTS',reqs===null?'Indisponible':String(new Set(reqs.map(x=>x.recruiter_wix_id)).size),
