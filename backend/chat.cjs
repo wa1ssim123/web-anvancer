@@ -100,8 +100,8 @@ function createChatHandler({pool,json,read,rate,auth,requireRole,error,limit,uui
         pool.query(directListSql,[user.role,user.id]),
         pool.query(`SELECT a.id,a.job_title,a.job_role,a.profile,a.status,a.updated_at,
           r.business_name,
-          (SELECT MAX(created_at) FROM hr_messages WHERE application_id=a.id) AS last_message_at,
-          (SELECT body FROM hr_messages WHERE application_id=a.id ORDER BY id DESC LIMIT 1) AS preview
+          (SELECT MAX(m.created_at) FROM hr_messages m WHERE m.application_id=a.id AND a.match_started_at IS NOT NULL AND m.created_at>=a.match_started_at) AS last_message_at,
+          (SELECT m.body FROM hr_messages m WHERE m.application_id=a.id AND a.match_started_at IS NOT NULL AND m.created_at>=a.match_started_at ORDER BY m.id DESC LIMIT 1) AS preview
           FROM hr_applications a
           LEFT JOIN hr_recruiter_requests r ON r.id=a.recruiter_request_id
           WHERE a.consent_to_intro=true AND a.recruiter_wix_id IS NOT NULL
@@ -143,7 +143,7 @@ function createChatHandler({pool,json,read,rate,auth,requireRole,error,limit,uui
         rate(user.id+':chat-get',150,60);
         const r=kind==='direct'?
           await pool.query('SELECT id,sender_wix_id,sender_role,body,created_at FROM (SELECT id,sender_wix_id,sender_role,body,created_at FROM hr_direct_messages WHERE thread_id=$1 ORDER BY id DESC LIMIT 200) recent ORDER BY id',[id]):
-          await pool.query('SELECT id,sender_wix_id,sender_role,body,created_at FROM (SELECT m.id,m.sender_wix_id,m.sender_role,m.body,m.created_at FROM hr_messages m JOIN hr_applications a ON a.id=m.application_id WHERE m.application_id=$1 AND (a.match_started_at IS NULL OR m.created_at>=a.match_started_at) ORDER BY m.id DESC LIMIT 200) recent ORDER BY id',[id]);
+          await pool.query('SELECT id,sender_wix_id,sender_role,body,created_at FROM (SELECT m.id,m.sender_wix_id,m.sender_role,m.body,m.created_at FROM hr_messages m JOIN hr_applications a ON a.id=m.application_id WHERE m.application_id=$1 AND (a.match_started_at IS NOT NULL AND m.created_at>=a.match_started_at) ORDER BY m.id DESC LIMIT 200) recent ORDER BY id',[id]);
         return json(res,200,{items:r.rows.map(x=>({id:x.id,senderWixId:x.sender_wix_id,senderRole:x.sender_role,body:x.body,createdAt:x.created_at}))});
       }
       if(method==='POST'){
