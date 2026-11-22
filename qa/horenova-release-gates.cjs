@@ -43,7 +43,9 @@ console.log('PASS Android Chrome sign-in stays enabled; token storage is excepti
 const recruiter=source('recruit-live.js');
 assert.match(recruiter,/recruitShiftFields/);
 assert.match(recruiter,/data\.kind==='shift'/);
-assert.match(recruiter,/\^\\d\{4\}-\\d\{2\}-\\d\{2\}\$/);
+assert.match(recruiter,/shiftCalendar\.validDate\(day\)/);
+assert.match(recruiter,/data\.startDate=day/);
+assert.match(source('recruit-shift-calendar.js'),/export function validShiftDate/);
 assert.match(recruiter,/name='shiftDate'/);
 assert.match(source('recruiter-setup.html'),/name="businessAddress"/);
 assert.match(source('recruiter-setup.html'),/name="businessEmail"/);
