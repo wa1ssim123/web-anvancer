@@ -29,8 +29,28 @@ function normalizeTelegramUrl(value){
  return 'https://t.me/'+match[1];
 }
 
-function createCommunityHandler({pool,json,read,rate,auth,requireRole,error}){
+function createCommunityHandler({pool,json,read,rate,auth,requireRole,error,publisher}){
  return async function communityHandler(req,res,path,method){
+  if(path==='/api/community/publications' && method==='GET'){
+   const user=await auth(req);requireRole(user,['admin']);
+   rate(user.id+':social-publications',45,60);
+   return json(res,200,await publisher.status(),{'Cache-Control':'private, no-store'});
+  }
+  const socialRetry=path.match(/^\/api\/community\/publications\/([0-9a-f-]+)\/retry$/i);
+  if(socialRetry && method==='PATCH'){
+   const user=await auth(req);requireRole(user,['admin']);
+   rate(user.id+':social-retry',8,3600);
+   if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(socialRetry[1]))
+    throw error(422,'Identifiant de publication invalide.');
+   const d=await read(req,600);
+   if(d.confirmedReviewed!==true)throw error(422,'Vérifiez le canal avant de relancer. Un message peut déjà avoir été envoyé.');
+   const ok=await publisher.retry(socialRetry[1]);
+   if(!ok)throw error(409,'Publication non relançable. Vérifiez son statut et la validation de l’annonce.');
+   await pool.query("INSERT INTO hr_audit(actor_wix_id,event_type,detail) VALUES($1,'TELEGRAM_POST_RETRY',$2)",
+    [user.id,JSON.stringify({requestId:socialRetry[1]})]);
+   return json(res,200,{ok:true,queued:true});
+  }
+
   if(path==='/api/community/telegram'){
    if(method==='GET'){
     const r=await pool.query("SELECT url,updated_at FROM hr_social_channels WHERE channel_type='telegram' LIMIT 1");
