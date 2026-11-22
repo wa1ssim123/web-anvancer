@@ -35,7 +35,7 @@ async function probe(path,options={}){
  }});
  assert.equal(preflight.status,204,'First-party CORS must remain allowed');
  assert.equal(preflight.headers.get('access-control-allow-origin'),'https://horenova.com');
- const invalid=await probe('/health',{method:'TRACE'});
+ const invalid=await probe('/health',{method:'PROPFIND'});
  assert.equal(invalid.status,405,'Unexpected HTTP methods are rejected');
  console.log('PASS DEPLOYED HORENOVA security: health, headers, all six private routes, first-party CORS, hostile origins and methods');
 })().catch(e=>{console.error('FAIL deployed HORENOVA security '+e.stack);process.exitCode=1;});
