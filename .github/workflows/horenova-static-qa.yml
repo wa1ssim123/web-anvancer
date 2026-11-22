@@ -18,6 +18,8 @@ jobs:
         run: node qa/site-audit.cjs
       - name: Simulate candidate, recruiter and administrator permissions
         run: node --test qa/roles.test.cjs
+      - name: Verify private chats, protected matching search and consent-based three-way conversations
+        run: node --test qa/recruitment-chat.test.cjs
       - name: Test HORENOVA TECH multi-venue authorization and atomic POS inventory transactions
         run: node --test qa/tech-api.test.cjs
 
