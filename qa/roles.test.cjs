@@ -15,7 +15,7 @@ const accounts={
  'recruiter-token':{id:'recruiter-1',role:'recruiter'},
  'admin-token':{id:'admin-verified',role:'admin'}
 };
-function harness(){
+function harness({wixDelayMs=0}={}){
  const log={db:[],wix:[]};
  let handler;
  class Pool{
@@ -34,6 +34,7 @@ function harness(){
   }
  }
  async function fakeFetch(url,opts={}){
+  if(wixDelayMs>0)await new Promise(resolve=>setTimeout(resolve,wixDelayMs));
   const token=opts.headers?.Authorization;
   const identity=accounts[token];
   const reply=(body,status=200)=>({ok:status>=200&&status<300,status,json:async()=>body});
@@ -77,8 +78,8 @@ function harness(){
   setTimeout,clearTimeout
  };
  vm.runInNewContext(source,sandbox,{filename:'backend/server.cjs'});
- async function request(method,route,token,body,origin='https://horenova.com'){
-  const headers={origin};
+ async function request(method,route,token,body,origin='https://horenova.com',extraHeaders={}){
+  const headers={origin,...extraHeaders};
   if(token)headers.authorization=token;
   if(body!==undefined)headers['content-type']='application/json';
   const payload=body===undefined?null:Buffer.from(JSON.stringify(body));
@@ -94,6 +95,44 @@ function harness(){
  }
  return {request,log};
 }
+test('HTTP API sends strict no-frame, no-referrer, anti-sniff, HTTPS and API-only CSP protections',async()=>{
+ const h=harness();
+ const r=await h.request('GET','/api/applications');
+ assert.equal(r.status,401);
+ for(const [name,value] of Object.entries({
+  'X-Frame-Options':'DENY',
+  'X-Content-Type-Options':'nosniff',
+  'Referrer-Policy':'no-referrer',
+  'Strict-Transport-Security':'max-age=31536000'
+ }))assert.equal(r.headers[name],value,name);
+ assert.match(r.headers['Content-Security-Policy'],/default-src 'none'/);
+ assert.match(r.headers['Permissions-Policy'],/camera=\(\)/);
+});
+test('Oversized claimed payload fails early with 413 before reading or mutating private records',async()=>{
+ const h=harness();
+ const result=await h.request('POST','/api/applications','candidate-token',{jobId:'job-1',consentToIntro:true},'https://horenova.com',{'content-length':'9000000'});
+ assert.equal(result.status,413);
+ assert.ok(!h.log.db.some(x=>x.sql.startsWith('INSERT INTO hr_applications')));
+});
+test('Repeated submission hits local bounded throttle and returns Retry-After without resetting counters',async()=>{
+ const h=harness();
+ const values=[];
+ for(let n=0;n<11;n++){
+  const r=await h.request('POST','/api/applications','candidate-token',{consentToIntro:false});
+  values.push(r.status);
+  if(n>=8)assert.match(r.headers['Retry-After'],/^\d+$/);
+ }
+ assert.deepEqual(values,[422,422,422,422,422,422,422,422,429,429,429]);
+});
+test('Request backlog overload sheds excess traffic instead of exhausting the API',async()=>{
+ const h=harness({wixDelayMs:50});
+ const results=await Promise.all(Array.from({length:92},()=>h.request('GET','/api/me','candidate-token')));
+ assert.equal(results.filter(r=>r.status===503).length,12);
+ assert.equal(results.filter(r=>r.status===200).length,80);
+ assert.ok(results.filter(r=>r.status===503).every(r=>r.headers['Retry-After']==='3'));
+ const after=await h.request('GET','/api/me','candidate-token');
+ assert.equal(after.status,200,'Admissions must recover after requests complete');
+});
 test('Unauthenticated callers cannot read private applications',async()=>{
  const h=harness();
  assert.equal((await h.request('GET','/api/applications')).status,401);
