@@ -35,7 +35,7 @@
     community.append(communityLabel);
     const setCommunityLanguage=()=>{
       const current=document.documentElement.lang.slice(0,2);
-      communityLabel.nodeValue=current==='ar'?'قناة واتساب وأخبار هورينوفا ':current==='en'?'News & WhatsApp Channel ':'Actualités & Canal WhatsApp ';
+      communityLabel.nodeValue=current==='ar'?'قنوات واتساب وتيليغرام وأخبار هورينوفا ':current==='en'?'News · WhatsApp & Telegram ':'Actualités · WhatsApp & Telegram ';
     };
     setCommunityLanguage();
     const communityObserver=new MutationObserver(setCommunityLanguage);
