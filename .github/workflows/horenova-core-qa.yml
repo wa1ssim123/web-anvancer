@@ -5,6 +5,12 @@ on:
       - horenova-free-deploy-2026
     paths:
       - 'qa/horenova-release-gates.cjs'
+      - 'qa/housekeeping-coverage.cjs'
+      - 'quiz.js'
+      - 'talents.html'
+      - 'candidate-setup.html'
+      - 'shop-products-atelier-20261113.js'
+      - 'horenova-wardrobe-atelier-20261113.js'
       - 'qa/transactional-email.cjs'
       - 'backend/mail-templates.cjs'
       - 'backend/transactional-mail.cjs'
@@ -57,6 +63,7 @@ jobs:
       - name: Verify code syntax, role isolation and public vacancy wiring
         run: |
           node qa/horenova-release-gates.cjs
+          node qa/housekeeping-coverage.cjs
           node qa/horenova-runtime-gates.cjs
           node qa/horenova-talents-gates.cjs
           node qa/horenova-role-gates.cjs
