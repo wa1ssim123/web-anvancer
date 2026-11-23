@@ -25,3 +25,7 @@ body[data-hn12="shop"]{--s17-bg:#111411;--s17-ink:#f1eee5;--s17-line:rgba(213,19
 /* QA: preserve dark ink on white active nav and golden account button. */
 body[data-hn12="shop"] .hn12-nav a.active{color:#14181e!important;background:#fff!important}
 body[data-hn12="shop"] .hn12-actions a.profile{color:#14181e!important}
+
+/* WCAG AA: dark nav text on light active/background shop detail controls. */
+body.shop17-detail-page .hn12-nav a.active{color:#111319!important}
+body.shop17-detail-page .hn12-actions a.profile{color:#111319!important}
