@@ -116,6 +116,8 @@ function createSocialPublisher({pool,token=process.env.TELEGRAM_BOT_TOKEN,fetchI
  async function start(){
   await pool.query(
    "UPDATE hr_social_publications SET status='needs_review',last_error='Envoi précédent interrompu. Vérifier Telegram avant toute reprise.',updated_at=now() WHERE channel='telegram' AND status='sending' AND updated_at<now()-interval '3 minutes'");
+  if(!configured())log.warn('HORENOVA Telegram automatic posting PAUSED: TELEGRAM_BOT_TOKEN is missing or invalid. Approved publications remain pending until configured.');
+  else log.info?.('HORENOVA Telegram publisher configured; pending approved publications will be processed without reapproval.');
   timer=setInterval(kick,30000);timer.unref?.();kick();
  }
  async function retry(id){
