@@ -31,4 +31,26 @@ for(const id of ['housekeeping-tunic','housekeeping-jacket','housekeeping-duo'])
 assert.ok(read('shop.html').includes('data-shop-filter="ÉTAGE"'));
 assert.ok(read('index.html').includes('MÉNAGE & ÉTAGE'));
 assert.ok(read('academy.html').includes('entretien hôtelier'));
-console.log('PASS housekeeping: 6 jobs, candidate/recruiter/talents, optional quiz FR/EN/AR, applications, academy, home and 3 shop concepts.');
+// Coverage of live job/shift filters, shared URLs, contrast and localized labels.
+for (const page of ['jobs.html','shifts.html']){
+ const html=read(page);
+ assert.ok(html.includes('id="hnCareerRole"'),'Missing profession filter on '+page);
+ assert.ok(html.includes('value="housekeeping"'),'Missing group filter on '+page);
+ for (const role of roles) assert.ok(html.includes('value="'+role+'"'),'Missing profession filter on '+page+': '+role);
+ assert.ok(html.includes('/horenova-housekeeping-careers.css'),'Missing responsive filter stylesheet on '+page);
+}
+const app=read('app.js');
+assert.match(app,/function matchesCareerRole\(/);
+assert.match(app,/function setupCareerFilter\(/);
+assert.match(app,/setupCareerFilter\(\);setupMatches/);
+assert.match(app,/j\.kind==='job'&&matchesCareerRole\(j\)/);
+assert.match(app,/j\.kind==='shift'&&matchesCareerRole\(j\)/);
+assert.match(app,/searchParams\.set\('metier',input\.value\)/);
+const css=read('horenova-housekeeping-careers.css');
+assert.ok(css.includes('focus-visible')&&css.includes('max-width:680px'),'Mobile or keyboard filter style missing');
+for(const label of ['Filtrer les emplois par métier','Filtrer les shifts par métier','Ménage et entretien · Tous les postes']){
+ assert.ok(read('horenova-i18n.js').includes(label),'Missing translation: '+label);
+}
+assert.ok(read('index.html').includes('jobs.html?metier=housekeeping'),'Missing home deep link');
+
+console.log('PASS housekeeping: 6 jobs, candidate/recruiter/talents, optional quiz FR/EN/AR, applications, academy, home, 3 shop concepts, mobile job/shift profession filters and deep links.');
