@@ -11,14 +11,14 @@ try{
  page.on('pageerror',e=>pageErrors.push(String(e)));
  await page.goto(base+'/shop.html',{waitUntil:'domcontentloaded',timeout:60000});
  await page.locator('.hx26-slot').first().waitFor({state:'visible',timeout:20000});
- assert.equal(await page.locator('.hx26-slot').count(),7,'Should have 7 independent clothes');
- const requiredAssets=['f0de10ebdb1b4f9db01bdcb5b3562dda','d7684c61777049bca3320eb6588c452c','a57fd1bc0b42499580dcf9669520c65d','078d4431c60a4ce89aeca764edcb176e','705b282295e84c89bf7c530bf67a4bc1','00a5e380f3c240ebbb411a0585e262bc','7d8857fd321548cdb069c428da8feb24'];
+ assert.equal(await page.locator('.hx26-slot').count(),9,'Should have 9 independent clothes');
+ const requiredAssets=['f0de10ebdb1b4f9db01bdcb5b3562dda','d7684c61777049bca3320eb6588c452c','a57fd1bc0b42499580dcf9669520c65d','078d4431c60a4ce89aeca764edcb176e','705b282295e84c89bf7c530bf67a4bc1','f3efed5107c34d2080f942ace393f4d2','9d4f760dad4b4f54984aa136da21705d','00a5e380f3c240ebbb411a0585e262bc','7d8857fd321548cdb069c428da8feb24'];
  await page.waitForFunction(()=>Array.from(document.querySelectorAll('.hx26-slot img')).every(im=>im.complete&&im.naturalWidth>0),null,{timeout:18000});
  const imageUrls=await page.locator('.hx26-slot img').evaluateAll(els=>els.map(el=>el.currentSrc));
- assert.deepEqual(imageUrls.map(u=>u.match(/d0158d_([a-z0-9]{32})/i)?.[1]),requiredAssets,'Live site still serves the seven old corrupted photos');
+ assert.deepEqual(imageUrls.map(u=>u.match(/d0158d_([a-z0-9]{32})/i)?.[1]),requiredAssets,'Wardrobe garment collection images mismatch');
     const garmentImages=await page.locator('.hx26-slot img').evaluateAll(images=>images.map(img=>({ok:img.complete&&img.naturalWidth>0,src:img.currentSrc})));
     console.log('Garment image decode status:',JSON.stringify(garmentImages));
-    assert.ok(garmentImages.every(i=>i.ok),'All seven garment images must load');
+    assert.ok(garmentImages.every(i=>i.ok),'All nine garment images must load');
  assert.match(await page.locator('[data-hx26-name]').innerText(),/Executive Chef Jacket/);
  await page.locator('button[data-hx26="next"]').first().click();
  assert.match(await page.locator('[data-hx26-name]').innerText(),/Service Vest/);
@@ -44,7 +44,7 @@ try{
       const rack=document.querySelector('.hx26-rack'),picked=document.querySelector('.hx26-slot.is-selected');
       return rack&&picked&&Math.abs((picked.getBoundingClientRect().left+picked.getBoundingClientRect().width/2)-(rack.getBoundingClientRect().left+rack.getBoundingClientRect().width/2))<75;
     },null,{timeout:7500});
- assert.equal(await mobile.locator('.hx26-slot').count(),7);
+ assert.equal(await mobile.locator('.hx26-slot').count(),9);
  await mobile.screenshot({path:'wardrobe-mobile.png',fullPage:false});
  // Reproduce iPhone Safari bug reports: huge garment overlay, blocked modal scroll,
  // dock overlapping product card, and inability to scroll to collection.
