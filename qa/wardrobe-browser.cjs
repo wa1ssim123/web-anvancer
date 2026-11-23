@@ -12,7 +12,7 @@ try{
  await page.goto(base+'/shop.html',{waitUntil:'domcontentloaded',timeout:60000});
  await page.locator('.hx26-slot').first().waitFor({state:'visible',timeout:20000});
  assert.equal(await page.locator('.hx26-slot').count(),9,'Should have 9 independent clothes');
- const requiredAssets=['f0de10ebdb1b4f9db01bdcb5b3562dda','d7684c61777049bca3320eb6588c452c','a57fd1bc0b42499580dcf9669520c65d','078d4431c60a4ce89aeca764edcb176e','705b282295e84c89bf7c530bf67a4bc1','f3efed5107c34d2080f942ace393f4d2','9d4f760dad4b4f54984aa136da21705d','00a5e380f3c240ebbb411a0585e262bc','7d8857fd321548cdb069c428da8feb24'];
+ const requiredAssets=['f0de10ebdb1b4f9db01bdcb5b3562dda','d7684c61777049bca3320eb6588c452c','a57fd1bc0b42499580dcf9669520c65d','078d4431c60a4ce89aeca764edcb176e','705b282295e84c89bf7c530bf67a4bc1','e888c13a6f594cc3a178074107517dcf','70ce8fe6b2844f1e8e887314d4f80ab5','00a5e380f3c240ebbb411a0585e262bc','7d8857fd321548cdb069c428da8feb24'];
  await page.waitForFunction(()=>Array.from(document.querySelectorAll('.hx26-slot img')).every(im=>im.complete&&im.naturalWidth>0),null,{timeout:18000});
  const imageUrls=await page.locator('.hx26-slot img').evaluateAll(els=>els.map(el=>el.currentSrc));
  assert.deepEqual(imageUrls.map(u=>u.match(/d0158d_([a-z0-9]{32})/i)?.[1]),requiredAssets,'Wardrobe garment collection images mismatch');
