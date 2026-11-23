@@ -25,6 +25,22 @@ const talentForHTML=source=>{
 };
 
 const jobs=()=>[...(window.HORENOVA_LIVE_JOBS||[])];
+const HOUSEKEEPING_PROFESSIONS=new Set(["Agent de ménage","Femme / Valet de chambre","Agent d'entretien","Gouvernant(e) d'étage","Employé(e) de blanchisserie","Agent de nettoyage"]);
+function matchesCareerRole(j){
+ const selected=$('#hnCareerRole')?.value||'all';
+ return selected==='all'||(selected==='housekeeping'?HOUSEKEEPING_PROFESSIONS.has(j.role):j.role===selected);
+}
+function setupCareerFilter(){
+ const input=$('#hnCareerRole');if(!input)return;
+ const requested=new URLSearchParams(location.search).get('metier');
+ if(requested&&Array.from(input.options).some(option=>option.value===requested))input.value=requested;
+ input.onchange=()=>{
+  const url=new URL(location.href);
+  if(input.value==='all')url.searchParams.delete('metier');else url.searchParams.set('metier',input.value);
+  history.replaceState(history.state,'',url.pathname+url.search+url.hash);
+  renderJobsPage();renderShifts();
+ };
+}
 function formatJobStartDate(value){
   const match=String(value||'').match(/^(\d{4})-(\d{2})-(\d{2})/);
   if(!match)return String(value||'');
@@ -79,11 +95,11 @@ function filteredMatches(){let list=jobs().filter(j=>kind==='all'||j.kind===kind
 function renderMatch(){const deck=$('#matchDeck');if(!deck)return;const list=filteredMatches();if(current>=list.length)current=0;const j=list[current]?jobForHTML(list[current]):null;const mi=$('#matchIndex'),mt=$('#matchTotal');if(mi)mi.textContent=list.length?String(current+1).padStart(2,'0'):'00';if(mt)mt.textContent=String(list.length).padStart(2,'0');if(!j){deck.innerHTML='<div class="empty-state"><h2>Aucun match pour le moment.</h2></div>';return}const saved=state.saved.includes(j.id);deck.innerHTML=`<article class="match-card"><a class="match-image" href="/job.html?id=${encodeURIComponent(j.id)}"><img src="${safeImg(j.img)}" alt="${j.title}"><span class="label">${j.kind==='shift'?'◷ Shift':'▣ Une nouvelle place'}</span><div class="card-copy"><small>${j.role.toUpperCase()}</small><h3>${j.title} &nbsp;↗</h3><p>⌖&nbsp; ${j.city}</p></div></a><div class="match-body"><div class="match-row"><div><small style="color:#999589">L’ÉTABLISSEMENT</small><h4>${j.business}</h4></div><div class="match-pay">${j.pay} <small><br>${j.period}</small></div></div><div class="chips"><span class="chip">✓ Même métier</span><span class="chip">✓ Dans votre ville</span><span class="chip">✓ Format recherché</span></div><div class="match-actions"><button id="prevBtn">‹&nbsp; Précédente</button><button class="save" id="saveBtn">♡&nbsp; ${saved?'Enregistré':'Enregistrer'}</button><button id="nextBtn">Suivante&nbsp; →</button></div><a class="detail-link" href="/job.html?id=${encodeURIComponent(j.id)}">Voir tous les détails de l’offre →</a></div></article>`;$('#prevBtn').onclick=()=>{current=(current-1+list.length)%list.length;renderMatch()};$('#nextBtn').onclick=()=>{current=(current+1)%list.length;renderMatch()};$('#saveBtn').onclick=()=>{state.saved=saved?state.saved.filter(x=>x!==j.id):[...state.saved,j.id];persist();renderMatch();toast(saved?'Retiré des favoris':'Ajouté aux favoris')}}
 function setupMatches(){if(!$('#matchDeck'))return;$$('[data-kind]').forEach(b=>b.onclick=()=>{kind=b.dataset.kind;current=0;$$('[data-kind]').forEach(x=>x.classList.toggle('active',x===b));renderMatch()});const sh=$('#shuffleBtn');if(sh)sh.onclick=()=>{const l=filteredMatches();current=l.length?Math.floor(Math.random()*l.length):0;renderMatch()};renderMatch()}
 function cardJob(source){const j=jobForHTML(source);return `<article class="job-card-page"><a class="job-card-photo" href="/job.html?id=${encodeURIComponent(j.id)}"><img src="${safeImg(j.img)}" alt="${j.title}">${j.sponsored?'<span class="sponsored">SPONSORISÉ</span>':''}</a><div class="job-card-content"><small>${j.kind==='shift'?'SHIFT':'EMPLOI'} · ${j.role}</small><h3>${j.title}</h3><p>${j.business}<br>⌖ ${j.city}${j.time?'<br>◷ '+j.time:''}</p><div class="job-card-bottom"><strong>${j.pay}</strong><a href="/job.html?id=${encodeURIComponent(j.id)}">Voir l’offre ↗</a><button type="button" class="soft-btn" data-share-job="${encodeURIComponent(j.id)}" data-share-mode="native" aria-label="Partager cette offre" style="padding:8px 12px;font-size:12px">↗ Partager</button></div></div></article>`}
-function renderJobsPage(){const g=$('#jobsGrid');if(!g)return;const list=jobs().filter(j=>j.kind==='job');g.innerHTML=list.length?list.map(cardJob).join(''):'<div class="empty-state"><h2>Aucune offre vérifiée publiée pour le moment.</h2><p>Les employeurs pourront bientôt publier leurs offres sur HORENOVA.</p></div>'}
+function renderJobsPage(){const g=$('#jobsGrid');if(!g)return;const list=jobs().filter(j=>j.kind==='job'&&matchesCareerRole(j));g.innerHTML=list.length?list.map(cardJob).join(''):'<div class="empty-state"><h2>Aucune offre vérifiée publiée pour le moment.</h2><p>Les employeurs pourront bientôt publier leurs offres sur HORENOVA.</p></div>'}
 let selectedDay=-1; // Show every upcoming shift until a particular date is chosen.
 function shiftDate(o){const d=new Date();d.setHours(12,0,0,0);d.setDate(d.getDate()+o);return d}
 function renderCalendar(){const box=$('#calendarStrip');if(!box)return;const _lng=localStorage.getItem('mihna-lang')||'fr';const f=new Intl.DateTimeFormat(_lng==='ar'?'ar-MA':_lng==='en'?'en-GB':'fr-MA',{weekday:'short'});box.innerHTML='<button class="day '+(selectedDay===-1?'active':'')+'" data-day="-1"><span>Tous</span><b>↗</b></button>'+[0,1,2,3,4,5,6].map(i=>`<button class="day ${i===selectedDay?'active':''}" data-day="${i}"><span>${f.format(shiftDate(i))}</span><b>${shiftDate(i).getDate()}</b></button>`).join('');$$('[data-day]').forEach(b=>b.onclick=()=>{selectedDay=+b.dataset.day;renderCalendar();renderShifts()})}
-function renderShifts(){const g=$('#shiftGrid');if(!g)return;const list=jobs().filter(j=>j.kind==='shift'&&(selectedDay===-1 || (j.dateOffset??0)===selectedDay)).map(jobForHTML);g.innerHTML=list.length?list.map(j=>`<article class="shift-card"><div class="shift-card-visual"><img src="${safeImg(j.img)}" alt="${j.title}"><span>${j.role.toUpperCase()} · ${j.city.toUpperCase()}</span></div><div class="shift-card-body"><span class="small-title">MISSION PONCTUELLE</span><h3>${j.title}</h3><div class="shift-meta">${j.business}<br>⌖ ${j.city}<br>◷ ${j.time||'Horaire à confirmer'}</div><strong>${j.pay}</strong><a class="cta-main button-link full-btn" href="/job.html?id=${encodeURIComponent(j.id)}">Voir le shift ↗</a><button type="button" class="soft-btn" data-share-job="${encodeURIComponent(j.id)}" data-share-mode="native" aria-label="Partager ce shift" style="margin-top:9px;width:100%;padding:11px">↗ Partager le shift</button></div></article>`).join(''):'<article class="shift-card"><div class="shift-card-body"><h3>Pas de shift ce jour.</h3><div class="shift-meta">Essayez une autre date.</div></div></article>'}
+function renderShifts(){const g=$('#shiftGrid');if(!g)return;const list=jobs().filter(j=>j.kind==='shift'&&matchesCareerRole(j)&&(selectedDay===-1 || (j.dateOffset??0)===selectedDay)).map(jobForHTML);g.innerHTML=list.length?list.map(j=>`<article class="shift-card"><div class="shift-card-visual"><img src="${safeImg(j.img)}" alt="${j.title}"><span>${j.role.toUpperCase()} · ${j.city.toUpperCase()}</span></div><div class="shift-card-body"><span class="small-title">MISSION PONCTUELLE</span><h3>${j.title}</h3><div class="shift-meta">${j.business}<br>⌖ ${j.city}<br>◷ ${j.time||'Horaire à confirmer'}</div><strong>${j.pay}</strong><a class="cta-main button-link full-btn" href="/job.html?id=${encodeURIComponent(j.id)}">Voir le shift ↗</a><button type="button" class="soft-btn" data-share-job="${encodeURIComponent(j.id)}" data-share-mode="native" aria-label="Partager ce shift" style="margin-top:9px;width:100%;padding:11px">↗ Partager le shift</button></div></article>`).join(''):'<article class="shift-card"><div class="shift-card-body"><h3>Pas de shift ce jour.</h3><div class="shift-meta">Essayez une autre date.</div></div></article>'}
 function renderTalents(){
  const grid=$('#talentGrid');if(!grid)return;
  const role=$('#talentRoleFilter')?.value||'all',city=$('#talentCityFilter')?.value||'all';
@@ -224,7 +240,7 @@ function renderTalentDetail(){
  '<div style="display:flex;gap:12px;flex-wrap:wrap">'+recruiterAction+'<a class="soft-btn" href="/talents.html">Revenir aux profils</a></div></div>';
 }
 document.addEventListener('hn-role-navigation-ready',()=>{if(typeof window.renderTalentDetail==='function')window.renderTalentDetail();});
-function init(){setupMenu();setupHeroVideo();setupQuiz();setupMatches();renderJobsPage();renderCalendar();renderShifts();setupTalents();renderProfile();renderFavorites();setupRecruit();setupBoost();setupTrip();renderJobDetail();renderTalentDetail()}
+function init(){setupMenu();setupHeroVideo();setupQuiz();setupCareerFilter();setupMatches();renderJobsPage();renderCalendar();renderShifts();setupTalents();renderProfile();renderFavorites();setupRecruit();setupBoost();setupTrip();renderJobDetail();renderTalentDetail()}
 document.addEventListener('DOMContentLoaded',init);
 
 
