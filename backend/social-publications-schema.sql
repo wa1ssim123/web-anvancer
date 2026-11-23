@@ -23,7 +23,15 @@ BEGIN
  IF NEW.removed_at IS NOT NULL OR NEW.status <> 'VALIDEE' THEN
   UPDATE hr_social_publications SET status='cancelled',updated_at=now()
    WHERE request_id=NEW.id AND status IN ('pending','manual','needs_review');
- ELSIF NEW.status='VALIDEE' AND OLD.status IS DISTINCT FROM 'VALIDEE' THEN
+ ELSIF NEW.status='VALIDEE' AND (
+   OLD.status IS DISTINCT FROM 'VALIDEE'
+   OR EXISTS(
+    SELECT 1 FROM hr_social_publications previous
+    WHERE previous.request_id=NEW.id AND previous.status='cancelled'
+     AND previous.attempts=0 AND previous.sent_at IS NULL
+     AND previous.telegram_message_id IS NULL
+   )
+  ) THEN
   INSERT INTO hr_social_publications(request_id,channel,status)
    VALUES (NEW.id,'telegram','pending'),(NEW.id,'whatsapp','manual')
    ON CONFLICT(request_id,channel) DO UPDATE
