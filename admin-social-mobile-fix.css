@@ -187,3 +187,84 @@ body[data-hn12="admin"] #hnAdminSocialPublications .hspa-promo-save{
  body[data-hn12="admin"] #hnAdminSocialPublications .hspa-promo-img{width:min(100%,310px);max-height:440px}
  body[data-hn12="admin"] #hnAdminSocialPublications .hspa-promo-tools{grid-template-columns:minmax(0,1fr)}
 }
+
+/* Social sharing cleanup: compact cards, visible feedback, clear secondary actions. */
+body[data-hn12="admin"] #hnAdminSocialPublications .hspa-post-actions{
+ display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+ gap:9px!important;align-items:stretch;
+}
+body[data-hn12="admin"] #hnAdminSocialPublications .hspa-post-actions .hspa-action{
+ width:100%!important;min-height:48px!important;
+}
+body[data-hn12="admin"] #hnAdminSocialPublications .hspa-post-actions .hspa-action:first-child{
+ grid-column:1/-1;background:#f0f4f2!important;
+}
+body[data-hn12="admin"] #hnAdminSocialPublications .hspa-channel-options{
+ margin-top:11px;border:1px solid #d7e4dc;border-radius:10px;padding:0 10px;
+ background:#f9fcfa;
+}
+body[data-hn12="admin"] #hnAdminSocialPublications .hspa-channel-options summary{
+ padding:12px 3px;color:#215442!important;font-weight:800;font-size:13px;
+ cursor:pointer;min-height:44px;outline-offset:2px;
+}
+body[data-hn12="admin"] #hnAdminSocialPublications .hspa-channel-actions{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+ gap:9px;padding-bottom:12px;
+}
+body[data-hn12="admin"] #hnAdminSocialPublications .hspa-channel-actions :is(a,button){
+ width:100%!important;min-height:45px!important;font-size:12px!important;
+}
+body[data-hn12="admin"] #hnAdminSocialPublications .hspa-promo-preview{
+ display:grid!important;grid-template-columns:minmax(70px,94px) minmax(0,1fr)!important;
+ gap:8px 13px!important;margin:12px 0 0!important;padding:11px!important;
+}
+body[data-hn12="admin"] #hnAdminSocialPublications .hspa-promo-img{
+ grid-column:1;grid-row:1/span 3;width:94px!important;
+ max-width:94px!important;height:128px!important;max-height:128px!important;
+ object-fit:contain!important;border-radius:9px;
+}
+body[data-hn12="admin"] #hnAdminSocialPublications .hspa-promo-title{
+ grid-column:2;grid-row:1;align-self:start;font-size:13px!important;
+}
+body[data-hn12="admin"] #hnAdminSocialPublications .hspa-promo-tools{
+ grid-column:2;grid-row:2/4;display:grid!important;
+ grid-template-columns:minmax(0,1fr)!important;gap:7px!important;
+}
+body[data-hn12="admin"] #hnAdminSocialPublications .hspa-promo-tools :is(a,button){
+ font-size:12px!important;min-height:38px!important;padding:8px!important;
+}
+body[data-hn12="admin"] #hnAdminSocialPublications .hspa-promo-details{
+ grid-column:1/-1;grid-row:4;align-self:stretch;
+}
+body[data-hn12="admin"] #hnAdminSocialPublications .hspa-local-feedback{
+ grid-column:1/-1;grid-row:5;margin:0;padding:6px 8px;
+ color:#174a38!important;background:#eef7f0;border-radius:8px;
+ font:700 12px/1.5 system-ui,sans-serif;overflow-wrap:anywhere;
+}
+body[data-hn12="admin"] #hnAdminSocialPublications .hspa-local-feedback:empty{display:none}
+@media(max-width:600px){
+ body[data-hn12="admin"] #hnAdminSocialPublications .hspa-post-actions{
+  grid-template-columns:minmax(0,1fr)!important;
+ }
+ body[data-hn12="admin"] #hnAdminSocialPublications .hspa-channel-actions{
+  grid-template-columns:minmax(0,1fr)!important;
+ }
+ body[data-hn12="admin"] #hnAdminSocialPublications .hspa-promo-preview{
+  grid-template-columns:80px minmax(0,1fr)!important;
+ }
+ body[data-hn12="admin"] #hnAdminSocialPublications .hspa-promo-img{
+  width:80px!important;max-width:80px!important;height:118px!important;max-height:118px!important;
+ }
+ body[data-hn12="admin"] .hn12-hero{display:none!important}
+ body[data-hn12="admin"] .hn-admin-mobile-tabs{
+  display:flex!important;flex-wrap:nowrap!important;gap:8px!important;
+  overflow-x:auto!important;overflow-y:hidden!important;
+  -webkit-overflow-scrolling:touch;scrollbar-width:thin;
+  padding:7px 4px 14px!important;margin-bottom:12px!important;
+ }
+ body[data-hn12="admin"] .hn-admin-mobile-tabs a{
+  display:inline-flex!important;flex:0 0 auto!important;
+  max-width:max-content!important;white-space:nowrap!important;
+  min-height:44px!important;align-items:center;
+ }
+}
