@@ -1,4 +1,5 @@
 import {hub} from '/hn-api.js';
+import {nextPromoImage,buildPromoMessage,copyRichPromo,sharePromo} from '/social-promo-share.js?v=promo-5-20261123-v1';
 /* HORENOVA official publication supervision.
  * WhatsApp = manual copy/paste into the existing channel (official Meta API
  * does not publish Channel posts). Telegram = official Bot API after setup.
@@ -13,7 +14,7 @@ const T={
   waReady:'Canal WhatsApp relié',waMissing:'Canal WhatsApp non relié',
   guideTitle:'Telegram bloqué ? Voir les étapes de configuration',instructions:'Pour activer Telegram : créez votre bot avec @BotFather, ajoutez-le comme administrateur de votre chaîne avec le droit de publier, puis configurez TELEGRAM_BOT_TOKEN dans les variables d’environnement privées du service Render HORENOVA API.',
   linkTelegram:'Gérer le canal Telegram ↗',render:'Ouvrir les paramètres Render ↗',
-  copy:'Copier le message WhatsApp',copyTelegram:'Copier le message Telegram',copyWaLink:'Copier le lien WhatsApp',copied:'Message copié. Ouvrez le canal et collez-le pour le publier.',copiedLink:'Lien de la chaîne copié.',copyError:'Copie impossible : sélectionnez et copiez le texte ci-dessous.',
+  copy:'Copier annonce + photo WhatsApp',copyTelegram:'Copier annonce + photo Telegram',copyWaLink:'Copier le lien WhatsApp',copied:'Message copié. Ouvrez le canal et collez-le pour le publier.',copiedLink:'Lien de la chaîne copié.',copyError:'Copie impossible : sélectionnez et copiez le texte ci-dessous.',promoTitle:'Visuel HORENOVA sélectionné',promoAlt:'Affiche officielle HORENOVA',promoPreview:'Voir le message prêt à publier',promoShare:'Partager photo + annonce',promoSave:'Ouvrir / enregistrer la photo',promoRich:'✅ Message et photo copiés. Selon l’application, le collage peut ne reprendre qu’un seul format ; utilisez Partager si nécessaire.',promoText:'✅ Message et lien copiés. Le visuel est prêt ci-dessous : utilisez Partager pour envoyer la photo avec le texte.',promoManual:'Copie automatique indisponible : sélectionnez le message ci-dessous et utilisez le bouton Partager pour la photo.',promoShared:'✅ Partage lancé. Vérifiez le texte dans l’application choisie avant de publier.',promoShareError:'Partage direct non disponible ici : ouvrez et enregistrez la photo, puis collez le message.',
   openWa:'Ouvrir le canal WhatsApp ↗',openTelegram:'Ouvrir le canal Telegram ↗',view:'Voir l’annonce ↗', retry:'Relancer Telegram après vérification',retryConfirm:'Vérifiez AVANT la relance qu’aucun message identique n’est déjà visible sur votre chaîne Telegram. Continuer ?',
   retried:'Nouvelle tentative demandée.',error:'Impossible de consulter la diffusion : ',empty:"Aucune nouvelle validation enregistrée depuis l’activation de la diffusion. Les anciennes annonces ne sont pas renvoyées.",
   pending:'En attente d’envoi',syncIssue:'Statut à synchroniser · actualiser',awaitBot:'Auto inactive · copiez le message',sending:'Envoi en cours',published:'Envoyé',manual:'Prêt à copier',needs_review:'À vérifier',cancelled:'Annulé',
@@ -27,7 +28,7 @@ const T={
   waReady:'WhatsApp Channel linked',waMissing:'WhatsApp Channel not linked',
   guideTitle:'Telegram blocked? View configuration steps',instructions:'To enable Telegram, create a bot with @BotFather, make it an administrator of your public channel with posting rights, and set TELEGRAM_BOT_TOKEN in the private Render HORENOVA API environment variables.',
   linkTelegram:'Manage Telegram Channel ↗',render:'Render settings ↗',
-  copy:'Copy WhatsApp post',copyTelegram:'Copy Telegram post',copyWaLink:'Copy WhatsApp Channel link',copied:'Post copied. Open the channel and paste it.',copiedLink:'Channel link copied.',copyError:'Copy unavailable: select and copy the text below.',
+  copy:'Copy WhatsApp post + image',copyTelegram:'Copy Telegram post + image',copyWaLink:'Copy WhatsApp Channel link',copied:'Post copied. Open the channel and paste it.',copiedLink:'Channel link copied.',copyError:'Copy unavailable: select and copy the text below.',promoTitle:'Selected HORENOVA poster',promoAlt:'Official HORENOVA recruitment poster',promoPreview:'View the ready-to-share post',promoShare:'Share image + post',promoSave:'Open / save image',promoRich:'✅ Image and text copied. Some apps paste only one format; use Share if needed.',promoText:'✅ Post and link copied. The selected image is below: use Share to send both.',promoManual:'Clipboard unavailable: select the text below and use Share to send the image.',promoShared:'✅ Share sheet opened. Verify the text in the selected app before posting.',promoShareError:'Sharing unavailable here: open and save the image, then paste the post.',
   openWa:'Open WhatsApp Channel ↗',openTelegram:'Open Telegram Channel ↗',view:'View job ↗',retry:'Retry Telegram after checking',retryConfirm:'First verify that no identical message was posted in your Telegram channel. Retry?',retried:'Retry requested.',error:'Cannot load publication status: ',empty:'No new approvals have been recorded since publishing was enabled. Older jobs are not resent.',
   pending:'Awaiting delivery',syncIssue:'Status out of sync · refresh',awaitBot:'Auto inactive · copy the post',sending:'Sending',published:'Sent',manual:'Ready to copy',needs_review:'Needs review',cancelled:'Cancelled',
   lastError:'Attention:',info:'Rejected, withdrawn or unapproved vacancies are never sent.'
@@ -40,7 +41,7 @@ const T={
   waReady:'قناة واتساب مرتبطة',waMissing:'قناة واتساب غير مرتبطة',
   guideTitle:'تيليغرام متوقف؟ عرض خطوات الربط',instructions:'لتفعيل تيليغرام، أنشئ بوتاً باستعمال @BotFather وأضفه مشرفاً للقناة مع صلاحية النشر، ثم أضف TELEGRAM_BOT_TOKEN إلى إعدادات البيئة الخاصة بخادم HORENOVA على Render.',
   linkTelegram:'إدارة قناة تيليغرام ↗',render:'إعدادات Render ↗',
-  copy:'نسخ رسالة واتساب',copyTelegram:'نسخ رسالة تيليغرام',copyWaLink:'نسخ رابط قناة واتساب',copied:'تم نسخ الرسالة. افتح القناة والصقها.',copiedLink:'تم نسخ رابط القناة.',copyError:'تعذر النسخ، يرجى نسخ النص أدناه.',
+  copy:'نسخ الإعلان والصورة لواتساب',copyTelegram:'نسخ الإعلان والصورة لتيليغرام',copyWaLink:'نسخ رابط قناة واتساب',copied:'تم نسخ الرسالة. افتح القناة والصقها.',copiedLink:'تم نسخ رابط القناة.',copyError:'تعذر النسخ، يرجى نسخ النص أدناه.',promoTitle:'صورة هورينوفا المختارة',promoAlt:'الملصق الرسمي للتوظيف من هورينوفا',promoPreview:'عرض رسالة الإعلان الجاهزة',promoShare:'مشاركة الصورة والإعلان',promoSave:'فتح / حفظ الصورة',promoRich:'✅ تم نسخ الصورة والنص. قد يلصق التطبيق صيغة واحدة فقط؛ استخدم المشاركة عند الحاجة.',promoText:'✅ تم نسخ النص والرابط. الصورة جاهزة بالأسفل؛ استخدم المشاركة لإرسالهما.',promoManual:'تعذر النسخ التلقائي: حدد النص بالأسفل واستخدم المشاركة لإرسال الصورة.',promoShared:'✅ فُتحت المشاركة. تحقق من النص في التطبيق قبل النشر.',promoShareError:'تعذرت المشاركة المباشرة: افتح الصورة واحفظها ثم الصق الإعلان.',
   openWa:'فتح قناة واتساب ↗',openTelegram:'فتح قناة تيليغرام ↗',view:'عرض الإعلان ↗',retry:'إعادة محاولة تيليغرام بعد التحقق',retryConfirm:'تحقق أولاً من عدم وجود رسالة مماثلة في القناة قبل إعادة الإرسال. هل تريد المتابعة؟',retried:'تم طلب إعادة الإرسال.',error:'تعذر تحميل حالة النشر: ',empty:'لا توجد موافقات جديدة منذ تفعيل نظام النشر. لن نعيد نشر الإعلانات القديمة.',
   pending:'في انتظار الإرسال',syncIssue:'الحالة غير متزامنة · حدّث الصفحة',awaitBot:'النشر الآلي غير نشط · انسخ الرسالة',sending:'جارٍ الإرسال',published:'تم الإرسال',manual:'جاهز للنسخ',needs_review:'يحتاج للمراجعة',cancelled:'ملغى',lastError:'تنبيه:',info:'لا يتم نشر الإعلانات المرفوضة أو المسحوبة أو غير المعتمدة.'}
 };
@@ -58,6 +59,49 @@ export function mountSocialPublications(root,request=hub){
  const text=(node,value)=>{node.textContent=value};
  function make(tag,cls,value){const n=document.createElement(tag);if(cls)n.className=cls;if(value!==undefined)n.textContent=value;return n}
  function button(label,cb){const b=make('button','hspa-action',label);b.type='button';b.addEventListener('click',cb);return b}
+ function preparePromoCard(card,offer,row){
+  const words=lang();
+  const url=nextPromoImage();
+  const message=buildPromoMessage(offer,row);
+  card.querySelector('.hspa-promo-preview')?.remove();
+  const panel=make('section','hspa-promo-preview');
+  panel.setAttribute('aria-label',words.promoTitle);
+  const heading=make('strong','hspa-promo-title',words.promoTitle);
+  const img=make('img','hspa-promo-img');
+  img.src=url;img.alt=words.promoAlt;
+  img.loading='eager';img.decoding='async';
+  const details=make('details','hspa-promo-details');
+  details.append(make('summary','',words.promoPreview));
+  const post=make('textarea','hspa-promo-text');
+  post.readOnly=true;post.value=message;post.setAttribute('aria-label',words.promoPreview);
+  post.rows=11;post.dir='auto';
+  details.append(post);
+  const tools=make('div','hspa-promo-tools');
+  const share=button(words.promoShare,async()=>{
+   share.disabled=true;
+   try{
+    await sharePromo(message,url);
+    text($('hspaFeedback'),lang().promoShared);
+   }catch(error){
+    if(error?.name!=='AbortError')text($('hspaFeedback'),lang().promoShareError);
+   }finally{share.disabled=false}
+  });
+  share.classList.add('hspa-promo-share');
+  const save=make('a','hspa-action hspa-promo-save',words.promoSave);
+  save.href=url;save.target='_blank';save.rel='noopener noreferrer';
+  tools.append(share,save);
+  panel.append(heading,img,details,tools);
+  card.append(panel);
+  return {url,message};
+ }
+ async function copyWithPoster(card,offer,row){
+  const {url,message}=preparePromoCard(card,offer,row);
+  const output=$('hspaFeedback');
+  text(output,'');
+  const result=await copyRichPromo(message,url);
+  const words=lang();
+  text(output,result.kind==='rich'?words.promoRich:result.kind==='text'?words.promoText:words.promoManual);
+ }
  async function copyShare(value,card,success){
   const content=String(value||'');
   if(!content)return;
@@ -111,7 +155,7 @@ export function mountSocialPublications(root,request=hub){
    const telegram=rows.find(x=>x.channel==='telegram');
    if(!rec.removed&&rec.jobStatus==='VALIDEE'){
     if(telegram){
-     actions.append(button(w.copyTelegram,()=>copyShare(telegram.message,card,lang().copied)));
+     actions.append(button(w.copyTelegram,()=>copyWithPoster(card,rec,telegram)));
      if(model.telegramChannel){
       const tgLink=make('a','hspa-action hspa-telegram',w.openTelegram);
       tgLink.href=model.telegramChannel;tgLink.target='_self';
@@ -119,7 +163,7 @@ export function mountSocialPublications(root,request=hub){
      }
     }
     if(whatsapp){
-     actions.append(button(w.copy,()=>copyShare(whatsapp.message,card,lang().copied)));
+     actions.append(button(w.copy,()=>copyWithPoster(card,rec,whatsapp)));
      if(model.whatsappChannel){
       const waLink=make('a','hspa-action hspa-whatsapp',w.openWa);
       waLink.href=model.whatsappChannel;waLink.target='_self';waLink.rel='external';
