@@ -16,7 +16,7 @@ const T={
   copy:'Copier le message WhatsApp',copied:'Message copié. Ouvrez le canal et collez-le pour le publier.',copyError:'Copie impossible : sélectionnez et copiez le message ci-dessous.',
   openWa:'Ouvrir le canal WhatsApp ↗',view:'Voir l’annonce ↗', retry:'Relancer Telegram après vérification',retryConfirm:'Vérifiez AVANT la relance qu’aucun message identique n’est déjà visible sur votre chaîne Telegram. Continuer ?',
   retried:'Nouvelle tentative demandée.',error:'Impossible de consulter la diffusion : ',empty:"Aucune nouvelle validation enregistrée depuis l’activation de la diffusion. Les anciennes annonces ne sont pas renvoyées.",
-  pending:'En attente d’envoi',awaitBot:'Bloqué : bot Telegram non configuré',sending:'Envoi en cours',published:'Envoyé',manual:'Prêt à copier',needs_review:'À vérifier',cancelled:'Annulé',
+  pending:'En attente d’envoi',syncIssue:'Statut à synchroniser · actualiser',awaitBot:'Bloqué : bot Telegram non configuré',sending:'Envoi en cours',published:'Envoyé',manual:'Prêt à copier',needs_review:'À vérifier',cancelled:'Annulé',
   lastError:'Contrôle nécessaire :',info:'Les annonces refusées, retirées ou non validées ne sont pas envoyées.'
  },
  en:{over:'HORENOVA · JOB PUBLICATION',title:'Every approved job, ready to share.',
@@ -29,7 +29,7 @@ const T={
   linkTelegram:'Configure Telegram ↗',render:'Render settings ↗',
   copy:'Copy WhatsApp post',copied:'Post copied. Open your channel and paste the message.',copyError:'Copy unavailable: select and copy the message below.',
   openWa:'Open WhatsApp Channel ↗',view:'View job ↗',retry:'Retry Telegram after checking',retryConfirm:'First verify that no identical message was posted in your Telegram channel. Retry?',retried:'Retry requested.',error:'Cannot load publication status: ',empty:'No new approvals have been recorded since publishing was enabled. Older jobs are not resent.',
-  pending:'Awaiting delivery',awaitBot:'Blocked: Telegram bot not configured',sending:'Sending',published:'Sent',manual:'Ready to copy',needs_review:'Needs review',cancelled:'Cancelled',
+  pending:'Awaiting delivery',syncIssue:'Status out of sync · refresh',awaitBot:'Blocked: Telegram bot not configured',sending:'Sending',published:'Sent',manual:'Ready to copy',needs_review:'Needs review',cancelled:'Cancelled',
   lastError:'Attention:',info:'Rejected, withdrawn or unapproved vacancies are never sent.'
  },
  ar:{over:'هورينوفا · نشر الوظائف',title:'كل عرض موافق عليه جاهز للنشر.',
@@ -42,7 +42,7 @@ const T={
   linkTelegram:'إعداد قناة تيليغرام ↗',render:'إعدادات Render ↗',
   copy:'نسخ رسالة واتساب',copied:'تم نسخ الرسالة. افتح القناة والصق الرسالة.',copyError:'تعذر النسخ. انسخ النص أدناه يدوياً.',
   openWa:'فتح قناة واتساب ↗',view:'عرض الإعلان ↗',retry:'إعادة محاولة تيليغرام بعد التحقق',retryConfirm:'تحقق أولاً من عدم وجود رسالة مماثلة في القناة قبل إعادة الإرسال. هل تريد المتابعة؟',retried:'تم طلب إعادة الإرسال.',error:'تعذر تحميل حالة النشر: ',empty:'لا توجد موافقات جديدة منذ تفعيل نظام النشر. لن نعيد نشر الإعلانات القديمة.',
-  pending:'في انتظار الإرسال',awaitBot:'متوقف: بوت تيليغرام غير مربوط',sending:'جارٍ الإرسال',published:'تم الإرسال',manual:'جاهز للنسخ',needs_review:'يحتاج للمراجعة',cancelled:'ملغى',lastError:'تنبيه:',info:'لا يتم نشر الإعلانات المرفوضة أو المسحوبة أو غير المعتمدة.'}
+  pending:'في انتظار الإرسال',syncIssue:'الحالة غير متزامنة · حدّث الصفحة',awaitBot:'متوقف: بوت تيليغرام غير مربوط',sending:'جارٍ الإرسال',published:'تم الإرسال',manual:'جاهز للنسخ',needs_review:'يحتاج للمراجعة',cancelled:'ملغى',lastError:'تنبيه:',info:'لا يتم نشر الإعلانات المرفوضة أو المسحوبة أو غير المعتمدة.'}
 };
 export function mountSocialPublications(root,request=hub){
  if(!root||root.querySelector('#hnAdminSocialPublications'))return;
@@ -84,11 +84,14 @@ export function mountSocialPublications(root,request=hub){
    const state=make('div','hspa-post-state');
    for(const row of rows){
     const item=make('span','hspa-pill hspa-'+row.status,
-     (row.channel==='telegram'?'Telegram':'WhatsApp')+' · '+(row.channel==='telegram'&&row.status==='pending'&&!model.configured?w.awaitBot:(w[row.status]||row.status)));
+     (row.channel==='telegram'?'Telegram':'WhatsApp')+' · '+(row.status==='cancelled'&&rec.jobStatus==='VALIDEE'&&!rec.removed?w.syncIssue:row.channel==='telegram'&&row.status==='pending'&&!model.configured?w.awaitBot:(w[row.status]||row.status)));
     state.append(item);
    }
    card.append(state);
    const actions=make('div','hspa-post-actions');
+   if(rows.some(row=>row.status==='cancelled')&&rec.jobStatus==='VALIDEE'&&!rec.removed){
+    card.append(make('p','hspa-error',w.syncIssue));
+   }
    const link=make('a','hspa-action',w.view);link.href=rec.publicUrl;link.target='_blank';link.rel='noopener noreferrer';actions.append(link);
    const whatsapp=rows.find(x=>x.channel==='whatsapp');
    if(whatsapp&&!rec.removed&&rec.jobStatus==='VALIDEE'){
