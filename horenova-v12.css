@@ -528,3 +528,8 @@ body[data-hn12="admin"] .hub-request-actions .hub-action{min-height:44px;touch-a
  }
  body[data-member-role="recruiter"] .hn12-dock a b{font-size:16px!important}
 }
+
+
+/* QA: adequate small-text contrast in ivory panels. */
+.hn12-paper .hn12-label{color:#963b1e!important}
+.hn12-paper .hn12-section-head>p{color:#48545b!important}
