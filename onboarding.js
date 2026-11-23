@@ -8,14 +8,14 @@ const scripts={
   'ومن خلال أكاديمية هورينوفا يمكنك تطوير مهاراتك، ثم متابعة الوظائف والشيفتات وحفظ الفرص المناسبة لك. خذ وقتك، أكمل ملفك، وابدأ خطوة بخطوة. أهلاً بك في هورينوفا.'
  ],
  fr:[
-  'Bienvenue sur Horenova, la plateforme pensée pour les métiers de l’hospitalité, de la cuisine, du café et du service au Maroc. Notre objectif est simple : transformer votre savoir-faire en opportunités plus claires et plus humaines.',
+  'Bienvenue sur Horenova, la plateforme pensée pour les métiers de l’hospitalité, de la cuisine, du café, du service et de l’entretien hôtelier au Maroc. Notre objectif est simple : transformer votre savoir-faire en opportunités plus claires et plus humaines.',
   'Commencez par votre profil. Ajoutez vos informations essentielles, votre ville, votre métier et les langues que vous parlez avec votre niveau. Plus votre profil est précis, plus un établissement peut comprendre rapidement ce que vous savez faire.',
   'Ensuite, enregistrez une courte vidéo de présentation. Cette vidéo reste privée et ne s’affiche pas dans l’annuaire public. Elle sert à donner plus de contexte à un recruteur autorisé lorsque votre candidature l’intéresse.',
   'Avant certaines candidatures, Horenova vous proposera aussi un petit quiz lié à votre métier. Il ne remplace pas un entretien, mais il permet de vérifier quelques bases et de mieux préparer votre candidature.',
   'Enfin, Horenova Academy vous aide à progresser avec des mini-formations, pendant que les espaces Emplois et Shifts vous permettent de chercher des opportunités adaptées à votre rythme. Complétez votre profil, avancez étape par étape, et bienvenue dans Horenova.'
  ],
  en:[
-  'Welcome to Horenova, a platform built for hospitality, kitchen, coffee and service professionals in Morocco. Our goal is simple: turn your skills into clearer and more human opportunities.',
+  'Welcome to Horenova, a platform built for hospitality, kitchen, coffee, service and housekeeping professionals in Morocco. Our goal is simple: turn your skills into clearer and more human opportunities.',
   'Start with your profile. Add the essentials, your city, your profession and the languages you speak with your level. A clear profile helps the right venue understand your strengths quickly.',
   'Then record a short introduction video. This video is private and is not shown in the public directory. It gives an authorized recruiter more context when your application is relevant to them.',
   'Before some applications, Horenova also gives you a short quiz related to your profession. It does not replace an interview, but it helps review important basics and gives your application more context.',
