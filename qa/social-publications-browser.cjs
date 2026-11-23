@@ -29,7 +29,7 @@ const offerId='11111111-1111-4111-8111-111111111111';
     const whatsapp={...record,channel:'whatsapp',status:'manual'};
     window.__calls=[];
     const stub=async(route,opts)=>{window.__calls.push([route,opts?.method||'GET']);
-      if(route==='/api/community/publications')return {configured:false,telegramChannel:null,
+      if(route==='/api/community/publications')return {configured:false,telegramChannel:'https://t.me/HORENOVA_Emploi_Maroc',
        whatsappChannel:'https://whatsapp.com/channel/0029Vb9VLZ5A2pLGFYQA6s2u',
        rows:[record,whatsapp]};
       throw Error('Unexpected call '+route);
@@ -41,7 +41,19 @@ const offerId='11111111-1111-4111-8111-111111111111';
    assert.match(await page.locator('#hspaConnections').innerText(),/non configuré/);
    assert.equal(await page.locator('a[href="https://horenova.com/job.html?id='+offerId+'"]').count(),1);
    assert.equal(await page.locator('.hspa-whatsapp').getAttribute('href'),'https://whatsapp.com/channel/0029Vb9VLZ5A2pLGFYQA6s2u');
-   assert.equal(await page.locator('button').filter({hasText:'Copier'}).count(),1);
+   assert.equal(await page.getByRole('button',{name:'Copier le message Telegram'}).count(),1);
+   assert.equal(await page.getByRole('button',{name:'Copier le message WhatsApp'}).count(),1);
+   assert.equal(await page.getByRole('button',{name:'Copier le lien WhatsApp'}).count(),1);
+   assert.equal(await page.getByRole('link',{name:/Ouvrir le canal Telegram/}).getAttribute('href'),'https://t.me/HORENOVA_Emploi_Maroc');
+   assert.equal(await page.locator('.hspa-whatsapp').getAttribute('target'),'_self','Do not open an iOS-blocked popup');
+   assert.equal(await page.getByRole('link',{name:/Ouvrir le canal Telegram/}).getAttribute('target'),'_self');
+   assert.equal(await page.locator('#hspaGuideDetails').count(),0,'Technical setup copy must not appear in the admin panel');
+   assert.equal(await page.locator('#hspaRender').count(),0,'No Render setup prompts in public admin outbox');
+   await page.evaluate(()=>Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText:async text=>{window.__lastCopied=text}}}));
+   await page.getByRole('button',{name:'Copier le message Telegram'}).click();
+   assert.match(await page.evaluate(()=>window.__lastCopied),/horenova.com\/job.html/);
+   await page.getByRole('button',{name:'Copier le lien WhatsApp'}).click();
+   assert.equal(await page.evaluate(()=>window.__lastCopied),'https://whatsapp.com/channel/0029Vb9VLZ5A2pLGFYQA6s2u');
    assert.equal(await page.locator('button').filter({hasText:'Relancer'}).count(),0);
    const size=await page.evaluate(()=>({screen:innerWidth,body:document.documentElement.scrollWidth}));
    assert.ok(size.body<=size.screen+4,'overflow at '+width+' '+JSON.stringify(size));
@@ -49,7 +61,7 @@ const offerId='11111111-1111-4111-8111-111111111111';
    await page.waitForFunction(()=>document.querySelector('#hspaTitle').textContent.includes('كل عرض'));
    assert.equal(await page.locator('.hspa-post').count(),1);
    assert.deepEqual(errors,[]);
-   console.log('PASS HORENOVA admin social approvals '+width+'px: real job URL, WhatsApp manual and bot not configured, FR/AR');
+   console.log('PASS HORENOVA admin social approvals '+width+'px: Telegram copy, WhatsApp copy/open, no technical setup, readable state, FR/AR');
    await context.close();
   }
  }finally{await browser.close();server.close()}
