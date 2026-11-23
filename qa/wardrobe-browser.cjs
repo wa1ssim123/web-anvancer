@@ -20,8 +20,10 @@ try{
     console.log('Garment image decode status:',JSON.stringify(garmentImages));
     assert.ok(garmentImages.every(i=>i.ok),'All nine garment images must load');
  assert.match(await page.locator('[data-hx26-name]').innerText(),/Executive Chef Jacket/);
- await page.locator('button[data-hx26="next"]').first().click();
+ assert.equal((await page.locator('[data-hx26-position]').innerText()).trim(),'03 / 09','Initial page count must match nine garments');
+  await page.locator('button[data-hx26="next"]').first().click();
  assert.match(await page.locator('[data-hx26-name]').innerText(),/Service Vest/);
+  assert.equal((await page.locator('[data-hx26-position]').innerText()).trim(),'04 / 09','Next button advances total of nine');
  await page.locator('button[data-hx26="prev"]').first().click();
  assert.match(await page.locator('[data-hx26-name]').innerText(),/Executive Chef Jacket/);
  await page.locator('.hx26-card button[data-hx26="view"]').click();
@@ -45,6 +47,7 @@ try{
       return rack&&picked&&Math.abs((picked.getBoundingClientRect().left+picked.getBoundingClientRect().width/2)-(rack.getBoundingClientRect().left+rack.getBoundingClientRect().width/2))<75;
     },null,{timeout:7500});
  assert.equal(await mobile.locator('.hx26-slot').count(),9);
+  assert.ok((await mobile.locator('[data-hx26-position]').innerText()).endsWith(' / 09'),'iPhone page count uses nine-product total');
  await mobile.screenshot({path:'wardrobe-mobile.png',fullPage:false});
  // Reproduce iPhone Safari bug reports: huge garment overlay, blocked modal scroll,
  // dock overlapping product card, and inability to scroll to collection.
