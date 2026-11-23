@@ -1,5 +1,5 @@
 import {hub} from '/hn-api.js';
-import {nextPromoImage,buildPromoMessage,copyRichPromo,sharePromo} from '/social-promo-share.js?v=promo-5-20261123-v1';
+import {nextPromoImage,buildPromoMessage,copyRichPromo,sharePromo,fetchPosterBlob} from '/social-promo-share.js?v=promo-5-20261123-v2';
 /* HORENOVA official publication supervision.
  * WhatsApp = manual copy/paste into the existing channel (official Meta API
  * does not publish Channel posts). Telegram = official Bot API after setup.
@@ -77,15 +77,21 @@ export function mountSocialPublications(root,request=hub){
   post.rows=11;post.dir='auto';
   details.append(post);
   const tools=make('div','hspa-promo-tools');
+  let shareBlob=null,shareBusy=false;
   const share=button(words.promoShare,async()=>{
-   share.disabled=true;
+   if(!shareBlob||shareBusy)return;
+   shareBusy=true;share.disabled=true;
    try{
-    await sharePromo(message,url);
+    await sharePromo(message,url,shareBlob);
     text($('hspaFeedback'),lang().promoShared);
    }catch(error){
     if(error?.name!=='AbortError')text($('hspaFeedback'),lang().promoShareError);
-   }finally{share.disabled=false}
+   }finally{shareBusy=false;share.disabled=!shareBlob}
   });
+  share.disabled=true;
+  // Preload the actual image before enabling Share. Safari requires the native
+  // share sheet to open directly from the user's click, without network awaits.
+  void fetchPosterBlob(url).then(blob=>{shareBlob=blob;share.disabled=false}).catch(()=>{share.disabled=true});
   share.classList.add('hspa-promo-share');
   const save=make('a','hspa-action hspa-promo-save',words.promoSave);
   save.href=url;save.target='_blank';save.rel='noopener noreferrer';
@@ -100,6 +106,10 @@ export function mountSocialPublications(root,request=hub){
   text(output,'');
   const result=await copyRichPromo(message,url);
   const words=lang();
+  if(result.kind==='manual'){
+   const preview=card.querySelector('.hspa-promo-preview');
+   if(preview){const details=preview.querySelector('details');if(details)details.open=true}
+  }
   text(output,result.kind==='rich'?words.promoRich:result.kind==='text'?words.promoText:words.promoManual);
  }
  async function copyShare(value,card,success){
