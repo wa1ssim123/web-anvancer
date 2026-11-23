@@ -15,25 +15,17 @@ const server=http.createServer((req,res)=>{
  const ext=path.extname(file),type=ext==='.js'?'application/javascript':ext==='.css'?'text/css':'text/plain';
  res.writeHead(200,{'Content-Type':type});res.end(fs.readFileSync(file));
 });
-const contrast=(a,b)=>{
- const linear=c=>{c=c/255;return c<=.04045?c/12.92:Math.pow((c+.055)/1.055,2.4)};
- const rgb=s=>{const nums=s.match(/[\d.]+/g)||[];return nums.slice(0,3).map(Number)};
- const lum=s=>{const c=rgb(s).map(linear);return c[0]*.2126+c[1]*.7152+c[2]*.0722};
- const x=lum(a),y=lum(b);return (Math.max(x,y)+.05)/(Math.min(x,y)+.05);
-};
 (async()=>{
  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
  const browser=await chromium.launch({headless:true});
  try{
   for(const width of [320,390,1280]){
-   const context=await browser.newContext({viewport:{width,height:840},serviceWorkers:'block'});
-   await context.route('**/hn-api.js',route=>route.fulfill({status:200,contentType:'application/javascript',body:'export async function hub(){throw Error("A mock API is required")};'}));
+   const context=await browser.newContext({viewport:{width,height:844},serviceWorkers:'block'});
+   await context.route('**/hn-api.js',route=>route.fulfill({status:200,contentType:'application/javascript',body:'export async function hub(){throw Error("Expected mocked request")};'}));
    await context.route('https://static.wixstatic.com/media/**',route=>route.fulfill({
     status:200,body:png,contentType:'image/png',
     headers:{'access-control-allow-origin':'*','cache-control':'max-age=300'}
    }));
-   await context.route('https://whatsapp.com/channel/**',route=>route.fulfill({status:200,contentType:'text/html',body:'<h1>WhatsApp Channel route reached</h1>'}));
-   await context.route('https://t.me/**',route=>route.fulfill({status:200,contentType:'text/html',body:'<h1>Telegram Channel route reached</h1>'}));
    const page=await context.newPage(),errors=[];
    page.on('pageerror',e=>errors.push(e.message));
    await page.goto('http://127.0.0.1:'+server.address().port+'/test-social');
@@ -43,18 +35,15 @@ const contrast=(a,b)=>{
      city:'Casablanca',kind:'job',jobStatus:'VALIDEE',removed:false,attempts:0,sentAt:null,lastError:null,
      publicUrl:'https://horenova.com/job.html?id='+id,message:'🏢 Restaurant test\nhttps://horenova.com/job.html?id='+id};
     const whatsapp={...record,channel:'whatsapp',status:'manual'};
-    window.__shares=[];window.__lastCopied=null;window.__copiedImages=[];
-    Object.defineProperty(navigator,'share',{configurable:true,value:async a=>{
-     window.__shares.push({name:a.files?.[0]?.name,blobType:a.files?.[0]?.type,text:a.text,url:a.url,posterUrl:a.url});
-    }});
-    Object.defineProperty(navigator,'canShare',{configurable:true,value:()=>true});
+    window.__lastCopied=null;window.__copiedImages=[];
     Object.defineProperty(navigator,'clipboard',{configurable:true,value:{
      writeText:async x=>{window.__lastCopied=x},
      write:async items=>{
-      const blob=await items[0].getType('image/png');
-      const bmp=await createImageBitmap(blob);
-      window.__copiedImages.push({size:blob.size,width:bmp.width,height:bmp.height});
-      bmp.close();
+      const item=items[0];window.__imageTypes=item.types;
+      const blob=await item.getType('image/png');
+      const image=await createImageBitmap(blob);
+      window.__copiedImages.push({type:blob.type,size:blob.size,width:image.width,height:image.height});
+      image.close();
      }
     }});
     mountSocialPublications(document.querySelector('#root'),async url=>{
@@ -62,86 +51,65 @@ const contrast=(a,b)=>{
       configured:false,telegramChannel:'https://t.me/HORENOVA_Emploi_Maroc',
       whatsappChannel:'https://whatsapp.com/channel/0029Vb9VLZ5A2pLGFYQA6s2u',rows:[record,whatsapp]
      };
-     throw Error('Unexpected mock route '+url);
+     throw Error('Unexpected route '+url);
     });
    },offerId);
    await page.locator('.hspa-post').waitFor({state:'visible'});
-   await page.waitForFunction(()=>Number(document.querySelector('#hnAdminSocialPublications')?.dataset.posterReadyCount)>=5);
-   assert.equal(await page.locator('.hspa-post').count(),1);
-   assert.equal(await page.locator('.hspa-connection').count(),2);
-   assert.equal(await page.locator('.hspa-channel-actions').isVisible(),true);
-   assert.equal(await page.getByRole('link',{name:/Ouvrir le canal WhatsApp/}).getAttribute('href'),'https://whatsapp.com/channel/0029Vb9VLZ5A2pLGFYQA6s2u');
-   assert.equal(await page.getByRole('link',{name:/Ouvrir le canal Telegram/}).getAttribute('href'),'https://t.me/HORENOVA_Emploi_Maroc');
-   assert.equal(await page.locator('.hspa-whatsapp').getAttribute('target'),'_blank');
-   assert.equal(await page.locator('.hspa-telegram').getAttribute('target'),'_blank');
-   assert.equal(await page.getByRole('button',{name:'Copier le lien Telegram'}).count(),1);
-   const colors=await page.evaluate(()=>{
-    const get=sel=>document.querySelector(sel);
-    return {
-     background:getComputedStyle(get('#hnAdminSocialPublications')).backgroundColor,
-     heading:getComputedStyle(get('.hspa-heading h2')).color,
-     description:getComputedStyle(get('.hspa-heading p')).color,
-     label:getComputedStyle(get('.hspa-connection b')).color,
-     connection:getComputedStyle(get('.hspa-connection')).backgroundColor,
-     footer:getComputedStyle(get('#hspaInfo')).color
-    }
-   });
-   assert.ok(contrast(colors.heading,colors.background)>=7,'Unreadable heading '+JSON.stringify(colors));
-   assert.ok(contrast(colors.description,colors.background)>=4.5,'Unreadable subheading '+JSON.stringify(colors));
-   assert.ok(contrast(colors.label,colors.connection)>=4.5,'Unreadable channel status '+JSON.stringify(colors));
-   assert.ok(contrast(colors.footer,colors.background)>=4.5,'Unreadable footer '+JSON.stringify(colors));
-   await page.getByRole('button',{name:'Copier affiche complète Telegram'}).click();
-   await page.waitForFunction(()=>window.__copiedImages?.length>=1);
-   const firstImage=await page.locator('.hspa-promo-img').getAttribute('src');
-   const firstCopy=await page.evaluate(()=>window.__copiedImages[0]);
-   assert.ok(firstCopy.size>2000,'Complete picture must be a real composed PNG, not a 1x1 original');
-   assert.equal(firstCopy.width,1080,'Full job details must be baked into a readable image');
-   assert.ok(firstCopy.height>1000,'Picture must include a distinct job caption and full link footer');
-   assert.match(await page.locator('.hspa-local-feedback').innerText(),/Affiche copiée/);
-   await page.getByRole('button',{name:'Copier affiche complète WhatsApp'}).click();
-   await page.waitForFunction(()=>window.__copiedImages?.length>=2);
-   const secondImage=await page.locator('.hspa-promo-img').getAttribute('src');
-   assert.notEqual(firstImage,secondImage,'Every copy rotates to a different original HORENOVA poster');
-   assert.match(await page.locator('.hspa-promo-text').inputValue(),new RegExp(offerId));
-   await page.getByRole('button',{name:'Copier message et lien'}).click();
+   const card=page.locator('.hspa-post');
+   assert.equal(await card.locator('.hspa-post-actions a').count(),1);
+   assert.equal(await card.locator('.hspa-post-actions button').count(),2);
+   assert.equal(await card.locator('.hspa-channel-actions').count(),0,'No WhatsApp/Telegram channel controls');
+   assert.equal(await card.locator('.hspa-channel-options').count(),0,'No secondary actions panel');
+   assert.equal(await card.getByRole('button',{name:'Copier message + lien'}).count(),1);
+   assert.equal(await card.getByRole('button',{name:'Copier photo aléatoire'}).count(),1);
+   assert.equal(await card.getByRole('link',{name:/Voir l’annonce/}).getAttribute('href'),'https://horenova.com/job.html?id='+offerId);
+   await card.getByRole('button',{name:'Copier message + lien'}).click();
    await page.waitForFunction(()=>window.__lastCopied?.includes('horenova.com/job.html'));
-   assert.match(await page.evaluate(()=>window.__lastCopied),/Restaurant test/);
-   assert.match(await page.evaluate(()=>window.__lastCopied),new RegExp(offerId));
-   await page.waitForFunction(()=>document.querySelector('.hspa-promo-share')?.dataset.posterReady==='file');
-   await page.getByRole('button',{name:'Partager photo + message + lien'}).click();
-   await page.waitForFunction(()=>window.__shares.length>=1);
-   const shared=await page.evaluate(()=>window.__shares[0]);
-   assert.equal(shared.blobType,'image/png');
-   assert.match(shared.text,/Restaurant test/);
-   assert.match(shared.text,new RegExp(offerId));
-   assert.equal(shared.url,'https://horenova.com/job.html?id='+offerId,'Native share includes clickable job URL where the target supports it');
-   await page.getByRole('button',{name:'Copier le lien Telegram'}).click();
-   assert.equal(await page.evaluate(()=>window.__lastCopied),'https://t.me/HORENOVA_Emploi_Maroc');
-   await page.getByRole('button',{name:'Copier le lien WhatsApp'}).click();
-   assert.equal(await page.evaluate(()=>window.__lastCopied),'https://whatsapp.com/channel/0029Vb9VLZ5A2pLGFYQA6s2u');
-   for(const [sel,expected] of [['.hspa-whatsapp','https://whatsapp.com/channel/0029Vb9VLZ5A2pLGFYQA6s2u'],['.hspa-telegram','https://t.me/HORENOVA_Emploi_Maroc']]){
-    const [popup]=await Promise.all([page.waitForEvent('popup'),page.locator(sel).click()]);
-    await popup.waitForLoadState('domcontentloaded');
-    assert.equal(popup.url(),expected,'Actual external channel must open after user tap');
-    await popup.close();
-   }
-   // The Telegram settings button must also work if the admin settings mount late.
-   await page.evaluate(()=>{window.__manageJump=0;Element.prototype.scrollIntoView=function(){window.__manageJump++}});
-   await page.getByRole('link',{name:/Gérer le canal Telegram/}).click();
-   await page.evaluate(()=>{const el=document.createElement('div');el.id='hnTelegramChannelAdmin';document.body.append(el)});
-   await page.waitForFunction(()=>window.__manageJump>=1);
-   // Clipboard image unsupported: retain a clickable job URL via plain-text fallback.
-   await page.evaluate(()=>Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText:async value=>{window.__lastCopied=value}}}));
-   await page.getByRole('button',{name:'Copier affiche complète WhatsApp'}).click();
-   assert.match(await page.evaluate(()=>window.__lastCopied),new RegExp(offerId));
-   const size=await page.evaluate(()=>({width:innerWidth,scroll:document.documentElement.scrollWidth}));
-   assert.ok(size.scroll<=size.width+4,'Horizontal overflow '+JSON.stringify(size));
+   const firstText=await page.evaluate(()=>window.__lastCopied);
+   assert.match(firstText,/Serveur/);assert.match(firstText,/Restaurant test/);
+   assert.match(firstText,/Casablanca/);assert.match(firstText,new RegExp(offerId));
+   assert.equal(await card.locator('.hspa-photo-preview').count(),0,'Text copy must not select an image');
+   assert.match(await card.locator('.hspa-local-feedback').innerText(),/Message complet et lien/);
+   await card.getByRole('button',{name:'Copier photo aléatoire'}).click();
+   await page.waitForFunction(()=>window.__copiedImages.length>=1);
+   const firstImage=await card.locator('.hspa-photo-preview img').getAttribute('src');
+   assert.match(firstImage,/^https:\/\/static\.wixstatic\.com\/media\/d0158d_/);
+   assert.deepEqual(await page.evaluate(()=>window.__imageTypes),['image/png'],'Photo button must write only image/png, not text');
+   assert.equal(await page.evaluate(()=>window.__lastCopied),firstText,'Photo copying does not mix in or replace text with caption');
+   assert.equal((await page.evaluate(()=>window.__copiedImages[0])).type,'image/png');
+   await card.getByRole('button',{name:'Copier photo aléatoire'}).click();
+   await page.waitForFunction(()=>window.__copiedImages.length>=2);
+   const secondImage=await card.locator('.hspa-photo-preview img').getAttribute('src');
+   assert.notEqual(firstImage,secondImage,'Each successive photo copy selects a different poster');
+   assert.match(await card.locator('.hspa-local-feedback').innerText(),/Photo copiée/);
+   assert.equal(await card.locator('button').count(),2,'Only requested two buttons inside offer card');
+   const dimensions=await page.evaluate(()=>({width:innerWidth,scroll:document.documentElement.scrollWidth}));
+   assert.ok(dimensions.scroll<=dimensions.width+4,'Horizontal overflow '+JSON.stringify(dimensions));
+   // Browser denies writing images: present the real selected photo with long-press instructions.
+   await page.evaluate(()=>Object.defineProperty(navigator,'clipboard',{configurable:true,value:{
+    writeText:async x=>{window.__lastCopied=x},
+    write:async()=>{throw new Error('NotAllowedError')}
+   }}));
+   await card.getByRole('button',{name:'Copier photo aléatoire'}).click();
+   await page.waitForFunction(()=>document.querySelector('.hspa-local-feedback')?.textContent.includes('appuyez longuement'));
+   assert.equal(await card.locator('.hspa-photo-preview img').count(),1);
+   // Browser denies writing text too: show selectable full message and URL instead of false success.
+   await page.evaluate(()=>{
+    Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText:async()=>{throw new Error('NotAllowedError')}}});
+    document.execCommand=()=>false;
+   });
+   await card.getByRole('button',{name:'Copier message + lien'}).click();
+   await page.waitForFunction(()=>document.querySelector('.hspa-copy-fallback')?.value.includes('horenova.com/job.html'));
+   assert.match(await card.locator('.hspa-local-feedback').innerText(),/Copie bloquée/);
+   await page.evaluate(()=>{document.documentElement.lang='en'});
+   await page.waitForFunction(()=>document.querySelector('.hspa-post-actions')?.textContent.includes('Copy random photo'));
+   assert.equal(await card.getByRole('button',{name:'Copy random photo'}).count(),1);
    await page.evaluate(()=>{document.documentElement.lang='ar';document.documentElement.dir='rtl'});
-   await page.waitForFunction(()=>document.querySelector('#hspaTitle')?.textContent.includes('كل عرض'));
-   assert.equal(await page.getByRole('button',{name:'نسخ الرسالة ورابط الترشح'}).count(),0,'Caption button is visible only after selecting a poster');
-   assert.deepEqual(errors,[],'Uncaught browser errors '+JSON.stringify(errors));
-   console.log('PASS HORENOVA social '+width+'px: legible contrast, clickable channel links, copy PNG containing poster + title + city + URL, random images, Share file+text+URL and clickable-text fallback');
+   await page.waitForFunction(()=>document.querySelector('.hspa-post-actions')?.textContent.includes('نسخ صورة عشوائية'));
+   assert.equal(await card.getByRole('button',{name:'نسخ الرسالة والرابط'}).count(),1);
+   assert.deepEqual(errors,[],'Unexpected page errors '+JSON.stringify(errors));
+   console.log('PASS HORENOVA '+width+'px: exactly 3 actions, text+link only, randomly changing photo only, no channel buttons, denied-copy fallbacks, FR/EN/AR');
    await context.close();
   }
  }finally{await browser.close();server.close()}
-})().catch(e=>{console.error('FAIL HORENOVA social iPhone regression '+e.stack);process.exitCode=1});
+})().catch(e=>{console.error('FAIL HORENOVA simple social share '+e.stack);process.exitCode=1});
