@@ -56,7 +56,7 @@ function render(){
    el.classList.toggle('is-back',i===state.index&&state.face==='back');
  });
  els('[data-hx26-dot]').forEach((el,i)=>el.classList.toggle('is-current',i===state.index));
- const tools=$('.hx26-actions');if(tools)tools.style.left=((state.index+.78)/7*96+3).toFixed(2)+'%';
+ const tools=$('.hx26-actions');if(tools)tools.style.left=((state.index+.78)/products.length*96+3).toFixed(2)+'%';
  const pos=$('[data-hx26-position]');
  if(pos)pos.textContent=String(state.index+1).padStart(2,'0')+' / '+String(products.length).padStart(2,'0');
  $('[data-hx26-cat]').textContent=p.cat+'  /  HORENOVA EDITION';
