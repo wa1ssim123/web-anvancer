@@ -121,17 +121,14 @@ function listRequests(){
     button.disabled=true;
     feedback.textContent='Enregistrement du statut…';
     try{
-      const moderation=await hub('/api/recruiter-requests/'+encodeURIComponent(id)+'/status',{method:'PATCH',body:{status}});
+      await hub('/api/recruiter-requests/'+encodeURIComponent(id)+'/status',{method:'PATCH',body:{status}});
       const old=requests.find(x=>x.id===id);if(old)old.status=status;
-      const telegramReady=moderation?.telegramAutomaticConfigured===true;
       feedback.textContent=status==='VALIDEE'
-        ? telegramReady
-          ? '✓ Offre validée et visible. Envoi Telegram demandé : vérifiez son statut. WhatsApp : publication manuelle.'
-          : '✓ Offre validée et visible. Telegram NON envoyé : bot non configuré. WhatsApp : publication manuelle.'
+        ? '✓ Offre validée et visible sur HORENOVA. Consultez la diffusion pour vérifier Telegram et partager sur WhatsApp.'
         : status==='REFUSEE'
         ? '✓ Demande refusée, non visible publiquement.'
         : '✓ Demande en attente de vérification, non publiée.';
-      feedback.style.color=status==='VALIDEE'&&!telegramReady?'#965010':'#155b42';
+      feedback.style.color='#155b42';
       if(status==='VALIDEE'){
         const jump=document.createElement('a');
         jump.href='#hnAdminSocialPublications';
