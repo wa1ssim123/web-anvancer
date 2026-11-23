@@ -67,3 +67,20 @@ body[data-hn12="admin"] :is(#adminApplications,#adminRecruiterRequests,#hnAdminS
  body[data-hn12="admin"] #hnAdminSocialPublications .hspa-post-actions{display:grid!important;grid-template-columns:minmax(0,1fr)!important}
  body[data-hn12="admin"] #hnAdminSocialPublications .hspa-post-actions :is(a,button){width:100%!important}
 }
+
+/* Keep onboarding help compact until the admin chooses to expand it. */
+body[data-hn12="admin"] #hnAdminSocialPublications .hspa-guide-details{
+ margin:10px 0 14px;border:1px solid #3c8179;border-radius:13px;background:#123d43;
+ padding:0 14px;overflow:hidden;color:#f2fffb;
+}
+body[data-hn12="admin"] #hnAdminSocialPublications .hspa-guide-details[hidden]{display:none!important}
+body[data-hn12="admin"] #hnAdminSocialPublications .hspa-guide-details summary{
+ display:list-item;list-style-position:inside;min-height:49px;padding:13px 1px;
+ font-weight:850;font-size:13px;line-height:1.5;color:#effff8!important;cursor:pointer;
+}
+body[data-hn12="admin"] #hnAdminSocialPublications .hspa-guide-details .hspa-guide{
+ margin:0 0 13px;padding:13px!important;border-radius:9px!important;
+}
+@media(max-width:700px){
+ body[data-hn12="admin"] #hnAdminSocialPublications .hspa-guide-details summary{font-size:13px!important;min-height:51px}
+}
