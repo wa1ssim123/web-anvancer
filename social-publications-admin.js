@@ -134,6 +134,8 @@ export function mountSocialPublications(root,request=hub){
  $('hspaRefresh').addEventListener('click',()=>{void refresh()});
  document.addEventListener('hn-admin-moderation-changed',()=>{void refresh()});
  document.addEventListener('hn-admin-listing-removed',()=>{void refresh()});
+ document.addEventListener('visibilitychange',()=>{if(!document.hidden)void refresh()});
+ setInterval(()=>{if(!document.hidden)void refresh()},60000);
  const observer=new MutationObserver(draw);observer.observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
  draw();void refresh();
 }
