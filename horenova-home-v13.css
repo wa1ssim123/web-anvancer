@@ -20,3 +20,8 @@
 
 /* QA: previous generic heading inherited dark ink on the dark universe panel. */
 .hn-universe-v13 .hn-v13-head h2{color:#f4ecdf!important}
+
+
+/* QA follow-up: orange labels on ivory shop card, white titles over cinema footage. */
+.hn-shop-v13 .hn-shop-copy>span{color:#974125!important}
+.hn-business-v13 .hn-business-copy,.hn-academy-v13 .hn-academy-copy{text-shadow:0 2px 16px rgba(0,0,0,.58)}
