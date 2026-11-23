@@ -2,6 +2,10 @@
 const fs=require('node:fs'),path=require('node:path'),http=require('node:http');
 const assert=require('node:assert/strict'),{chromium}=require('playwright');
 const base=path.resolve(__dirname,'..');
+const techHtml=fs.readFileSync(path.join(base,'tech.html'),'utf8');
+assert.match(techHtml,/class="hn-brand-logo hn-brand-logo-whatsapp"/,'Standalone HORENOVA Tech WhatsApp quote button must have genuine brand logo');
+assert.match(techHtml,/\/assets\/brand-whatsapp\.svg/);
+
 const markup="<!doctype html><html lang=\"fr\"><head><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><link rel=\"stylesheet\" href=\"/social-brand-icons.css\"></head><body>\n<section id=\"canal\"><div class=\"hc-channel-symbol\">◉</div><a id=\"hcFollow\" href=\"https://whatsapp.com/channel/0029Vb9VLZ5A2pLGFYQA6s2u\">Suivre sur WhatsApp ↗</a></section>\n<section id=\"telegram\"><div class=\"hc-channel-symbol\">➤</div><a id=\"hcTelegramFollow\" href=\"https://t.me/HORENOVA_Emploi_Maroc\">Suivre sur Telegram ↗</a></section>\n<a id=\"hnSocialWA\" href=\"https://whatsapp.com/channel/0029Vb9VLZ5A2pLGFYQA6s2u\">WhatsApp ↗</a><a id=\"hnSocialTG\" href=\"https://t.me/HORENOVA_Emploi_Maroc\">Telegram ↗</a>\n<span id=\"hnSocialTGPending\">Telegram bientôt</span><div id=\"hnAdminSocialPublications\"><div class=\"hspa-connection\"><b>WhatsApp</b></div><div class=\"hspa-connection\"><b>Telegram</b></div><div class=\"hspa-pill\">Telegram · Auto inactive</div></div>\n<a id=\"communityNav\" href=\"/communaute.html\">WhatsApp, Telegram & actualités</a><a id=\"unrelated\" href=\"/jobs.html\">Offres</a><script defer src=\"/social-brand-icons.js\"></script></body></html>";
 const server=http.createServer((req,res)=>{
  const name=new URL(req.url,'http://localhost').pathname;
