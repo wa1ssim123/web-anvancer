@@ -1,0 +1,28 @@
+name: HORENOVA mobile shop and footer diagnostics
+on:
+  push:
+    branches: [horenova-free-deploy-2026]
+    paths:
+      - 'qa/shop-mobile-regression.cjs'
+      - '.github/workflows/horenova-shop-mobile-diagnostic.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  shop-mobile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --no-save playwright
+      - run: npx playwright install --with-deps chromium
+      - run: node qa/shop-mobile-regression.cjs
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: horenova-shop-mobile-debug
+          path: shop-full-mobile.png
+          if-no-files-found: ignore
