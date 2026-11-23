@@ -10,3 +10,11 @@
 .phone-menu>p{color:#385043!important}
 .device-receipt>small{color:#3b5258!important}
 .device-receipt .receipt-status{color:#246044!important}
+
+/* Deep readability audit — retain brand colors while meeting text contrast. */
+.phone-menu>small{color:#68502e}
+.phone-menu>p{color:#354940}
+.device-receipt small{color:#43565d}
+.device-cards small{color:#43565d}
+.receipt-status{color:#165b42}
+.catalog-note{color:#3b4b45}
