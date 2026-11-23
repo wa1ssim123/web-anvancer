@@ -90,9 +90,12 @@ export function mountSocialPublications(root,request=hub){
    }finally{shareBusy=false;share.disabled=!shareBlob}
   });
   share.disabled=true;
-  // Preload the actual image before enabling Share. Safari requires the native
-  // share sheet to open directly from the user's click, without network awaits.
-  void fetchPosterBlob(url).then(blob=>{shareBlob=blob;share.disabled=false}).catch(()=>{share.disabled=true;text(local,lang().promoShareError)});
+  // Only show the Share action on devices that actually support native sharing.
+  // Avoid a dead disabled button when the image host or browser cannot provide files.
+  if(typeof navigator.share==='function'&&typeof File!=='undefined'){
+   void fetchPosterBlob(url).then(blob=>{shareBlob=blob;share.disabled=false})
+    .catch(()=>{share.hidden=true;text(local,lang().promoShareError)});
+  }else share.hidden=true;
   share.classList.add('hspa-promo-share');
   const save=make('a','hspa-action hspa-promo-save',words.promoSave);
   save.href=url;save.target='_blank';save.rel='noopener noreferrer';
