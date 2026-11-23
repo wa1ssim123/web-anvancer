@@ -63,8 +63,8 @@ const onePixelPng=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAAD
      writeText:async text=>{window.__textCopyCount++;window.__lastCopied=text}
     }});
     Object.defineProperty(navigator,'canShare',{configurable:true,value:()=>true});
-    Object.defineProperty(navigator,'share',{configurable:true,value:async ({files,text})=>{
-     window.__share={file:files[0]?.name,type:files[0]?.type,text};
+    Object.defineProperty(navigator,'share',{configurable:true,value:async ({files,text,url})=>{
+     window.__share={file:files?.[0]?.name,type:files?.[0]?.type,text,url};
     }});
    });
    await page.getByRole('button',{name:'Copier message + lien Telegram'}).click();
@@ -90,12 +90,40 @@ const onePixelPng=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAAD
    assert.match(clipboardState.text,/horenova.com\/job.html\?id=/);
    assert.equal(clipboardState.binaryCalls,0,'Do not write an image: WhatsApp/iOS can discard text and link');
    assert.equal(clipboardState.textCalls,2,'Both channels copy complete plain-text messages');
+   await page.waitForFunction(()=>document.querySelector('.hspa-promo-share')?.dataset.posterReady==='file');
    await page.getByRole('button',{name:'Partager uniquement la photo'}).click();
    await page.waitForFunction(()=>window.__share?.file);
    const shared=await page.evaluate(()=>window.__share);
    assert.ok(shared.file.startsWith('HORENOVA-recrutement.'));
    assert.equal(shared.text,undefined,'Photo share must never replace the copied job message with media text');
+   assert.equal(shared.url,undefined,'When file is ready, share actual image data rather than the image link');
    assert.match(await page.evaluate(()=>window.__lastCopied),/horenova.com\/job.html\?id=/,'Sharing photo preserves the already-copied text');
+   // CORS/network denial must never leave a broken Share control.
+   await page.evaluate(()=>{
+    const original=window.fetch.bind(window);
+    window.fetch=(url,...args)=>String(url).includes('static.wixstatic.com')?
+      Promise.reject(Error('CORS blocked')):original(url,...args);
+    window.__share=null;
+   });
+   await page.getByRole('button',{name:'Copier message + lien Telegram'}).click();
+   await page.waitForFunction(()=>document.querySelector('.hspa-promo-share')?.dataset.posterReady==='link');
+   assert.equal(await page.getByRole('button',{name:'Partager uniquement la photo'}).isEnabled(),true,'Share poster URL is a functional fallback if image cannot be fetched');
+   await page.getByRole('button',{name:'Partager uniquement la photo'}).click();
+   await page.waitForFunction(()=>window.__share?.url);
+   assert.match(await page.evaluate(()=>window.__share.url),/^https:\/\/static\.wixstatic\.com\/media\//);
+   assert.match(await page.evaluate(()=>window.__lastCopied),/horenova.com\/job.html\?id=/,'Poster fallback must preserve the copied job message');
+   // Safari clipboard permission denied must show manual selection instead of fake "copied".
+   await page.evaluate(()=>{
+    Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText:async()=>{throw Error('NotAllowedError')}}});
+    document.execCommand=()=>false;
+   });
+   await page.getByRole('button',{name:'Copier message + lien WhatsApp'}).click();
+   await page.waitForFunction(()=>document.querySelector('.hspa-promo-details')?.open===true);
+   assert.match(await page.locator('.hspa-local-feedback').innerText(),/navigateur bloque la copie automatique/);
+   // Restore permitted clipboard for the independent WhatsApp channel link button.
+   await page.evaluate(()=>Object.defineProperty(navigator,'clipboard',{configurable:true,value:{
+    writeText:async text=>{window.__lastCopied=text}
+   }}));
    await page.getByRole('button',{name:'Copier le lien WhatsApp'}).click();
    assert.equal(await page.evaluate(()=>window.__lastCopied),'https://whatsapp.com/channel/0029Vb9VLZ5A2pLGFYQA6s2u');
    assert.equal(await page.locator('button').filter({hasText:'Relancer'}).count(),0);
