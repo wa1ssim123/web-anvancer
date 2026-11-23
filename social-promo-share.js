@@ -99,6 +99,7 @@ export async function copyRichPromo(message,imageUrl){
  if(typeof ClipboardItem!=='undefined'&&navigator.clipboard?.write){
   try{
    const pngPromise=posterAsPng(imageUrl);
+   pngPromise.catch(()=>{}); // Browser may reject ClipboardItem before consuming the PNG promise.
    const item=new ClipboardItem({
     'text/plain':new Blob([message],{type:'text/plain'}),
     'image/png':pngPromise
@@ -109,9 +110,11 @@ export async function copyRichPromo(message,imageUrl){
  }
  return {kind:await copyTextOnly(message)?'text':'manual'};
 }
-export async function sharePromo(message,imageUrl){
+export async function sharePromo(message,imageUrl,preloadedPoster=null){
  if(!navigator.share)throw Error('Native sharing unavailable');
- const poster=await fetchPosterBlob(imageUrl);
+ // When the poster has been preloaded, invoke navigator.share in the SAME click
+ // task: mobile Safari may reject a share started after an awaited network fetch.
+ const poster=preloadedPoster||await fetchPosterBlob(imageUrl);
  const type=poster.type||'image/jpeg';
  const ext=type==='image/png'?'png':type==='image/webp'?'webp':'jpg';
  const file=new File([poster],'HORENOVA-recrutement.'+ext,{type});
