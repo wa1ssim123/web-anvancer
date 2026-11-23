@@ -72,6 +72,51 @@ export async function fetchPosterBlob(url){
  if(!/^image\/(jpeg|png|webp)$/i.test(blob.type))throw Error('Invalid poster media type');
  return blob;
 }
+
+/** Build a single pasteable image containing the selected original poster,
+ * the real vacancy title/city, and the job URL printed within the image.
+ * This avoids the WebKit bug that drops either text or file when sharing both.
+ * A URL printed in a raster image cannot be clicked; offer copyTextOnly too.
+ */
+export async function buildCompletePosterPng(posterUrl,offer,row){
+ const src=await fetchPosterBlob(posterUrl);
+ const tmp=URL.createObjectURL(src);
+ try{
+  const photo=new Image();photo.src=tmp;await photo.decode();
+  if(!photo.naturalWidth||!photo.naturalHeight)throw Error('Poster image invalid');
+  const w=1080,scale=Math.min(w/photo.naturalWidth,1420/photo.naturalHeight);
+  const h=Math.max(1,Math.round(photo.naturalHeight*scale));
+  const footer=490,canvas=document.createElement('canvas');
+  canvas.width=w;canvas.height=h+footer;
+  const ctx=canvas.getContext('2d');if(!ctx)throw Error('Canvas 2D unavailable');
+  ctx.fillStyle='#102836';ctx.fillRect(0,0,w,h+footer);
+  ctx.drawImage(photo,(w-photo.naturalWidth*scale)/2,0,photo.naturalWidth*scale,h);
+  const y=h;
+  ctx.fillStyle='#d5ae6f';ctx.fillRect(0,y,w,8);
+  ctx.fillStyle='#fcfaf4';ctx.font='700 36px system-ui, sans-serif';
+  ctx.fillText('HORENOVA  •  OFFRE VALIDÉE',48,y+64,w-96);
+  const title=safeLine(offer?.title,100)||'Offre HORENOVA';
+  const city=safeLine(offer?.city,85)||'Maroc';
+  ctx.font='800 57px system-ui, sans-serif';ctx.fillText(title,48,y+145,w-96);
+  ctx.fillStyle='#d7e8df';ctx.font='600 35px system-ui, sans-serif';
+  ctx.fillText('📍 '+city+'   •   '+(offer?.kind==='shift'?'SHIFT / EXTRA':'EMPLOI'),48,y+209,w-96);
+  ctx.fillStyle='#d5ae6f';ctx.font='800 33px system-ui, sans-serif';
+  ctx.fillText('VOIR L’OFFRE ET POSTULER',48,y+277,w-96);
+  const caption=buildPromoMessage(offer,row);
+  const url=caption.match(/https:\/\/horenova\.com\/(?:job|shift)\.html\?id=[0-9a-f-]{36}/i)?.[0]||'https://horenova.com';
+  // Two legible lines preserve the full URL and its unique offer identifier.
+  let parts=url.includes('?id=')?url.split('?id='):[url];
+  if(parts.length===2)parts=[parts[0],'?id='+parts[1]];
+  ctx.font='600 31px ui-monospace, monospace';ctx.fillStyle='#fff';
+  for(let i=0;i<parts.length;i++)ctx.fillText(parts[i],48,y+341+45*i,w-96);
+  ctx.fillStyle='#a8c6c1';ctx.font='600 26px system-ui, sans-serif';
+  ctx.fillText('Hôtellerie • Restauration • Tourisme  |  horenova.com',48,y+459,w-96);
+  const result=await new Promise((resolve,reject)=>
+   canvas.toBlob(blob=>blob?resolve(blob):reject(Error('PNG conversion failed')),'image/png'));
+  return result;
+ }finally{URL.revokeObjectURL(tmp)}
+}
+
 export async function posterAsPng(url){
  const blob=await fetchPosterBlob(url);
  const blobUrl=URL.createObjectURL(blob);
