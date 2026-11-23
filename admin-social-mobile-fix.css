@@ -134,3 +134,56 @@ body[data-hn12="admin"] #hnAdminSocialPublications .hspa-post-actions a{
 body[data-hn12="admin"] #hnAdminSocialPublications .hspa-fallback{
  color:#183b32!important;background:white!important;
 }
+
+/* Five HORENOVA owner-supplied campaign posters: no crop, text remains selectable. */
+body[data-hn12="admin"] #hnAdminSocialPublications .hspa-promo-preview{
+ display:grid;grid-template-columns:minmax(0,1fr);gap:12px;
+ margin:16px 0 5px;padding:15px;border-radius:16px;
+ background:linear-gradient(135deg,#eef7f0,#f7fbf7);
+ border:1px solid #b6d1c0;color:#173e32;min-width:0;max-width:100%;
+}
+body[data-hn12="admin"] #hnAdminSocialPublications .hspa-promo-title{
+ display:block;font:850 14px/1.45 Inter,system-ui,sans-serif;
+ color:#173e32!important;letter-spacing:0;
+}
+body[data-hn12="admin"] #hnAdminSocialPublications .hspa-promo-img{
+ display:block;width:min(100%,340px);height:auto;max-height:485px;object-fit:contain;
+ border:1px solid #d3d9cb;border-radius:13px;background:#edf0eb;
+ box-shadow:0 10px 20px #102f2420;margin:0 auto;
+}
+body[data-hn12="admin"] #hnAdminSocialPublications .hspa-promo-details{
+ border:1px solid #ceded4;border-radius:11px;padding:9px 12px;
+ background:#fffefa;color:#244737;overflow:hidden;
+}
+body[data-hn12="admin"] #hnAdminSocialPublications .hspa-promo-details summary{
+ font:800 13px/1.5 Inter,system-ui,sans-serif;cursor:pointer;
+ min-height:36px;padding:7px 0;color:#19503d!important;
+}
+body[data-hn12="admin"] #hnAdminSocialPublications .hspa-promo-text{
+ display:block;width:100%;max-width:100%;min-height:270px;
+ margin-top:9px;padding:13px;border:1px solid #c5d8cb;border-radius:10px;
+ background:white!important;color:#143529!important;
+ -webkit-text-fill-color:#143529!important;
+ font:500 13px/1.6 Inter,system-ui,sans-serif;
+ direction:inherit;unicode-bidi:plaintext;white-space:pre-wrap;
+ resize:vertical;
+}
+body[data-hn12="admin"] #hnAdminSocialPublications .hspa-promo-tools{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+ align-items:stretch;gap:10px;
+}
+body[data-hn12="admin"] #hnAdminSocialPublications .hspa-promo-tools :is(a,button){
+ width:100%!important;min-width:0;min-height:48px!important;font-size:12.5px!important;
+ overflow-wrap:anywhere;white-space:normal;
+}
+body[data-hn12="admin"] #hnAdminSocialPublications .hspa-promo-share{
+ border:1px solid #226b51!important;background:#17513f!important;color:#fff!important;
+}
+body[data-hn12="admin"] #hnAdminSocialPublications .hspa-promo-save{
+ background:#fff!important;color:#174839!important;border:1px solid #bfd7ca!important;
+}
+@media(max-width:600px){
+ body[data-hn12="admin"] #hnAdminSocialPublications .hspa-promo-preview{padding:12px;gap:11px}
+ body[data-hn12="admin"] #hnAdminSocialPublications .hspa-promo-img{width:min(100%,310px);max-height:440px}
+ body[data-hn12="admin"] #hnAdminSocialPublications .hspa-promo-tools{grid-template-columns:minmax(0,1fr)}
+}
