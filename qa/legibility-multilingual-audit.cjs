@@ -46,7 +46,7 @@ async function analyse(page){
    if(sampled++>2600)break;
    if(el.closest('[hidden],[aria-hidden="true"],[inert]'))continue;
    const t=[...el.childNodes].filter(n=>n.nodeType===3).map(n=>n.nodeValue).join(' ').replace(/\s+/g,' ').trim();
-   if(!t||t.length<3||/^[0-9\W]+$/u.test(t))continue;
+   if(!t||t.length<3||!/\p{L}/u.test(t))continue;
    const st=getComputedStyle(el),r=el.getBoundingClientRect();
    if(st.display==='none'||st.visibility!=='visible'||+st.opacity<.2||r.width<2||r.height<2)continue;
    if(r.bottom<0||r.top>document.documentElement.scrollHeight||r.left>=innerWidth||r.right<=0)continue;
