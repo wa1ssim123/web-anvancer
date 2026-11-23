@@ -1,0 +1,2 @@
+/* Hide the fixed masthead only when the footer is visible, so the brand isn't repeated in the same mobile viewport. */
+(()=>{'use strict';const footer=document.getElementById('hnFooter'),head=document.querySelector('.hn-home-head');if(!footer||!head)return;const observer=new IntersectionObserver(entries=>{for(const entry of entries){document.body.classList.toggle('hn-footer-in-view',entry.isIntersecting)}},{threshold:0,rootMargin:'0px 0px -8px 0px'});observer.observe(footer);})();
