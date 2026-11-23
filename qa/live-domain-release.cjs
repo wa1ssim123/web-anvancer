@@ -1,13 +1,20 @@
 'use strict';
 /* Public production smoke: verifies actual domain content, not only GitHub files. */
 const assert=require('node:assert/strict');
+const fs=require('node:fs'),path=require('node:path');
+const localAdmin=fs.readFileSync(path.join(__dirname,'../admin.html'),'utf8');
+const expectedAdminScript=localAdmin.match(/src="(\/admin\.js\?v=[^"]+)"/)?.[1];
+const expectedAdminStyles=localAdmin.match(/href="(\/admin-social-mobile-fix\.css\?v=[^"]+)"/)?.[1];
+assert.ok(expectedAdminScript&&expectedAdminStyles,'Admin release must link to current JS and CSS');
 const release='2026.11.21.admin-delete-scroll-v9';
 const asset='support-no-art-v8';
 const bases=['https://horenova.com','https://horenova-site-officiel.onrender.com'];
 const checks=[
  {path:'/version.json',verify:s=>{try{return JSON.parse(s).version===release}catch{return false}}},
  {path:'/support.html',verify:s=>s.includes('id="hsQuickDemand"')&&s.includes('support.js?v='+asset)&&s.includes('Assistance 24 h/24')},
- {path:'/admin.html',verify:s=>s.includes('admin.js?v=admin-delete-scroll-v1')&&s.includes('horenova-admin-cases-v2.css?v=admin-delete-scroll-v1')},
+ {path:'/admin.html',verify:s=>s.includes(expectedAdminScript)&&s.includes(expectedAdminStyles)&&s.includes('horenova-admin-cases-v2.css')},
+ {path:'/social-publications-admin.js',verify:s=>s.includes('social-promo-share.js')&&s.includes('copyWithPoster')},
+ {path:'/social-promo-share.js',verify:s=>s.includes('nextPromoImage')&&s.includes('buildPromoMessage')&&s.includes('d0158d_94f90047')},
  {path:'/admin.js',verify:s=>s.includes('data-quickprint-id')&&s.includes('Imprimer la candidature avec photo')&&s.includes('data-request-remove')},
  {path:'/admin-overview.js',verify:s=>s.includes('data-remove-id')&&s.includes('hn-admin-listing-removed')},
  {path:'/horenova-admin-cases-v2.css',verify:s=>s.includes('#adminGate #hubRecruiterRequests.hub-stack')&&s.includes('hn-admin-remove-btn')},
