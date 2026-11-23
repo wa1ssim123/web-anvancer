@@ -17,7 +17,7 @@
 .hn-footer-modern .hn-footer-nav .hn-footer-tel{font-weight:850!important;color:#dfb57c!important;font-variant-numeric:tabular-nums}
 .hn-footer-modern .hn-footer-bottom{display:flex!important;grid-column:1/-1;flex-direction:row!important;align-items:center!important;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-top:6px;padding-top:18px;border-top:1px solid #6d807533;width:100%;font-size:11px;color:#a8b7b3}
 .hn-footer-modern .hn-footer-bottom a{color:#d8bb8d!important;font-size:11px;text-decoration:none!important}
-body.hn-footer-in-view .hn-home-head{opacity:0!important;visibility:hidden!important;pointer-events:none!important;transform:translateY(-15px)!important;transition:none!important}
+body.hn-footer-in-view .hn-home-head{display:none!important;opacity:0!important;visibility:hidden!important;pointer-events:none!important;transform:none!important;transition:none!important}
 @media(max-width:990px){.hn-home-footer.hn-footer-modern{grid-template-columns:1fr;row-gap:26px}.hn-footer-modern .hn-footer-nav{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:590px){
  .hn-home-footer.hn-footer-modern{padding:35px 21px max(26px,env(safe-area-inset-bottom,0px))!important;gap:20px}
