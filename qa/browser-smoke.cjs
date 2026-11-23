@@ -65,7 +65,7 @@ async function run(){
     try{
      await page.goto(base+'/shop.html',{waitUntil:'domcontentloaded',timeout:20000});
      await page.locator('.hx26-slot').first().waitFor({timeout:7000});
-     assert.equal(await page.locator('.hx26-slot').count(),7);
+     assert.equal(await page.locator('.hx26-slot').count(),9);
      assert.match(await page.locator('[data-hx26-name]').innerText(),/Executive Chef Jacket/);
      await page.locator('.hx26-card [data-hx26="view"]').click();
      await page.locator('.hx26-dialog').waitFor({timeout:6000});
@@ -88,7 +88,7 @@ async function run(){
      await page.locator('.hx26-slot').first().waitFor({timeout:7000});
      assert.equal(await page.locator('[data-hx26-count]').first().innerText(),'2');
      assert.equal(errors.length,0,'Shop JS exceptions: '+errors.join(' / '));
-     console.log('PASS HORENOVA interactive wardrobe '+width+'px: seven garments, simulated back, colour, size, quantity, quote and persistence');
+     console.log('PASS HORENOVA interactive wardrobe '+width+'px: nine garments, simulated back, colour, size, quantity, quote and persistence');
     }catch(e){
      failures.push('Showroom '+width+': '+e.message.slice(0,500)+' JS='+errors.join(' / '));
      console.error('FAIL showroom '+width+': '+e.message.slice(0,420)+' JS='+errors.join(' / '));
@@ -200,7 +200,7 @@ async function run(){
     const decorative=await page.locator('video[muted][loop]').evaluateAll(vs=>vs.map(v=>({
      autoplay:v.autoplay,controls:v.controls
     })));
-    if(url==='/shop.html')assert.equal(await page.locator('.hx26-slot').count(),7,'Shop uses animated garments instead of decorative video');else assert.ok(decorative.length>0,'No decorative video on '+url);
+    if(url==='/shop.html')assert.equal(await page.locator('.hx26-slot').count(),9,'Shop uses animated garments instead of decorative video');else assert.ok(decorative.length>0,'No decorative video on '+url);
     assert.ok(decorative.every(v=>!v.autoplay&&!v.controls),'Safari low-power native overlay may appear: '+JSON.stringify(decorative));
     if(url==='/'){
      await page.locator('.hn-intro-film').waitFor({state:'attached'});
