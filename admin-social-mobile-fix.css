@@ -84,3 +84,53 @@ body[data-hn12="admin"] #hnAdminSocialPublications .hspa-guide-details .hspa-gui
 @media(max-width:700px){
  body[data-hn12="admin"] #hnAdminSocialPublications .hspa-guide-details summary{font-size:13px!important;min-height:51px}
 }
+
+/* Contrast corrections: dark text on light admin surfaces, light text on dark panels. */
+body[data-hn12="admin"] #adminGate .hub-head :is(h2,h3,strong),
+body[data-hn12="admin"] #adminGate .hub-panel :is(h2,h3,h4,legend),
+body[data-hn12="admin"] #adminGate .hub-detail :is(h2,h3,h4,strong),
+body[data-hn12="admin"] #adminGate #adminRecruiterRequests :is(h3,h4,strong){
+ color:#173831!important;
+}
+body[data-hn12="admin"] #adminGate .hub-panel :is(p,li,label,small),
+body[data-hn12="admin"] #adminGate #adminRecruiterRequests :is(p,li,label,small),
+body[data-hn12="admin"] #adminGate .hub-detail :is(p,li,label,small){
+ color:#3a554e!important;opacity:1!important;
+}
+body[data-hn12="admin"] #adminGate :is(input,select,textarea){
+ background:#fff!important;color:#142f29!important;border-color:#adc3b5!important;
+ -webkit-text-fill-color:#142f29!important;
+}
+body[data-hn12="admin"] #adminGate :is(input,textarea)::placeholder{
+ color:#536a60!important;-webkit-text-fill-color:#536a60!important;opacity:1!important;
+}
+body[data-hn12="admin"] #adminGate #hnAdminSocialPublications .hspa-heading :is(h2,h3){
+ color:#fff!important;
+}
+body[data-hn12="admin"] #adminGate #hnAdminSocialPublications .hspa-heading p{
+ color:#e4eff1!important;
+}
+body[data-hn12="admin"] #adminGate #hnAdminSocialPublications .hspa-connection :is(b,span){
+ color:#f0f8f7!important;
+}
+body[data-hn12="admin"] #adminGate #hnAdminSocialPublications .hspa-connection:not(.hspa-ready) span{
+ color:#ffdaaa!important;
+}
+body[data-hn12="admin"] #adminGate #hnAdminSocialPublications .hspa-post :is(p,small,span,strong){
+ color:#244a46!important;opacity:1!important;
+}
+body[data-hn12="admin"] #adminGate #hnAdminSocialPublications .hspa-pill.hspa-manual{
+ color:#124f7b!important;
+}
+body[data-hn12="admin"] #adminGate #hnAdminSocialPublications .hspa-pill.hspa-pending{
+ color:#704018!important;
+}
+body[data-hn12="admin"] #hnAdminSocialPublications .hspa-telegram{
+ color:#174a66!important;background:#e5f1ff!important;border:1px solid #b1c9e2!important;
+}
+body[data-hn12="admin"] #hnAdminSocialPublications .hspa-post-actions a{
+ display:inline-flex!important;text-decoration:none!important;
+}
+body[data-hn12="admin"] #hnAdminSocialPublications .hspa-fallback{
+ color:#183b32!important;background:white!important;
+}
