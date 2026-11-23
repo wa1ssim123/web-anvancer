@@ -14,6 +14,7 @@ const products=[
 {id:'reception-blazer',cat:'RECEPTION',name:'Reception Blazer',short:'Blazer de réception',image:'https://static.wixstatic.com/media/d0158d_00a5e380f3c240ebbb411a0585e262bc~mv2.png',desc:'Blazer noir avec finitions contrastées, pour les métiers de l’accueil. Concept HORENOVA.',sizes:['XS','S','M','L','XL'],colors:[['Noir','#17191a','none'],['Marine','#30374c','hue-rotate(30deg) saturate(.8)'],['Charbon','#545356','grayscale(1) brightness(1.26)']]},
 {id:'hotel-polo',cat:'HOSPITALITY',name:'Hospitality Polo',short:'Polo hospitality',image:'https://static.wixstatic.com/media/d0158d_7d8857fd321548cdb069c428da8feb24~mv2.png',desc:'Polo de service ivoire avec col et revers contrastés. Concept HORENOVA.',sizes:['XS','S','M','L','XL','XXL'],colors:[['Ivoire','#efeee8','none'],['Noir','#222324','grayscale(1) brightness(.4)'],['Sable','#b4a28a','sepia(.55) saturate(.65) brightness(.9)']]}
 ];
+root.style.setProperty('--hn-garment-count',String(products.length));
 const KEY='horenova-wardrobe-2026-cart';
 const state={index:2,color:0,face:'front',size:null,qty:1,step:0,modal:false};
 let cart=[];
