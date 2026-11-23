@@ -4,6 +4,13 @@ on:
     branches: [horenova-free-deploy-2026]
     paths:
       - 'qa/shop-mobile-regression.cjs'
+      - 'horenova-footer-mobile.css'
+      - 'horenova-footer-mobile.js'
+      - 'horenova-shop-mobile-clean.css'
+      - 'shop.html'
+      - 'index.html'
+      - 'shop-products-atelier-20261113.js'
+      - 'horenova-wardrobe-atelier-20261113.js'
       - '.github/workflows/horenova-shop-mobile-diagnostic.yml'
   workflow_dispatch:
 permissions:
