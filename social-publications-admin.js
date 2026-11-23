@@ -6,7 +6,7 @@ import {PROMO_IMAGES,nextPromoImage,buildPromoMessage,copyTextOnly,posterAsPng} 
  * Only authenticated admins mount this panel; server enforces the role.
  */
 const T={
- fr:{over:copyMessage:'Copier message + lien',copyPhoto:'Copier photo aléatoire',textCopied:'✅ Message complet et lien de candidature copiés.',imageCopied:'✅ Photo copiée. Collez-la dans votre publication.',textManual:'Copie bloquée : sélectionnez le message affiché ci-dessous.',imageManual:'Copie photo non autorisée sur ce navigateur : appuyez longuement sur l’image pour la copier ou l’enregistrer.',imagePreview:'Photo HORENOVA sélectionnée','HORENOVA · DIFFUSION DES OFFRES',title:'Chaque offre validée, prête à partager.',
+ fr:{copyMessage:'Copier message + lien',copyPhoto:'Copier photo aléatoire',textCopied:'✅ Message complet et lien de candidature copiés.',imageCopied:'✅ Photo copiée. Collez-la dans votre publication.',textManual:'Copie bloquée : sélectionnez le message affiché ci-dessous.',imageManual:'Copie photo non autorisée sur ce navigateur : appuyez longuement sur l’image pour la copier ou l’enregistrer.',imagePreview:'Photo HORENOVA sélectionnée',over:'HORENOVA · DIFFUSION DES OFFRES',title:'Chaque offre validée, prête à partager.',
   desc:'Offres approuvées · publication suivie sur Telegram et messages prêts à partager sur WhatsApp. Les envois confirmés sont clairement indiqués.',
   refresh:'Actualiser ↻',tg:'Telegram',wa:'WhatsApp',
   botReady:'Serveur prêt · envois à confirmer',botMissing:'Envoi automatique inactif',
@@ -20,7 +20,7 @@ const T={
   pending:'En attente d’envoi',syncIssue:'Statut à synchroniser · actualiser',awaitBot:'Auto inactive · copiez le message',sending:'Envoi en cours',published:'Envoyé',manual:'Prêt à copier',needs_review:'À vérifier',cancelled:'Annulé',
   lastError:'Contrôle nécessaire :',info:'Les annonces refusées, retirées ou non validées ne sont pas envoyées.'
  },
- en:{over:copyMessage:'Copy message + link',copyPhoto:'Copy random photo',textCopied:'✅ Full message and job link copied.',imageCopied:'✅ Photo copied. Paste it into your post.',textManual:'Clipboard blocked: select the message below to copy it.',imageManual:'This browser blocked image copying: press and hold the image to copy or save it.',imagePreview:'Selected HORENOVA poster','HORENOVA · JOB PUBLICATION',title:'Every approved job, ready to share.',
+ en:{copyMessage:'Copy message + link',copyPhoto:'Copy random photo',textCopied:'✅ Full message and job link copied.',imageCopied:'✅ Photo copied. Paste it into your post.',textManual:'Clipboard blocked: select the message below to copy it.',imageManual:'This browser blocked image copying: press and hold the image to copy or save it.',imagePreview:'Selected HORENOVA poster',over:'HORENOVA · JOB PUBLICATION',title:'Every approved job, ready to share.',
   desc:'Approved jobs · Telegram delivery tracking and WhatsApp posts ready to share. Only confirmed deliveries appear as sent.',
   refresh:'Refresh ↻',tg:'Telegram',wa:'WhatsApp',
   botReady:'Server ready · delivery to verify',botMissing:'Automatic posting inactive',
@@ -33,7 +33,7 @@ const T={
   pending:'Awaiting delivery',syncIssue:'Status out of sync · refresh',awaitBot:'Auto inactive · copy the post',sending:'Sending',published:'Sent',manual:'Ready to copy',needs_review:'Needs review',cancelled:'Cancelled',
   lastError:'Attention:',info:'Rejected, withdrawn or unapproved vacancies are never sent.'
  },
- ar:{over:copyMessage:'نسخ الرسالة والرابط',copyPhoto:'نسخ صورة عشوائية',textCopied:'✅ تم نسخ الرسالة ورابط الترشح.',imageCopied:'✅ تم نسخ الصورة. الصقها في المنشور.',textManual:'تعذر النسخ: حدد النص المعروض أدناه لنسخه.',imageManual:'هذا المتصفح يمنع نسخ الصورة: اضغط عليها مطولاً لنسخها أو حفظها.',imagePreview:'صورة هورينوفا المختارة','هورينوفا · نشر الوظائف',title:'كل عرض موافق عليه جاهز للنشر.',
+ ar:{copyMessage:'نسخ الرسالة والرابط',copyPhoto:'نسخ صورة عشوائية',textCopied:'✅ تم نسخ الرسالة ورابط الترشح.',imageCopied:'✅ تم نسخ الصورة. الصقها في المنشور.',textManual:'تعذر النسخ: حدد النص المعروض أدناه لنسخه.',imageManual:'هذا المتصفح يمنع نسخ الصورة: اضغط عليها مطولاً لنسخها أو حفظها.',imagePreview:'صورة هورينوفا المختارة',over:'هورينوفا · نشر الوظائف',title:'كل عرض موافق عليه جاهز للنشر.',
   desc:'عروض العمل المعتمدة · متابعة النشر على تيليغرام وتجهيز رسائل واتساب للمشاركة. لا تظهر حالة الإرسال إلا بعد التأكيد.',
   refresh:'تحديث ↻',tg:'تيليغرام',wa:'واتساب',
   botReady:'الخادم جاهز · تأكيد الإرسال مطلوب',botMissing:'النشر التلقائي غير نشط',
