@@ -11,3 +11,9 @@ html[dir=rtl] .hc-hero{text-align:right}html[dir=rtl] .hc-phone{transform:rotate
 @media(max-width:650px){.hc-head{min-height:70px;padding:12px 14px;gap:8px}.hc-brand img{width:36px;height:36px}.hc-brand strong{font-size:19px}.hc-links{gap:8px;font-size:11px}.hc-links a:nth-child(2){display:none}.hc-language{height:39px;min-width:50px;padding:6px 3px}.hc-hero{grid-template-columns:minmax(0,1fr);padding:43px 20px 40px;min-height:0}.hc-hero h1{font-size:clamp(46px,12vw,70px);max-width:600px}.hc-hero-visual{min-height:330px}.hc-phone{width:min(300px,79%);transform:rotate(-3deg)}.hc-channel-band{grid-template-columns:1fr;padding:25px 21px;gap:17px;margin:0 15px 40px;border-radius:21px}.hc-channel-action{grid-column:auto}.hc-channel-symbol{width:58px;height:58px;font-size:29px}.hc-filters{grid-template-columns:1fr}.hc-offers-grid{grid-template-columns:1fr}.hc-universe-grid{grid-template-columns:1fr 1fr}.hc-universe{min-height:220px;padding:19px}.hc-universe h3{font-size:22px}.hc-section-heading{display:block}.hc-footer{padding:25px 20px}.hc-footer nav{margin-left:0}.hc-hero-actions .hc-button{min-height:48px}}
 @media(max-width:380px){.hc-links a:first-child{display:none}.hc-universe-grid{grid-template-columns:1fr}.hc-hero h1{font-size:44px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.hc-button,.hc-universe{transition:none}}
+
+
+/* QA: readable community metadata over cream and white surfaces. */
+.hc-section-heading .hc-minilabel{color:#85452e!important}
+.hc-phone-card small{color:#415863!important}
+.hc-results-info{color:#465a64!important}
