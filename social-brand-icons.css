@@ -1,0 +1,48 @@
+/* Local official WhatsApp & Telegram brand glyphs. */
+.hn-brand-control{gap:7px!important}
+.hn-brand-logo{
+ display:inline-block!important;flex:0 0 auto!important;
+ width:20px!important;height:20px!important;object-fit:contain!important;
+ vertical-align:middle!important;max-width:none!important;
+}
+.hn-brand-logo-whatsapp{color:#25d366}
+.hn-brand-logo-telegram{color:#26a5e4}
+.hn-brand-symbol{display:grid!important;place-items:center!important}
+.hn-brand-symbol>.hn-brand-logo{
+ display:block!important;width:44px!important;height:44px!important;
+ filter:brightness(0) invert(1)!important;
+}
+#hnWhatsappChannelAdmin .hca-badge.hn-brand-symbol>.hn-brand-logo,
+#hnTelegramChannelAdmin .hca-badge.hn-brand-symbol>.hn-brand-logo{
+ width:50px!important;height:50px!important;
+}
+#hcFollow .hn-brand-logo,#hcTelegramFollow .hn-brand-logo,
+#hnSocialWA .hn-brand-logo,#hnSocialTG .hn-brand-logo,
+#hcaSave .hn-brand-logo,#htgSave .hn-brand-logo{
+ filter:brightness(0) invert(1)!important;
+}
+#hnSocialWA,#hnSocialTG,.hc-button,
+#hcaSave,#htgSave{gap:8px!important}
+#hnSocialWA .hn-brand-logo,#hnSocialTG .hn-brand-logo{
+ width:16px!important;height:16px!important;
+}
+.hspa-connection b:has(>.hn-brand-logo){
+ display:flex!important;align-items:center!important;gap:7px!important;
+}
+.hspa-connection b .hn-brand-logo,.hspa-pill .hn-brand-logo{
+ width:17px!important;height:17px!important;
+}
+.hspa-pill:has(>.hn-brand-logo){gap:6px!important}
+.hn-admin-mobile-tabs a:has(>.hn-brand-logo) .hn-brand-logo,
+.hspa-admin-link .hn-brand-logo{width:16px!important;height:16px!important}
+@media(max-width:450px){
+ .hc-channel-symbol.hn-brand-symbol>.hn-brand-logo{
+  width:37px!important;height:37px!important;
+ }
+ .hn-social-buttons .hn-brand-logo{
+  width:15px!important;height:15px!important;
+ }
+}
+@media(prefers-reduced-motion:reduce){
+ .hn-brand-logo{transition:none!important}
+}
