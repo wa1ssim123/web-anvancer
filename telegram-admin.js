@@ -25,7 +25,7 @@ function valid(url){
 export function mountTelegramAdmin(root,request=hub){
  if(!root||root.querySelector('#hnTelegramChannelAdmin'))return;
  const section=document.createElement('section');section.id='hnTelegramChannelAdmin';section.className='hn-channel-admin hn-telegram-admin';
- section.innerHTML='<div class="hca-head"><div><span id="htgEyebrow"></span><h2 id="htgTitle"></h2><p id="htgIntro"></p></div><div class="hca-badge" aria-hidden="true">➤</div></div>'+
+ section.innerHTML='<div class="hca-head"><div><span id="htgEyebrow"></span><h2 id="htgTitle"></h2><p id="htgIntro"></p></div><div class="hca-badge hn-brand-symbol" aria-hidden="true"><img class="hn-brand-logo hn-brand-logo-telegram" src="/assets/brand-telegram.svg" alt="" width="50" height="50"></div></div>'+
  '<div class="hca-content"><form id="htgForm"><label for="htgUrl" id="htgLabel"></label><div class="hca-input-row"><input id="htgUrl" type="url" spellcheck="false" autocomplete="off" inputmode="url" placeholder="https://t.me/nom_du_canal" required><button type="submit" id="htgSave"></button></div><small id="htgHint"></small><div class="hca-actions"><button type="button" id="htgRemove"></button><a href="/communaute.html#telegram" target="_blank" rel="noopener noreferrer" id="htgPreview"></a></div></form>'+
  '<div class="hca-status"><strong id="htgPublished"></strong><a id="htgCurrent" target="_blank" rel="noopener noreferrer" hidden></a><p id="htgNone"></p></div></div>'+
  '<div class="hca-guide"><p id="htgGuide"></p><small id="htgPrivacy"></small></div><p id="htgFeedback" role="status" aria-live="polite"></p>';
