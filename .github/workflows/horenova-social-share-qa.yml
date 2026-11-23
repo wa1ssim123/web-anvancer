@@ -18,6 +18,7 @@ on:
       - channel-admin.js
       - telegram-admin.js
       - pwa-register.js
+      - tech.html
       - .github/workflows/horenova-social-share-qa.yml
   workflow_dispatch:
 permissions:
