@@ -1,3 +1,14 @@
+/* Shared HORENOVA social branding: applies original WhatsApp and Telegram logos
+ * to pages and async UI. Does not modify labels, links or account state.
+ */
+(function(){
+ if(document.querySelector('script[data-hn-official-social-logos]'))return;
+ const script=document.createElement('script');
+ script.src='/social-brand-icons.js?v=20261123-logo1';
+ script.defer=true;script.dataset.hnOfficialSocialLogos='true';
+ document.head.append(script);
+})();
+
 /* HORENOVA: Disable old offline service workers that showed a false full-page outage.
  * Keep browser cache, signed-in accounts and Wix member tokens untouched.
  */
