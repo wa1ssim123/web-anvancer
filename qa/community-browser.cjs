@@ -73,6 +73,8 @@ const server=http.createServer((req,res)=>{
    await menu.selectOption('ar');
    assert.equal(await page.locator('html').getAttribute('dir'),'rtl');
    await page.waitForFunction(()=>document.querySelector('h1').textContent.includes('الفرص'));
+    const rtlDimensions=await page.evaluate(()=>({viewport:innerWidth,document:document.documentElement.scrollWidth,body:document.body.scrollWidth}));
+    assert.ok(rtlDimensions.document<=width+5,'Arabic RTL community viewport overflow '+JSON.stringify(rtlDimensions));
    await menu.selectOption('en');
    assert.equal(await page.locator('html').getAttribute('lang'),'en');
    await page.waitForFunction(()=>document.querySelector('h1').textContent.includes('Opportunities'));
