@@ -132,9 +132,9 @@ export function mountSocialPublications(root,request=hub){
   const w=lang();
   for(const [id,key] of Object.entries({hspaOver:'over',hspaTitle:'title',hspaDesc:'desc',hspaRefresh:'refresh',hspaTelegram:'linkTelegram',hspaInfo:'info'}))text($(id),w[key]);
   const links=$('hspaConnections');links.replaceChildren();
+  const telegramActive=!!(model?.configured&&model?.telegramChannel);
   const indicators=[
-   {label:w.tg,detail:model?.configured?w.botReady:w.botMissing,ready:!!model?.configured},
-   {label:w.tg,detail:model?.telegramChannel?w.channelReady:w.channelMissing,ready:!!model?.telegramChannel},
+   {label:w.tg,detail:telegramActive?w.botReady:w.botMissing,ready:telegramActive},
    {label:w.wa,detail:model?.whatsappChannel?w.waReady:w.waMissing,ready:!!model?.whatsappChannel}
   ];
   for(const val of indicators){const card=make('div','hspa-connection'+(val.ready?' hspa-ready':''));card.append(make('b','',val.label),make('span','',val.detail));links.append(card)}
