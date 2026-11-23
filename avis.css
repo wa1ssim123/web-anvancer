@@ -48,3 +48,7 @@ html[dir="rtl"] .rv-x-card{text-align:right}
 .rv-eyebrow{color:#315c43!important}
 .rv-sectionhead p{color:#415a50!important}
 .rv-form small,.rv-card small,.rv-example small{color:#3b5348}
+
+/* Neutral secondary captions on light cards: WCAG AA readable. */
+.rv-form-card label small,.rv-card-foot,.rv-examples small,.rv-experience-card small{color:#425a4b}
+.rv-sectionhead p{color:#405347}
