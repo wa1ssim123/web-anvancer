@@ -1,0 +1,32 @@
+/* HORENOVA · Mobile-first global footer · avoid duplicate fixed navigation over footer. */
+.hn-home-footer.hn-footer-modern{box-sizing:border-box;display:grid!important;grid-template-columns:minmax(200px,.85fr) minmax(0,2fr);column-gap:clamp(24px,6vw,90px);row-gap:30px;align-items:start!important;justify-content:initial!important;background:#0c1116!important;color:#e9e6dd!important;padding:clamp(34px,5vw,70px) clamp(20px,5vw,74px) max(34px,env(safe-area-inset-bottom,0px))!important;border-top:1px solid #53645855;font-family:Inter,system-ui,-apple-system,sans-serif;line-height:1.5;max-width:100%;overflow:hidden;}
+.hn-footer-modern *{box-sizing:border-box;min-width:0}
+.hn-footer-modern .hn-footer-intro{display:flex!important;flex-direction:column;align-items:flex-start!important;gap:12px!important;margin:0}
+.hn-footer-modern .hn-footer-brand{display:inline-flex;align-items:center;gap:10px;color:#f6f0e3!important;text-decoration:none!important;font-size:clamp(19px,2.3vw,28px);font-weight:850;line-height:1.1}
+.hn-footer-modern .hn-footer-brand img{width:40px;height:40px;object-fit:contain}
+.hn-footer-modern .hn-footer-brand strong{color:#f6f0e3;font-size:inherit;letter-spacing:-.03em}
+.hn-footer-modern .hn-footer-brand strong span{color:#d6a26e}
+.hn-footer-modern .hn-footer-intro p{margin:0;font-size:15px;line-height:1.6;color:#b9c7c3;max-width:280px}
+.hn-footer-modern .hn-footer-intro small{display:block;color:#8da9a2;font-size:12px;line-height:1.65;max-width:285px}
+.hn-footer-modern .hn-footer-nav{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));column-gap:clamp(13px,2.5vw,40px);row-gap:24px;width:100%;margin:0;padding:0}
+.hn-footer-modern .hn-footer-nav section{display:flex;flex-direction:column;align-items:flex-start;gap:11px;min-width:0}
+.hn-footer-modern .hn-footer-nav h2{font:850 10px/1.35 Inter,system-ui,sans-serif;letter-spacing:.13em;color:#cfad79;margin:2px 0 6px;text-transform:uppercase}
+.hn-footer-modern .hn-footer-nav a{display:inline-block;width:auto;max-width:100%;color:#e4e8e1!important;font-size:clamp(12px,1.1vw,14px)!important;line-height:1.45!important;letter-spacing:0!important;font-weight:570!important;text-decoration:none!important;overflow-wrap:anywhere;padding:4px 0;border:0;background:transparent;transition:color .15s ease}
+.hn-footer-modern .hn-footer-nav a:hover,.hn-footer-modern .hn-footer-nav a:focus-visible{color:#dfb57c!important;text-decoration:underline!important;text-underline-offset:4px}
+.hn-footer-modern .hn-footer-nav a:focus-visible,.hn-footer-modern .hn-footer-brand:focus-visible{outline:2px solid #e5b982;outline-offset:3px;border-radius:4px}
+.hn-footer-modern .hn-footer-nav .hn-footer-tel{font-weight:850!important;color:#dfb57c!important;font-variant-numeric:tabular-nums}
+.hn-footer-modern .hn-footer-bottom{display:flex!important;grid-column:1/-1;flex-direction:row!important;align-items:center!important;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-top:6px;padding-top:18px;border-top:1px solid #6d807533;width:100%;font-size:11px;color:#a8b7b3}
+.hn-footer-modern .hn-footer-bottom a{color:#d8bb8d!important;font-size:11px;text-decoration:none!important}
+body.hn-footer-in-view .hn-home-head{opacity:0!important;visibility:hidden!important;pointer-events:none!important;transform:translateY(-15px)!important;transition:opacity .2s,transform .2s,visibility .2s!important}
+@media(max-width:990px){.hn-home-footer.hn-footer-modern{grid-template-columns:1fr;row-gap:26px}.hn-footer-modern .hn-footer-nav{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:590px){
+ .hn-home-footer.hn-footer-modern{padding:35px 21px max(26px,env(safe-area-inset-bottom,0px))!important;gap:20px}
+ .hn-footer-modern .hn-footer-intro{gap:9px!important}
+ .hn-footer-modern .hn-footer-intro p{font-size:14px}
+ .hn-footer-modern .hn-footer-nav{grid-template-columns:repeat(2,minmax(0,1fr));column-gap:17px;row-gap:20px}
+ .hn-footer-modern .hn-footer-nav section:last-child{grid-column:1/-1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:14px;row-gap:9px}
+ .hn-footer-modern .hn-footer-nav section:last-child h2{grid-column:1/-1}
+ .hn-footer-modern .hn-footer-nav a{font-size:13px!important;padding:5px 0;min-height:28px}
+ .hn-footer-modern .hn-footer-bottom{padding-top:16px}
+}
+@media(prefers-reduced-motion:reduce){body.hn-footer-in-view .hn-home-head{transition:none!important}}
