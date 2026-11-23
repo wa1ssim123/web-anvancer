@@ -6,7 +6,10 @@ on:
     paths:
       - 'qa/legibility-multilingual-audit.cjs'
       - 'horenova-i18n.js'
-      - 'horenova-contrast-repair.css'
+      - '*.html'
+      - '*.css'
+      - 'communaute.js'
+      - 'qa/community-browser.cjs'
       - 'qa/housekeeping-coverage.cjs'
       - '.github/workflows/horenova-deep-qa.yml'
   workflow_dispatch:
