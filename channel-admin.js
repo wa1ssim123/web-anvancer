@@ -41,7 +41,7 @@ function safe(value){
 export function mountAdminChannel(root,request=hub){
  if(!root||root.querySelector('#hnWhatsappChannelAdmin'))return;
  const part=document.createElement('section');part.id='hnWhatsappChannelAdmin';part.className='hn-channel-admin';
- part.innerHTML='<div class="hca-head"><div><span id="hcaEyebrow"></span><h2 id="hcaTitle"></h2><p id="hcaIntro"></p></div><div class="hca-badge" aria-hidden="true">◉</div></div>'+
+ part.innerHTML='<div class="hca-head"><div><span id="hcaEyebrow"></span><h2 id="hcaTitle"></h2><p id="hcaIntro"></p></div><div class="hca-badge hn-brand-symbol" aria-hidden="true"><img class="hn-brand-logo hn-brand-logo-whatsapp" src="/assets/brand-whatsapp.svg" alt="" width="50" height="50"></div></div>'+
  '<div class="hca-content"><form id="hcaForm"><label for="hcaUrl" id="hcaLinkLabel"></label><div class="hca-input-row"><input id="hcaUrl" type="url" spellcheck="false" autocomplete="off" inputmode="url" placeholder="https://whatsapp.com/channel/…" required><button type="submit" id="hcaSave"></button></div><small id="hcaHint"></small><div class="hca-actions"><button type="button" id="hcaRemove"></button><a href="/communaute.html" target="_blank" rel="noopener noreferrer" id="hcaPreview"></a></div></form><div class="hca-status"><strong id="hcaCurrentLabel"></strong><a id="hcaCurrentLink" target="_blank" rel="noopener noreferrer" hidden></a><p id="hcaState"></p></div></div><div class="hca-guide"><p id="hcaGuide"></p><small id="hcaPrivacy"></small></div><p id="hcaFeedback" role="status" aria-live="polite"></p>';
  root.prepend(part);
  let active=false,busy=false,loaded=false,current=null;
