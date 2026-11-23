@@ -268,3 +268,5 @@ body[data-hn12="admin"] #hnAdminSocialPublications .hspa-local-feedback:empty{di
   min-height:44px!important;align-items:center;
  }
 }
+
+body[data-hn12="admin"] #hnAdminSocialPublications .hspa-promo-share[hidden]{display:none!important}
