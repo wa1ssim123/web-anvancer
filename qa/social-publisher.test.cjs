@@ -96,3 +96,16 @@ test('Telegram error 403 is visible for manual review, not treated as published'
  assert.equal(pool.state,'needs_review');
  assert.equal(pool.attempts,1);
 });
+
+test('Reapproved offers revive only unsent publications and never blindly resend',()=>{
+ const fs=require('node:fs'),path=require('node:path');
+ const schema=fs.readFileSync(path.join(__dirname,'../backend/social-publications-schema.sql'),'utf8');
+ assert.match(schema,/ON CONFLICT\(request_id,channel\) DO UPDATE/);
+ assert.match(schema,/hr_social_publications\.status='cancelled'/);
+ assert.match(schema,/hr_social_publications\.attempts=0/);
+ assert.match(schema,/hr_social_publications\.sent_at IS NULL/);
+ assert.match(schema,/hr_social_publications\.telegram_message_id IS NULL/);
+ assert.match(schema,/hr_social_publications\.attempts>0[\s\S]*?THEN 'needs_review'/);
+ assert.match(schema,/ELSE hr_social_publications\.status/,'Keep delivered or in-flight states unchanged');
+ assert.doesNotMatch(schema,/ON CONFLICT\(request_id,channel\) DO NOTHING/);
+});
