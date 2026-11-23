@@ -42,3 +42,9 @@ html[dir="rtl"] .rv-x-card{text-align:right}
 @media(max-width:1000px){.rv-x-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:680px){.rv-x-grid{grid-template-columns:1fr}.rv-x-card{min-height:0}.rv-experiences .rv-sectionhead{margin-bottom:24px}.rv-x-toolbar{align-items:start}.rv-x-filter{padding:10px 13px}.rv-x-count{white-space:normal}.rv-x-actions{display:grid}.rv-x-more,.rv-x-real{width:100%}}
 @media(prefers-reduced-motion:reduce){.rv-x-card,.rv-x-filter{transition:none}.rv-x-card:hover{transform:none}}
+
+
+/* QA: review labels / form hints must contrast with pale sections. */
+.rv-eyebrow{color:#315c43!important}
+.rv-sectionhead p{color:#415a50!important}
+.rv-form small,.rv-card small,.rv-example small{color:#3b5348}
