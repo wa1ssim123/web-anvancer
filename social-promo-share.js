@@ -133,6 +133,12 @@ export async function sharePromo(message,imageUrl,preloadedPoster=null){
  // Files shared through iOS / WhatsApp may discard the message and URL.
  // Sharing the photo alone preserves the previously copied text on clipboard.
  const payload={files:[file],title:'HORENOVA | Recrutement'};
- if(String(message||'').trim())payload.text=String(message);
+ const caption=String(message||'').trim();
+ if(caption){
+  payload.text=caption;
+  // Include an explicit canonical job URL for targets supporting Web Share URL.
+  const direct=caption.match(/https:\/\/horenova\.com\/(?:job|shift)\.html\?id=[0-9a-f-]{36}/i);
+  if(direct)payload.url=direct[0];
+ }
  await navigator.share(payload);
 }
