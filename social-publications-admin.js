@@ -14,7 +14,7 @@ const T={
   waReady:'Canal WhatsApp relié',waMissing:'Canal WhatsApp non relié',
   guideTitle:'Telegram bloqué ? Voir les étapes de configuration',instructions:'Pour activer Telegram : créez votre bot avec @BotFather, ajoutez-le comme administrateur de votre chaîne avec le droit de publier, puis configurez TELEGRAM_BOT_TOKEN dans les variables d’environnement privées du service Render HORENOVA API.',
   linkTelegram:'Gérer le canal Telegram ↗',render:'Ouvrir les paramètres Render ↗',moreOptions:'Canaux et autres actions',
-  copy:'Copier message + lien WhatsApp',copyTelegram:'Copier message + lien Telegram',copyWaLink:'Copier le lien WhatsApp',copied:'Message copié. Ouvrez le canal et collez-le pour le publier.',copiedLink:'Lien de la chaîne copié.',copyError:'Copie impossible : sélectionnez et copiez le texte ci-dessous.',promoTitle:'Visuel HORENOVA sélectionné',promoAlt:'Affiche officielle HORENOVA',promoPreview:'Voir le message prêt à publier',promoShare:'Partager uniquement la photo',promoSave:'Ouvrir / enregistrer la photo',promoRich:'✅ Message copié avec son lien.',promoText:'✅ Texte et lien de candidature copiés. La photo est disponible séparément.',promoManual:'Le navigateur bloque la copie automatique : ouvrez le message ci-dessous pour le sélectionner et copier.',promoShared:'✅ Photo envoyée vers le partage. Collez ensuite le message et le lien déjà copiés.',promoShareError:'Partage direct non disponible ici : ouvrez et enregistrez la photo, puis collez le message.',
+  copy:'Copier message + lien WhatsApp',copyTelegram:'Copier message + lien Telegram',copyWaLink:'Copier le lien WhatsApp',copied:'Message copié. Ouvrez le canal et collez-le pour le publier.',copiedLink:'Lien de la chaîne copié.',copyError:'Copie impossible : sélectionnez et copiez le texte ci-dessous.',promoTitle:'Visuel HORENOVA sélectionné',promoAlt:'Affiche officielle HORENOVA',promoPreview:'Voir le message prêt à publier',promoShare:'Partager uniquement la photo',promoSave:'Ouvrir / enregistrer la photo',promoRich:'✅ Message copié avec son lien.',promoText:'✅ Texte et lien de candidature copiés. La photo est disponible séparément.',promoManual:'Le navigateur bloque la copie automatique : ouvrez le message ci-dessous pour le sélectionner et copier.',promoShared:'✅ Photo envoyée vers le partage. Collez ensuite le message et le lien déjà copiés.',promoShareError:'Le partage n’est pas disponible ici. Ouvrez la photo, puis collez le message copié.',promoSharedLink:'Le lien de la photo a été partagé. Collez ensuite votre message déjà copié.',
   openWa:'Ouvrir le canal WhatsApp ↗',openTelegram:'Ouvrir le canal Telegram ↗',view:'Voir l’annonce ↗', retry:'Relancer Telegram après vérification',retryConfirm:'Vérifiez AVANT la relance qu’aucun message identique n’est déjà visible sur votre chaîne Telegram. Continuer ?',
   retried:'Nouvelle tentative demandée.',error:'Impossible de consulter la diffusion : ',empty:"Aucune nouvelle validation enregistrée depuis l’activation de la diffusion. Les anciennes annonces ne sont pas renvoyées.",
   pending:'En attente d’envoi',syncIssue:'Statut à synchroniser · actualiser',awaitBot:'Auto inactive · copiez le message',sending:'Envoi en cours',published:'Envoyé',manual:'Prêt à copier',needs_review:'À vérifier',cancelled:'Annulé',
@@ -28,7 +28,7 @@ const T={
   waReady:'WhatsApp Channel linked',waMissing:'WhatsApp Channel not linked',
   guideTitle:'Telegram blocked? View configuration steps',instructions:'To enable Telegram, create a bot with @BotFather, make it an administrator of your public channel with posting rights, and set TELEGRAM_BOT_TOKEN in the private Render HORENOVA API environment variables.',
   linkTelegram:'Manage Telegram Channel ↗',render:'Render settings ↗',moreOptions:'Channels and more actions',
-  copy:'Copy WhatsApp message + link',copyTelegram:'Copy Telegram message + link',copyWaLink:'Copy WhatsApp Channel link',copied:'Post copied. Open the channel and paste it.',copiedLink:'Channel link copied.',copyError:'Copy unavailable: select and copy the text below.',promoTitle:'Selected HORENOVA poster',promoAlt:'Official HORENOVA recruitment poster',promoPreview:'View the ready-to-share post',promoShare:'Share the image only',promoSave:'Open / save image',promoRich:'✅ Message and link copied.',promoText:'✅ Message and job link copied. Share the poster separately.',promoManual:'Clipboard blocked: open the message below, select and copy it.',promoShared:'✅ Image sharing opened. Paste your already-copied message and link afterwards.',promoShareError:'Sharing unavailable here: open and save the image, then paste the post.',
+  copy:'Copy WhatsApp message + link',copyTelegram:'Copy Telegram message + link',copyWaLink:'Copy WhatsApp Channel link',copied:'Post copied. Open the channel and paste it.',copiedLink:'Channel link copied.',copyError:'Copy unavailable: select and copy the text below.',promoTitle:'Selected HORENOVA poster',promoAlt:'Official HORENOVA recruitment poster',promoPreview:'View the ready-to-share post',promoShare:'Share the image only',promoSave:'Open / save image',promoRich:'✅ Message and link copied.',promoText:'✅ Message and job link copied. Share the poster separately.',promoManual:'Clipboard blocked: open the message below, select and copy it.',promoShared:'✅ Image sharing opened. Paste your already-copied message and link afterwards.',promoShareError:'Sharing unavailable here. Open the image, then paste your copied message.',promoSharedLink:'The image link was shared. Paste the copied job message afterwards.',
   openWa:'Open WhatsApp Channel ↗',openTelegram:'Open Telegram Channel ↗',view:'View job ↗',retry:'Retry Telegram after checking',retryConfirm:'First verify that no identical message was posted in your Telegram channel. Retry?',retried:'Retry requested.',error:'Cannot load publication status: ',empty:'No new approvals have been recorded since publishing was enabled. Older jobs are not resent.',
   pending:'Awaiting delivery',syncIssue:'Status out of sync · refresh',awaitBot:'Auto inactive · copy the post',sending:'Sending',published:'Sent',manual:'Ready to copy',needs_review:'Needs review',cancelled:'Cancelled',
   lastError:'Attention:',info:'Rejected, withdrawn or unapproved vacancies are never sent.'
@@ -41,7 +41,7 @@ const T={
   waReady:'قناة واتساب مرتبطة',waMissing:'قناة واتساب غير مرتبطة',
   guideTitle:'تيليغرام متوقف؟ عرض خطوات الربط',instructions:'لتفعيل تيليغرام، أنشئ بوتاً باستعمال @BotFather وأضفه مشرفاً للقناة مع صلاحية النشر، ثم أضف TELEGRAM_BOT_TOKEN إلى إعدادات البيئة الخاصة بخادم HORENOVA على Render.',
   linkTelegram:'إدارة قناة تيليغرام ↗',render:'إعدادات Render ↗',moreOptions:'القنوات وخيارات إضافية',
-  copy:'نسخ رسالة ورابط واتساب',copyTelegram:'نسخ رسالة ورابط تيليغرام',copyWaLink:'نسخ رابط قناة واتساب',copied:'تم نسخ الرسالة. افتح القناة والصقها.',copiedLink:'تم نسخ رابط القناة.',copyError:'تعذر النسخ، يرجى نسخ النص أدناه.',promoTitle:'صورة هورينوفا المختارة',promoAlt:'الملصق الرسمي للتوظيف من هورينوفا',promoPreview:'عرض رسالة الإعلان الجاهزة',promoShare:'مشاركة الصورة فقط',promoSave:'فتح / حفظ الصورة',promoRich:'✅ تم نسخ النص والرابط.',promoText:'✅ تم نسخ النص ورابط الترشح. شارك الصورة بشكل منفصل.',promoManual:'تعذّر النسخ التلقائي. افتح الرسالة بالأسفل وحددها لنسخها.',promoShared:'✅ فُتحت مشاركة الصورة. الصق الرسالة والرابط المنسوخين بعدها.',promoShareError:'تعذرت المشاركة المباشرة: افتح الصورة واحفظها ثم الصق الإعلان.',
+  copy:'نسخ رسالة ورابط واتساب',copyTelegram:'نسخ رسالة ورابط تيليغرام',copyWaLink:'نسخ رابط قناة واتساب',copied:'تم نسخ الرسالة. افتح القناة والصقها.',copiedLink:'تم نسخ رابط القناة.',copyError:'تعذر النسخ، يرجى نسخ النص أدناه.',promoTitle:'صورة هورينوفا المختارة',promoAlt:'الملصق الرسمي للتوظيف من هورينوفا',promoPreview:'عرض رسالة الإعلان الجاهزة',promoShare:'مشاركة الصورة فقط',promoSave:'فتح / حفظ الصورة',promoRich:'✅ تم نسخ النص والرابط.',promoText:'✅ تم نسخ النص ورابط الترشح. شارك الصورة بشكل منفصل.',promoManual:'تعذّر النسخ التلقائي. افتح الرسالة بالأسفل وحددها لنسخها.',promoShared:'✅ فُتحت مشاركة الصورة. الصق الرسالة والرابط المنسوخين بعدها.',promoShareError:'تعذرت المشاركة هنا. افتح الصورة ثم الصق الرسالة المنسوخة.',promoSharedLink:'تمت مشاركة رابط الصورة. الصق رسالة التوظيف المنسوخة بعدها.',
   openWa:'فتح قناة واتساب ↗',openTelegram:'فتح قناة تيليغرام ↗',view:'عرض الإعلان ↗',retry:'إعادة محاولة تيليغرام بعد التحقق',retryConfirm:'تحقق أولاً من عدم وجود رسالة مماثلة في القناة قبل إعادة الإرسال. هل تريد المتابعة؟',retried:'تم طلب إعادة الإرسال.',error:'تعذر تحميل حالة النشر: ',empty:'لا توجد موافقات جديدة منذ تفعيل نظام النشر. لن نعيد نشر الإعلانات القديمة.',
   pending:'في انتظار الإرسال',syncIssue:'الحالة غير متزامنة · حدّث الصفحة',awaitBot:'النشر الآلي غير نشط · انسخ الرسالة',sending:'جارٍ الإرسال',published:'تم الإرسال',manual:'جاهز للنسخ',needs_review:'يحتاج للمراجعة',cancelled:'ملغى',lastError:'تنبيه:',info:'لا يتم نشر الإعلانات المرفوضة أو المسحوبة أو غير المعتمدة.'}
 };
@@ -80,21 +80,27 @@ export function mountSocialPublications(root,request=hub){
   const local=make('p','hspa-local-feedback');local.setAttribute('role','status');local.setAttribute('aria-live','polite');
   let shareBlob=null,shareBusy=false;
   const share=button(words.promoShare,async()=>{
-   if(!shareBlob||shareBusy)return;
+   if(shareBusy)return;
    shareBusy=true;share.disabled=true;
+   const isFile=!!shareBlob;
    try{
-    await sharePromo('',url,shareBlob);
-    text(local,lang().promoShared);
+    // Native share runs directly from the tap; an unavailable media file falls
+    // back to sharing the public poster URL instead of a dead button.
+    if(isFile)await sharePromo('',url,shareBlob);
+    else await navigator.share({url,title:'HORENOVA | Recrutement'});
+    text(local,isFile?lang().promoShared:lang().promoSharedLink);
    }catch(error){
     if(error?.name!=='AbortError')text(local,lang().promoShareError);
-   }finally{shareBusy=false;share.disabled=!shareBlob}
+   }finally{shareBusy=false;share.disabled=false}
   });
-  share.disabled=true;
-  // Only show the Share action on devices that actually support native sharing.
-  // Avoid a dead disabled button when the image host or browser cannot provide files.
-  if(typeof navigator.share==='function'&&typeof File!=='undefined'){
-   void fetchPosterBlob(url).then(blob=>{shareBlob=blob;share.disabled=false})
-    .catch(()=>{share.hidden=true;text(local,lang().promoShareError)});
+  // Share only appears where supported, but is NEVER a permanently disabled
+  // control: until the photo loads it shares its direct public link.
+  if(typeof navigator.share==='function'){
+   share.disabled=false;
+   if(typeof File!=='undefined'){
+    void fetchPosterBlob(url).then(blob=>{shareBlob=blob;share.dataset.posterReady='file'})
+     .catch(()=>{share.dataset.posterReady='link'});
+   }
   }else share.hidden=true;
   share.classList.add('hspa-promo-share');
   const save=make('a','hspa-action hspa-promo-save',words.promoSave);
