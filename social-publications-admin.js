@@ -77,31 +77,32 @@ export function mountSocialPublications(root,request=hub){
   post.rows=11;post.dir='auto';
   details.append(post);
   const tools=make('div','hspa-promo-tools');
+  const local=make('p','hspa-local-feedback');local.setAttribute('role','status');local.setAttribute('aria-live','polite');
   let shareBlob=null,shareBusy=false;
   const share=button(words.promoShare,async()=>{
    if(!shareBlob||shareBusy)return;
    shareBusy=true;share.disabled=true;
    try{
     await sharePromo(message,url,shareBlob);
-    text($('hspaFeedback'),lang().promoShared);
+    text(local,lang().promoShared);
    }catch(error){
-    if(error?.name!=='AbortError')text($('hspaFeedback'),lang().promoShareError);
+    if(error?.name!=='AbortError')text(local,lang().promoShareError);
    }finally{shareBusy=false;share.disabled=!shareBlob}
   });
   share.disabled=true;
   // Preload the actual image before enabling Share. Safari requires the native
   // share sheet to open directly from the user's click, without network awaits.
-  void fetchPosterBlob(url).then(blob=>{shareBlob=blob;share.disabled=false}).catch(()=>{share.disabled=true});
+  void fetchPosterBlob(url).then(blob=>{shareBlob=blob;share.disabled=false}).catch(()=>{share.disabled=true;text(local,lang().promoShareError)});
   share.classList.add('hspa-promo-share');
   const save=make('a','hspa-action hspa-promo-save',words.promoSave);
   save.href=url;save.target='_blank';save.rel='noopener noreferrer';
   tools.append(share,save);
-  panel.append(heading,img,details,tools);
+  panel.append(heading,img,details,tools,local);
   card.append(panel);
-  return {url,message};
+  return {url,message,note:local};
  }
  async function copyWithPoster(card,offer,row){
-  const {url,message}=preparePromoCard(card,offer,row);
+  const {url,message,note}=preparePromoCard(card,offer,row);
   const output=$('hspaFeedback');
   text(output,'');
   const result=await copyRichPromo(message,url);
@@ -110,7 +111,8 @@ export function mountSocialPublications(root,request=hub){
    const preview=card.querySelector('.hspa-promo-preview');
    if(preview){const details=preview.querySelector('details');if(details)details.open=true}
   }
-  text(output,result.kind==='rich'?words.promoRich:result.kind==='text'?words.promoText:words.promoManual);
+  const feedback=result.kind==='rich'?words.promoRich:result.kind==='text'?words.promoText:words.promoManual;
+  text(note,feedback);text(output,feedback);
  }
  async function copyShare(value,card,success){
   const content=String(value||'');
