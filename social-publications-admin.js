@@ -54,6 +54,20 @@ export function mountSocialPublications(root,request=hub){
  '<div class="hspa-list" id="hspaList"></div><p id="hspaFeedback" role="status" aria-live="polite"></p><small id="hspaInfo"></small>';
  root.prepend(el);
  const $=id=>el.querySelector('#'+id);
+ // The channel settings are mounted asynchronously. A regular anchor can
+ // resolve before its target exists, leaving the mobile button apparently dead.
+ $('hspaTelegram').href='#hnTelegramChannelAdmin';
+ $('hspaTelegram').addEventListener('click',event=>{
+  event.preventDefault();
+  const locate=()=>document.getElementById('hnTelegramChannelAdmin');
+  const jump=()=>{const target=locate();if(!target)return false;
+   target.scrollIntoView({behavior:'smooth',block:'start'});return true;};
+  if(jump())return;
+  history.replaceState(null,'','#hnTelegramChannelAdmin');
+  const observer=new MutationObserver(()=>{if(jump())observer.disconnect()});
+  observer.observe(document.body,{childList:true,subtree:true});
+  setTimeout(()=>observer.disconnect(),10000);
+ });
  const lang=()=>T[(document.documentElement.lang||'fr').slice(0,2)]||T.fr;
  let model=null,loading=false;
  const posterCache=new Map();
