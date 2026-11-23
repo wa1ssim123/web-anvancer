@@ -10,9 +10,9 @@ root.innerHTML='<div class="hub-root"><div class="hub-head"><div><span class="hu
 
 void import('/social-publications-admin.js?v=simple-copy-20261123-v11').then(({mountSocialPublications})=>mountSocialPublications(root))
  .catch(error=>console.warn('HORENOVA social publications unavailable',error?.message||'unknown'));
-void import('/telegram-admin.js?v=20261122-homefix3').then(({mountTelegramAdmin})=>mountTelegramAdmin(root))
+void import('/telegram-admin.js?v=brand-logos-20261123').then(({mountTelegramAdmin})=>mountTelegramAdmin(root))
  .catch(error=>console.warn('HORENOVA Telegram admin unavailable',error?.message||'unknown'));
-void import('/channel-admin.js?v=channel-20261122').then(({mountAdminChannel})=>mountAdminChannel(root))
+void import('/channel-admin.js?v=brand-logos-20261123').then(({mountAdminChannel})=>mountAdminChannel(root))
  .catch(error=>console.warn('HORENOVA WhatsApp Channel admin unavailable',error?.message||'unknown'));
 void import('/admin-analytics.js?v=analytics-20261122').then(({mountAdminAnalytics})=>mountAdminAnalytics(root))
  .catch(error=>console.warn('HORENOVA private analytics could not load',error?.message||'unknown'));
