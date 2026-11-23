@@ -31,6 +31,9 @@ async function analyse(page){
   const ratio=(a,b)=>{const x=light(a),y=light(b);return (Math.max(x,y)+.05)/(Math.min(x,y)+.05)};
   const background=el=>{
    for(let p=el;p;p=p.parentElement){
+    // A sibling photo/video and its overlay define the actual pixel background.
+    // Without image pixels the CSS-only contrast is indeterminate, not white.
+    if(p.classList?.contains('hn-world-v13') && p.querySelector('img,video'))return null;
     const s=getComputedStyle(p);
     if(s.backgroundImage&&s.backgroundImage!=='none')return null; // Photograph or gradient: cannot know pixel contrast.
     const col=rgb(s.backgroundColor);
