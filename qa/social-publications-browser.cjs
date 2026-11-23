@@ -44,6 +44,19 @@ const onePixelPng=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAAD
    assert.equal(await page.locator('.hspa-post').count(),1);
    assert.match(await page.locator('#hspaConnections').innerText(),/Envoi automatique inactif/);
    assert.equal(await page.locator('a[href="https://horenova.com/job.html?id='+offerId+'"]').count(),1);
+   assert.equal(await page.locator('a[href="https://horenova.com/job.html?id='+offerId+'"]').getAttribute('target'),'_self','Job details must open without popup blockers');
+   const safeLinks=await page.evaluate(async id=>{
+    const {buildPromoMessage}=await import('/social-promo-share.js');
+    return {
+     relative:buildPromoMessage({title:'Serveur',kind:'job',publicUrl:'/job.html?id='+id},{}),
+     reconstructed:buildPromoMessage({title:'Serveur',kind:'job',requestId:id},{}),
+     rejected:buildPromoMessage({title:'Serveur',kind:'job',requestId:id,publicUrl:'https://example.evil/job.html?id='+id},{})
+    };
+   },offerId);
+   for(const value of Object.values(safeLinks)){
+    assert.match(value,new RegExp('https://horenova.com/job.html\\?id='+offerId),'Always include the exact vacancy URL');
+    assert.doesNotMatch(value,/example\\.evil/,'No untrusted external job link');
+   }
    assert.equal(await page.locator('.hspa-channel-options').count(),1,'Secondary channel links must be grouped');
    assert.equal(await page.locator('#hspaConnections .hspa-connection').count(),2,'No duplicate Telegram status tile');
    assert.equal(await page.locator('.hspa-channel-options .hspa-channel-actions').isVisible(),true,'Channel open buttons must be visible without an extra tap');
