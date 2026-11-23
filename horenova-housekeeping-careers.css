@@ -1,0 +1,11 @@
+/* HORENOVA — filter professions across live job and shift boards. */
+.hn-career-filter{display:flex;align-items:end;justify-content:space-between;flex-wrap:wrap;gap:16px;margin:22px 0 26px;padding:19px clamp(16px,3vw,28px);border:1px solid rgba(45,91,81,.24);border-radius:18px;background:linear-gradient(125deg,rgba(231,239,230,.92),rgba(249,251,246,.92));box-shadow:0 10px 32px rgba(8,30,27,.06)}
+.hn-career-filter>div{flex:1 1 250px;min-width:0}
+.hn-career-filter label{display:block;font-size:12px;letter-spacing:.11em;font-weight:850;text-transform:uppercase;color:#17493d}
+.hn-career-filter p{margin:7px 0 0;font-size:13px;line-height:1.5;color:#37564e}
+.hn-career-filter select{appearance:auto;flex:1 1 300px;min-width:0;max-width:430px;width:100%;padding:14px 17px;min-height:52px;border:1px solid #7f998d;border-radius:12px;color:#132a27!important;background:#fff!important;font:700 14px/1.35 Inter,system-ui,sans-serif;box-shadow:none}
+.hn-career-filter select:focus-visible{outline:3px solid #9ad3b9;outline-offset:2px}
+.hn12-dark .hn-career-filter{border-color:rgba(179,223,204,.28);background:linear-gradient(130deg,#15322d,#17282b)}
+.hn12-dark .hn-career-filter label{color:#d6f5e6}
+.hn12-dark .hn-career-filter p{color:#bed6cc}
+@media(max-width:680px){.hn-career-filter{align-items:stretch;gap:14px;padding:16px;margin:16px 0}.hn-career-filter select{max-width:none;font-size:16px;flex-basis:auto}.hn-career-filter>div{flex-basis:auto}}
