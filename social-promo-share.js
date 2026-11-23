@@ -25,10 +25,21 @@ export function buildPromoMessage(offer,row){
  const title=safeLine(offer?.title,100)||'Opportunité HORENOVA';
  const city=safeLine(offer?.city,75)||'Maroc';
  const kind=offer?.kind==='shift'?'SHIFT / EXTRA':'EMPLOI';
- const direct=String(offer?.publicUrl||'');
- // Only link to HORENOVA's validated public vacancy detail pages.
- const valid=/^https:\/\/horenova\.com\/job\.html\?id=[a-f\d-]{36}$/i.test(direct);
- const url=valid?direct:'https://horenova.com/offres.html';
+ const isUuid=value=>/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(value||''));
+ // Prefer the exact safe public link returned by the API, including relative URLs.
+ // If the API omits the link, reconstruct it from the approved request ID.
+ let url='';
+ try{
+  const candidate=new URL(String(offer?.publicUrl||row?.publicUrl||''),'https://horenova.com');
+  const id=candidate.searchParams.get('id');
+  if(candidate.origin==='https://horenova.com'
+   && /^\/(?:job|shift)\.html$/.test(candidate.pathname)
+   && isUuid(id))url=candidate.origin+candidate.pathname+'?id='+id;
+ }catch{}
+ if(!url){
+  const id=String(offer?.requestId||offer?.id||row?.requestId||'');
+  url=isUuid(id)?'https://horenova.com/job.html?id='+id:'https://horenova.com/jobs.html';
+ }
  const original=String(row?.message||'');
  const businessLine=original.split('\n').find(line=>line.startsWith('🏢 '));
  const business=safeLine(businessLine?.slice(3),85);
