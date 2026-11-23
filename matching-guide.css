@@ -135,3 +135,7 @@ html[dir="rtl"] .mg-logo-word{letter-spacing:0}
 .mg-meaning-person{min-width:43px;font-size:7px}
 }
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.mg-primary,.mg-secondary,.mg-step,.mg-step-link{transition:none!important;transform:none!important}}
+
+
+/* QA: progression labels on ivory need stronger contrast. */
+.mg-step-meta{color:#75472c!important}
