@@ -11,7 +11,7 @@ const T={
   botReady:'Bot Telegram configuré',botMissing:'Bot Telegram non configuré',
   channelMissing:'Créer et relier la chaîne Telegram',channelReady:'Chaîne Telegram reliée',
   waReady:'Canal WhatsApp relié',waMissing:'Canal WhatsApp non relié',
-  instructions:'Pour activer Telegram : créez votre bot avec @BotFather, ajoutez-le comme administrateur de votre chaîne avec le droit de publier, puis configurez TELEGRAM_BOT_TOKEN dans les variables d’environnement privées du service Render HORENOVA API.',
+  guideTitle:'Telegram bloqué ? Voir les étapes de configuration',instructions:'Pour activer Telegram : créez votre bot avec @BotFather, ajoutez-le comme administrateur de votre chaîne avec le droit de publier, puis configurez TELEGRAM_BOT_TOKEN dans les variables d’environnement privées du service Render HORENOVA API.',
   linkTelegram:'Configurer le canal Telegram ↗',render:'Ouvrir les paramètres Render ↗',
   copy:'Copier le message WhatsApp',copied:'Message copié. Ouvrez le canal et collez-le pour le publier.',copyError:'Copie impossible : sélectionnez et copiez le message ci-dessous.',
   openWa:'Ouvrir le canal WhatsApp ↗',view:'Voir l’annonce ↗', retry:'Relancer Telegram après vérification',retryConfirm:'Vérifiez AVANT la relance qu’aucun message identique n’est déjà visible sur votre chaîne Telegram. Continuer ?',
@@ -25,7 +25,7 @@ const T={
   botReady:'Telegram bot configured',botMissing:'Telegram bot not configured',
   channelMissing:'Create and link Telegram channel',channelReady:'Telegram channel linked',
   waReady:'WhatsApp Channel linked',waMissing:'WhatsApp Channel not linked',
-  instructions:'To enable Telegram, create a bot with @BotFather, make it an administrator of your public channel with posting rights, and set TELEGRAM_BOT_TOKEN in the private Render HORENOVA API environment variables.',
+  guideTitle:'Telegram blocked? View configuration steps',instructions:'To enable Telegram, create a bot with @BotFather, make it an administrator of your public channel with posting rights, and set TELEGRAM_BOT_TOKEN in the private Render HORENOVA API environment variables.',
   linkTelegram:'Configure Telegram ↗',render:'Render settings ↗',
   copy:'Copy WhatsApp post',copied:'Post copied. Open your channel and paste the message.',copyError:'Copy unavailable: select and copy the message below.',
   openWa:'Open WhatsApp Channel ↗',view:'View job ↗',retry:'Retry Telegram after checking',retryConfirm:'First verify that no identical message was posted in your Telegram channel. Retry?',retried:'Retry requested.',error:'Cannot load publication status: ',empty:'No new approvals have been recorded since publishing was enabled. Older jobs are not resent.',
@@ -38,7 +38,7 @@ const T={
   botReady:'بوت تيليغرام جاهز',botMissing:'بوت تيليغرام غير مربوط',
   channelMissing:'إنشاء وربط قناة تيليغرام',channelReady:'قناة تيليغرام مرتبطة',
   waReady:'قناة واتساب مرتبطة',waMissing:'قناة واتساب غير مرتبطة',
-  instructions:'لتفعيل تيليغرام، أنشئ بوتاً باستعمال @BotFather وأضفه مشرفاً للقناة مع صلاحية النشر، ثم أضف TELEGRAM_BOT_TOKEN إلى إعدادات البيئة الخاصة بخادم HORENOVA على Render.',
+  guideTitle:'تيليغرام متوقف؟ عرض خطوات الربط',instructions:'لتفعيل تيليغرام، أنشئ بوتاً باستعمال @BotFather وأضفه مشرفاً للقناة مع صلاحية النشر، ثم أضف TELEGRAM_BOT_TOKEN إلى إعدادات البيئة الخاصة بخادم HORENOVA على Render.',
   linkTelegram:'إعداد قناة تيليغرام ↗',render:'إعدادات Render ↗',
   copy:'نسخ رسالة واتساب',copied:'تم نسخ الرسالة. افتح القناة والصق الرسالة.',copyError:'تعذر النسخ. انسخ النص أدناه يدوياً.',
   openWa:'فتح قناة واتساب ↗',view:'عرض الإعلان ↗',retry:'إعادة محاولة تيليغرام بعد التحقق',retryConfirm:'تحقق أولاً من عدم وجود رسالة مماثلة في القناة قبل إعادة الإرسال. هل تريد المتابعة؟',retried:'تم طلب إعادة الإرسال.',error:'تعذر تحميل حالة النشر: ',empty:'لا توجد موافقات جديدة منذ تفعيل نظام النشر. لن نعيد نشر الإعلانات القديمة.',
@@ -48,7 +48,7 @@ export function mountSocialPublications(root,request=hub){
  if(!root||root.querySelector('#hnAdminSocialPublications'))return;
  const el=document.createElement('section');el.id='hnAdminSocialPublications';el.className='hn-social-publication-admin';
  el.innerHTML='<div class="hspa-heading"><div><span id="hspaOver"></span><h2 id="hspaTitle"></h2><p id="hspaDesc"></p></div><button type="button" id="hspaRefresh"></button></div>'+
- '<div id="hspaConnections" class="hspa-connections"></div><p class="hspa-guide" id="hspaGuide"></p>'+
+ '<div id="hspaConnections" class="hspa-connections"></div><details class="hspa-guide-details" id="hspaGuideDetails"><summary id="hspaGuideTitle"></summary><p class="hspa-guide" id="hspaGuide"></p></details>'+
  '<div class="hspa-guidelinks"><a href="/admin.html#hnTelegramChannelAdmin" id="hspaTelegram" class="hspa-admin-link"></a><a href="https://dashboard.render.com/web/srv-dbq8m9oae00c73aa4npg/env" id="hspaRender" target="_blank" rel="noopener noreferrer"></a></div>'+
  '<div class="hspa-list" id="hspaList"></div><p id="hspaFeedback" role="status" aria-live="polite"></p><small id="hspaInfo"></small>';
  root.prepend(el);
@@ -60,7 +60,8 @@ export function mountSocialPublications(root,request=hub){
  function button(label,cb){const b=make('button','hspa-action',label);b.type='button';b.addEventListener('click',cb);return b}
  function draw(){
   const w=lang();
-  for(const [id,key] of Object.entries({hspaOver:'over',hspaTitle:'title',hspaDesc:'desc',hspaRefresh:'refresh',hspaGuide:'instructions',hspaTelegram:'linkTelegram',hspaRender:'render',hspaInfo:'info'}))text($(id),w[key]);
+  for(const [id,key] of Object.entries({hspaOver:'over',hspaTitle:'title',hspaDesc:'desc',hspaRefresh:'refresh',hspaGuide:'instructions',hspaGuideTitle:'guideTitle',hspaTelegram:'linkTelegram',hspaRender:'render',hspaInfo:'info'}))text($(id),w[key]);
+  $('hspaGuideDetails').hidden=!!model?.configured;
   const links=$('hspaConnections');links.replaceChildren();
   const indicators=[
    {label:w.tg,detail:model?.configured?w.botReady:w.botMissing,ready:!!model?.configured},
