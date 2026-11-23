@@ -44,6 +44,9 @@ const onePixelPng=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAAD
    assert.equal(await page.locator('.hspa-post').count(),1);
    assert.match(await page.locator('#hspaConnections').innerText(),/Envoi automatique inactif/);
    assert.equal(await page.locator('a[href="https://horenova.com/job.html?id='+offerId+'"]').count(),1);
+   assert.equal(await page.locator('.hspa-channel-options').count(),1,'Secondary channel links must be grouped');
+   assert.equal(await page.locator('#hspaConnections .hspa-connection').count(),2,'No duplicate Telegram status tile');
+   await page.locator('.hspa-channel-options summary').click();
    assert.equal(await page.locator('.hspa-whatsapp').getAttribute('href'),'https://whatsapp.com/channel/0029Vb9VLZ5A2pLGFYQA6s2u');
    assert.equal(await page.getByRole('button',{name:'Copier annonce + photo Telegram'}).count(),1);
    assert.equal(await page.getByRole('button',{name:'Copier annonce + photo WhatsApp'}).count(),1);
@@ -80,6 +83,7 @@ const onePixelPng=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAAD
    assert.match(firstMessage,/horenova.com\/job.html\?id=/);
    await page.getByRole('button',{name:'Copier annonce + photo WhatsApp'}).click();
    const second=await page.locator('.hspa-promo-img').getAttribute('src');
+   await page.locator('.hspa-local-feedback').waitFor({state:'visible'});
    assert.notEqual(second,first,'Every successive copy rotates to a different actual poster');
    assert.match(await page.locator('.hspa-promo-text').inputValue(),/HORENOVA/);
    const clipboardState=await page.evaluate(()=>({
