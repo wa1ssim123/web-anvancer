@@ -43,12 +43,20 @@ const contrast=(a,b)=>{
      city:'Casablanca',kind:'job',jobStatus:'VALIDEE',removed:false,attempts:0,sentAt:null,lastError:null,
      publicUrl:'https://horenova.com/job.html?id='+id,message:'🏢 Restaurant test\nhttps://horenova.com/job.html?id='+id};
     const whatsapp={...record,channel:'whatsapp',status:'manual'};
-    window.__shares=[];window.__lastCopied=null;
+    window.__shares=[];window.__lastCopied=null;window.__copiedImages=[];
     Object.defineProperty(navigator,'share',{configurable:true,value:async a=>{
      window.__shares.push({name:a.files?.[0]?.name,blobType:a.files?.[0]?.type,text:a.text,url:a.url,posterUrl:a.url});
     }});
     Object.defineProperty(navigator,'canShare',{configurable:true,value:()=>true});
-    Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText:async x=>{window.__lastCopied=x}}});
+    Object.defineProperty(navigator,'clipboard',{configurable:true,value:{
+     writeText:async x=>{window.__lastCopied=x},
+     write:async items=>{
+      const blob=await items[0].getType('image/png');
+      const bmp=await createImageBitmap(blob);
+      window.__copiedImages.push({size:blob.size,width:bmp.width,height:bmp.height});
+      bmp.close();
+     }
+    }});
     mountSocialPublications(document.querySelector('#root'),async url=>{
      if(url==='/api/community/publications')return {
       configured:false,telegramChannel:'https://t.me/HORENOVA_Emploi_Maroc',
@@ -82,27 +90,31 @@ const contrast=(a,b)=>{
    assert.ok(contrast(colors.description,colors.background)>=4.5,'Unreadable subheading '+JSON.stringify(colors));
    assert.ok(contrast(colors.label,colors.connection)>=4.5,'Unreadable channel status '+JSON.stringify(colors));
    assert.ok(contrast(colors.footer,colors.background)>=4.5,'Unreadable footer '+JSON.stringify(colors));
-   await page.getByRole('button',{name:'Partager annonce complète Telegram'}).click();
-   await page.waitForFunction(()=>window.__shares.length>=1);
+   await page.getByRole('button',{name:'Copier affiche complète Telegram'}).click();
+   await page.waitForFunction(()=>window.__copiedImages?.length>=1);
    const firstImage=await page.locator('.hspa-promo-img').getAttribute('src');
-   const fullShare=await page.evaluate(()=>window.__shares[0]);
-   assert.ok(fullShare.name.startsWith('HORENOVA-recrutement.'),'Share must contain actual attached poster');
-   assert.match(fullShare.text,/Serveur/);
-   assert.match(fullShare.text,/Casablanca/);
-   assert.match(fullShare.text,/Restaurant test/);
-   assert.match(fullShare.text,/https:\/\/horenova.com\/job.html\?id=/);
-   assert.equal(fullShare.url,'https://horenova.com/job.html?id='+offerId,'Native share must expose clickable job URL too');
-   await page.getByRole('button',{name:'Partager annonce complète WhatsApp'}).click();
-   await page.waitForFunction(()=>window.__shares.length>=2);
+   const firstCopy=await page.evaluate(()=>window.__copiedImages[0]);
+   assert.ok(firstCopy.size>2000,'Complete picture must be a real composed PNG, not a 1x1 original');
+   assert.equal(firstCopy.width,1080,'Full job details must be baked into a readable image');
+   assert.ok(firstCopy.height>1000,'Picture must include a distinct job caption and full link footer');
+   assert.match(await page.locator('.hspa-local-feedback').innerText(),/Affiche copiée/);
+   await page.getByRole('button',{name:'Copier affiche complète WhatsApp'}).click();
+   await page.waitForFunction(()=>window.__copiedImages?.length>=2);
    const secondImage=await page.locator('.hspa-promo-img').getAttribute('src');
-   assert.notEqual(firstImage,secondImage,'Each subsequent click changes the visual');
+   assert.notEqual(firstImage,secondImage,'Every copy rotates to a different original HORENOVA poster');
+   assert.match(await page.locator('.hspa-promo-text').inputValue(),new RegExp(offerId));
    await page.getByRole('button',{name:'Copier message et lien'}).click();
    await page.waitForFunction(()=>window.__lastCopied?.includes('horenova.com/job.html'));
    assert.match(await page.evaluate(()=>window.__lastCopied),/Restaurant test/);
    assert.match(await page.evaluate(()=>window.__lastCopied),new RegExp(offerId));
+   await page.waitForFunction(()=>document.querySelector('.hspa-promo-share')?.dataset.posterReady==='file');
    await page.getByRole('button',{name:'Partager photo + message + lien'}).click();
-   await page.waitForFunction(()=>window.__shares.length>=3);
-   assert.match(await page.evaluate(()=>window.__shares[2].text),new RegExp(offerId));
+   await page.waitForFunction(()=>window.__shares.length>=1);
+   const shared=await page.evaluate(()=>window.__shares[0]);
+   assert.equal(shared.blobType,'image/png');
+   assert.match(shared.text,/Restaurant test/);
+   assert.match(shared.text,new RegExp(offerId));
+   assert.equal(shared.url,'https://horenova.com/job.html?id='+offerId,'Native share includes clickable job URL where the target supports it');
    await page.getByRole('button',{name:'Copier le lien Telegram'}).click();
    assert.equal(await page.evaluate(()=>window.__lastCopied),'https://t.me/HORENOVA_Emploi_Maroc');
    await page.getByRole('button',{name:'Copier le lien WhatsApp'}).click();
@@ -113,9 +125,9 @@ const contrast=(a,b)=>{
     assert.equal(popup.url(),expected,'Actual external channel must open after user tap');
     await popup.close();
    }
-   // No Web Share: full caption and clickable job URL must still be copied.
-   await page.evaluate(()=>Object.defineProperty(navigator,'share',{configurable:true,value:undefined}));
-   await page.getByRole('button',{name:'Partager annonce complète WhatsApp'}).click();
+   // Clipboard image unsupported: retain a clickable job URL via plain-text fallback.
+   await page.evaluate(()=>Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText:async value=>{window.__lastCopied=value}}}));
+   await page.getByRole('button',{name:'Copier affiche complète WhatsApp'}).click();
    assert.match(await page.evaluate(()=>window.__lastCopied),new RegExp(offerId));
    const size=await page.evaluate(()=>({width:innerWidth,scroll:document.documentElement.scrollWidth}));
    assert.ok(size.scroll<=size.width+4,'Horizontal overflow '+JSON.stringify(size));
@@ -123,7 +135,7 @@ const contrast=(a,b)=>{
    await page.waitForFunction(()=>document.querySelector('#hspaTitle')?.textContent.includes('كل عرض'));
    assert.equal(await page.getByRole('button',{name:'نسخ الرسالة ورابط الترشح'}).count(),0,'Caption button is visible only after selecting a poster');
    assert.deepEqual(errors,[],'Uncaught browser errors '+JSON.stringify(errors));
-   console.log('PASS HORENOVA social '+width+'px: legible contrast, real channel navigation, actual five-poster WebShare with job URL, text-copy fallback, FR/AR');
+   console.log('PASS HORENOVA social '+width+'px: legible contrast, clickable channel links, copy PNG containing poster + title + city + URL, random images, Share file+text+URL and clickable-text fallback');
    await context.close();
   }
  }finally{await browser.close();server.close()}
