@@ -341,3 +341,66 @@ body[data-hn12="admin"] #adminGate #hnAdminSocialPublications :is(a,button):focu
 body[data-hn12="admin"] #adminGate #hnAdminSocialPublications .hspa-promo-title{
  color:#143f35!important;-webkit-text-fill-color:#143f35!important;
 }
+
+/* HORENOVA compact, two independent copy actions — 2026-11-23. */
+body[data-hn12="admin"] #hnAdminSocialPublications .hspa-post-actions{
+ display:grid!important;grid-template-columns:minmax(0,1fr)!important;
+ gap:11px!important;
+}
+body[data-hn12="admin"] #hnAdminSocialPublications .hspa-post-actions .hspa-action{
+ display:flex!important;grid-column:auto!important;width:100%!important;
+ min-height:52px!important;padding:13px!important;
+ font-size:14px!important;font-weight:800!important;
+}
+body[data-hn12="admin"] #hnAdminSocialPublications .hspa-post-actions .hspa-action:first-child{
+ background:#edf4f1!important;
+}
+body[data-hn12="admin"] #hnAdminSocialPublications .hspa-post-actions button:nth-child(2){
+ background:#e1f0eb!important;color:#124538!important;
+ border-color:#9dc7b9!important;
+}
+body[data-hn12="admin"] #hnAdminSocialPublications .hspa-post-actions button:nth-child(3){
+ background:#e7f0ff!important;color:#194d76!important;
+ border-color:#a9c8e5!important;
+}
+body[data-hn12="admin"] #hnAdminSocialPublications .hspa-copy-fallback{
+ display:block!important;width:100%!important;min-width:0;
+ min-height:176px!important;padding:12px!important;margin:12px 0 0!important;
+ border:1px solid #b5cfc3!important;border-radius:10px!important;
+ color:#173f33!important;background:#fff!important;
+ -webkit-text-fill-color:#173f33!important;
+ white-space:pre-wrap!important;overflow-wrap:anywhere!important;
+ user-select:text!important;-webkit-user-select:text!important;
+ font:500 13px/1.65 system-ui,sans-serif!important;
+}
+body[data-hn12="admin"] #hnAdminSocialPublications .hspa-photo-preview{
+ display:grid!important;gap:10px!important;
+ margin:14px 0 0!important;padding:12px!important;
+ border:1px solid #c9dace!important;border-radius:12px!important;
+ background:#f6faf6!important;
+}
+body[data-hn12="admin"] #hnAdminSocialPublications .hspa-photo-preview strong{
+ color:#204c3a!important;-webkit-text-fill-color:#204c3a!important;
+ font:800 13px/1.4 system-ui,sans-serif!important;
+}
+body[data-hn12="admin"] #hnAdminSocialPublications .hspa-photo-preview img{
+ display:block!important;width:min(100%,300px)!important;
+ height:auto!important;max-height:420px!important;
+ object-fit:contain!important;margin:0 auto!important;
+ border-radius:10px!important;border:1px solid #bdcec5!important;
+ background:#fff!important;
+}
+body[data-hn12="admin"] #hnAdminSocialPublications .hspa-local-feedback{
+ display:block!important;margin:12px 0 0!important;padding:10px 12px!important;
+ border-radius:9px!important;background:#e9f6ed!important;
+ color:#175239!important;-webkit-text-fill-color:#175239!important;
+ font:700 13px/1.55 system-ui,sans-serif!important;
+}
+@media(max-width:600px){
+ body[data-hn12="admin"] #hnAdminSocialPublications .hspa-post-actions{
+  grid-template-columns:minmax(0,1fr)!important;
+ }
+ body[data-hn12="admin"] #hnAdminSocialPublications .hspa-photo-preview img{
+  width:min(100%,260px)!important;max-height:360px!important;
+ }
+}
