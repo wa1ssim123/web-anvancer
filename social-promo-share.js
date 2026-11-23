@@ -119,5 +119,9 @@ export async function sharePromo(message,imageUrl,preloadedPoster=null){
  const ext=type==='image/png'?'png':type==='image/webp'?'webp':'jpg';
  const file=new File([poster],'HORENOVA-recrutement.'+ext,{type});
  if(navigator.canShare&&!navigator.canShare({files:[file]}))throw Error('Sharing files unavailable');
- await navigator.share({files:[file],text:message,title:'HORENOVA | Recrutement'});
+ // Files shared through iOS / WhatsApp may discard the message and URL.
+ // Sharing the photo alone preserves the previously copied text on clipboard.
+ const payload={files:[file],title:'HORENOVA | Recrutement'};
+ if(String(message||'').trim())payload.text=String(message);
+ await navigator.share(payload);
 }
