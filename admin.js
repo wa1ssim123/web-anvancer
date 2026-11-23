@@ -121,14 +121,24 @@ function listRequests(){
     button.disabled=true;
     feedback.textContent='Enregistrement du statut…';
     try{
-      await hub('/api/recruiter-requests/'+encodeURIComponent(id)+'/status',{method:'PATCH',body:{status}});
+      const moderation=await hub('/api/recruiter-requests/'+encodeURIComponent(id)+'/status',{method:'PATCH',body:{status}});
       const old=requests.find(x=>x.id===id);if(old)old.status=status;
+      const telegramReady=moderation?.telegramAutomaticConfigured===true;
       feedback.textContent=status==='VALIDEE'
-        ? '✓ Offre validée dans Offres/Shifts · diffusion WhatsApp prête à copier, Telegram automatique après configuration du bot.'
+        ? telegramReady
+          ? '✓ Offre validée et visible. Envoi Telegram demandé : vérifiez son statut. WhatsApp : publication manuelle.'
+          : '✓ Offre validée et visible. Telegram NON envoyé : bot non configuré. WhatsApp : publication manuelle.'
         : status==='REFUSEE'
         ? '✓ Demande refusée, non visible publiquement.'
         : '✓ Demande en attente de vérification, non publiée.';
-      feedback.style.color='#155b42';
+      feedback.style.color=status==='VALIDEE'&&!telegramReady?'#965010':'#155b42';
+      if(status==='VALIDEE'){
+        const jump=document.createElement('a');
+        jump.href='#hnAdminSocialPublications';
+        jump.textContent=' Voir la diffusion et copier WhatsApp ↗';
+        jump.style.cssText='display:block;margin-top:7px;font-weight:800;text-decoration:underline;color:inherit';
+        feedback.append(jump);
+      }
       card.querySelector('.hub-tag').textContent=requestStatuses[status]||status;
       document.dispatchEvent(new Event('hn-admin-moderation-changed'));
     }catch(error){
