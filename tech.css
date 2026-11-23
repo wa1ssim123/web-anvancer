@@ -18,3 +18,9 @@
 .device-cards small{color:#43565d}
 .receipt-status{color:#165b42}
 .catalog-note{color:#3b4b45}
+
+
+/* QA follow-up: text in digital menu demo and proposal on light surfaces. */
+.phone-item>small,.phone-tag{color:#354d46!important}
+.device-receipt small{color:#354b52!important}
+.tech-section .catalog-note,.quote-panel p,.quote-panel small{color:#40534e}
