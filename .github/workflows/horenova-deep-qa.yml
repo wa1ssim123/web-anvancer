@@ -1,0 +1,37 @@
+name: HORENOVA — Deep Visual, Mobile & FR EN AR QA
+on:
+  push:
+    branches:
+      - horenova-free-deploy-2026
+    paths:
+      - 'qa/legibility-multilingual-audit.cjs'
+      - 'horenova-i18n.js'
+      - 'horenova-contrast-repair.css'
+      - 'qa/housekeeping-coverage.cjs'
+      - '.github/workflows/horenova-deep-qa.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  visual-international-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 16
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Chromium test runner
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: Scan mobile and desktop text contrast, navigation, FR EN AR
+        run: node qa/legibility-multilingual-audit.cjs
+      - name: Upload detailed legibility report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: horenova-deep-visual-report
+          path: horenova-deep-visual-audit.json
+          if-no-files-found: warn
+          retention-days: 14
