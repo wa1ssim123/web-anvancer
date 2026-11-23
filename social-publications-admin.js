@@ -57,7 +57,7 @@ export function mountSocialPublications(root,request=hub){
  const lang=()=>T[(document.documentElement.lang||'fr').slice(0,2)]||T.fr;
  let model=null,loading=false;
  const posterCache=new Map();
- for(const url of PROMO_IMAGES){void fetchPosterBlob(url).then(blob=>posterCache.set(url,blob)).catch(()=>{});}
+ for(const url of PROMO_IMAGES){void fetchPosterBlob(url).then(blob=>{posterCache.set(url,blob);el.dataset.posterReadyCount=String(posterCache.size)}).catch(()=>{});}
  const text=(node,value)=>{node.textContent=value};
  function make(tag,cls,value){const n=document.createElement(tag);if(cls)n.className=cls;if(value!==undefined)n.textContent=value;return n}
  function button(label,cb){const b=make('button','hspa-action',label);b.type='button';b.addEventListener('click',cb);return b}
