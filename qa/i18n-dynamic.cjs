@@ -13,6 +13,15 @@ assert.notEqual(exposed,source,'Translator closure must be found');
 vm.runInNewContext(exposed,context,{filename:'horenova-i18n.js'});
 const {doText,doAttr,target}=context.__qaI18n;
 assert.equal(target('Enregistrer','en'),'Save');
+// Product names, generated wardrobe actions, and concept disclaimers must localize fully.
+assert.equal(target('Executive Chef Jacket','fr'),'Veste de chef exécutif');
+assert.equal(target('Veste de chef exécutif','en'),'Executive Chef Jacket');
+assert.equal(target('Executive Chef Jacket','ar'),'سترة رئيس الطهاة');
+assert.equal(target('PRIX SUR DEMANDE','en'),'PRICE ON REQUEST');
+assert.equal(target('PRIX SUR DEMANDE','ar'),'السعر عند الطلب');
+assert.equal(target('03 · DEMANDE','en'),'03 · REQUEST');
+assert.equal(target('COLLECTION CONCEPT · LES COULEURS ET LE DOS SONT DES SIMULATIONS · PRIX ET STOCKS À CONFIRMER','ar'),'مجموعة تصورية · الألوان والظهر محاكاة · الأسعار والمخزون غير مؤكدين');
+assert.equal(target('Collection Entretien — Duo Hôtel','en'),'Hotel Housekeeping Duo Collection');
 assert.equal(target('Enregistrée','en'),'Saved');
 assert.equal(target('Enregistrée','ar'),'تم الحفظ');
 // Existing text node: initial translation, dynamic state change, switches back/forth.
