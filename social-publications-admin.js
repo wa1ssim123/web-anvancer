@@ -98,8 +98,16 @@ export function mountSocialPublications(root,request=hub){
   if(typeof navigator.share==='function'){
    share.disabled=false;
    if(typeof File!=='undefined'){
-    void fetchPosterBlob(url).then(blob=>{shareBlob=blob;share.dataset.posterReady='file'})
-     .catch(()=>{share.dataset.posterReady='link'});
+    void fetchPosterBlob(url).then(blob=>{
+     try{
+      const type=blob.type||'image/jpeg';
+      const candidate=new File([blob],'HORENOVA-recrutement.jpg',{type});
+      if(typeof navigator.canShare==='function'&&!navigator.canShare({files:[candidate]})){
+       share.dataset.posterReady='link';return;
+      }
+      shareBlob=blob;share.dataset.posterReady='file';
+     }catch{share.dataset.posterReady='link'}
+    }).catch(()=>{share.dataset.posterReady='link'});
    }
   }else share.hidden=true;
   share.classList.add('hspa-promo-share');
