@@ -1,11 +1,12 @@
 import {hub} from '/hn-api.js';
-import {PROMO_IMAGES,nextPromoImage,buildPromoMessage,buildCompletePosterPng,copyTextOnly,sharePromo,fetchPosterBlob} from '/social-promo-share.js?v=complete-poster-20261123-r2';
+import {PROMO_IMAGES,nextPromoImage,buildPromoMessage,copyTextOnly,posterAsPng} from '/social-promo-share.js?v=simple-copy-20261123-v11';
 /* HORENOVA official publication supervision.
  * WhatsApp = manual copy/paste into the existing channel (official Meta API
  * does not publish Channel posts). Telegram = official Bot API after setup.
  * Only authenticated admins mount this panel; server enforces the role.
  */
 const T={
+  copyMessage:'Copier message + lien',copyPhoto:'Copier photo aléatoire',textCopied:'✅ Message complet et lien de candidature copiés.',imageCopied:'✅ Photo copiée. Collez-la dans votre publication.',textManual:'Copie bloquée : sélectionnez le message affiché ci-dessous.',imageManual:'Copie photo non autorisée sur ce navigateur : appuyez longuement sur l’image pour la copier ou l’enregistrer.',imagePreview:'Photo HORENOVA sélectionnée',
  fr:{over:'HORENOVA · DIFFUSION DES OFFRES',title:'Chaque offre validée, prête à partager.',
   desc:'Offres approuvées · publication suivie sur Telegram et messages prêts à partager sur WhatsApp. Les envois confirmés sont clairement indiqués.',
   refresh:'Actualiser ↻',tg:'Telegram',wa:'WhatsApp',
@@ -20,6 +21,7 @@ const T={
   pending:'En attente d’envoi',syncIssue:'Statut à synchroniser · actualiser',awaitBot:'Auto inactive · copiez le message',sending:'Envoi en cours',published:'Envoyé',manual:'Prêt à copier',needs_review:'À vérifier',cancelled:'Annulé',
   lastError:'Contrôle nécessaire :',info:'Les annonces refusées, retirées ou non validées ne sont pas envoyées.'
  },
+  copyMessage:'Copy message + link',copyPhoto:'Copy random photo',textCopied:'✅ Full message and job link copied.',imageCopied:'✅ Photo copied. Paste it into your post.',textManual:'Clipboard blocked: select the message below to copy it.',imageManual:'This browser blocked image copying: press and hold the image to copy or save it.',imagePreview:'Selected HORENOVA poster',
  en:{over:'HORENOVA · JOB PUBLICATION',title:'Every approved job, ready to share.',
   desc:'Approved jobs · Telegram delivery tracking and WhatsApp posts ready to share. Only confirmed deliveries appear as sent.',
   refresh:'Refresh ↻',tg:'Telegram',wa:'WhatsApp',
@@ -33,6 +35,7 @@ const T={
   pending:'Awaiting delivery',syncIssue:'Status out of sync · refresh',awaitBot:'Auto inactive · copy the post',sending:'Sending',published:'Sent',manual:'Ready to copy',needs_review:'Needs review',cancelled:'Cancelled',
   lastError:'Attention:',info:'Rejected, withdrawn or unapproved vacancies are never sent.'
  },
+  copyMessage:'نسخ الرسالة والرابط',copyPhoto:'نسخ صورة عشوائية',textCopied:'✅ تم نسخ الرسالة ورابط الترشح.',imageCopied:'✅ تم نسخ الصورة. الصقها في المنشور.',textManual:'تعذر النسخ: حدد النص المعروض أدناه لنسخه.',imageManual:'هذا المتصفح يمنع نسخ الصورة: اضغط عليها مطولاً لنسخها أو حفظها.',imagePreview:'صورة هورينوفا المختارة',
  ar:{over:'هورينوفا · نشر الوظائف',title:'كل عرض موافق عليه جاهز للنشر.',
   desc:'عروض العمل المعتمدة · متابعة النشر على تيليغرام وتجهيز رسائل واتساب للمشاركة. لا تظهر حالة الإرسال إلا بعد التأكيد.',
   refresh:'تحديث ↻',tg:'تيليغرام',wa:'واتساب',
@@ -70,109 +73,67 @@ export function mountSocialPublications(root,request=hub){
  });
  const lang=()=>T[(document.documentElement.lang||'fr').slice(0,2)]||T.fr;
  let model=null,loading=false;
- const posterCache=new Map();
- for(const url of PROMO_IMAGES){void fetchPosterBlob(url).then(blob=>{posterCache.set(url,blob);el.dataset.posterReadyCount=String(posterCache.size)}).catch(()=>{});}
+ // Prepare all five PNGs while the administrator views the page. Each
+ // clipboard write starts directly inside a click (necessary on iPhone Safari).
+ const posterPng=new Map();
+ for(const url of PROMO_IMAGES){
+  const task=posterAsPng(url);
+  task.catch(()=>{});posterPng.set(url,task);
+ }
  const text=(node,value)=>{node.textContent=value};
  function make(tag,cls,value){const n=document.createElement(tag);if(cls)n.className=cls;if(value!==undefined)n.textContent=value;return n}
  function button(label,cb){const b=make('button','hspa-action',label);b.type='button';b.addEventListener('click',cb);return b}
- function preparePromoCard(card,offer,row){
-  const words=lang();
-  const url=nextPromoImage();
+ function feedback(card,message){
+  let node=card.querySelector('.hspa-local-feedback');
+  if(!node){
+   node=make('p','hspa-local-feedback');
+   node.setAttribute('role','status');
+   node.setAttribute('aria-live','polite');
+   card.append(node);
+  }
+  text(node,message);
+ }
+ function showManualText(card,message){
+  let preview=card.querySelector('.hspa-copy-fallback');
+  if(!preview){
+   preview=make('textarea','hspa-copy-fallback');
+   preview.setAttribute('aria-label',lang().copyMessage);
+   preview.readOnly=true;preview.rows=10;
+   card.append(preview);
+  }
+  preview.value=message;
+  preview.focus();preview.select();
+ }
+ async function copyJobMessage(card,offer,row){
   const message=buildPromoMessage(offer,row);
-  card.querySelector('.hspa-promo-preview')?.remove();
-  const panel=make('section','hspa-promo-preview');
-  panel.setAttribute('aria-label',words.promoTitle);
-  const heading=make('strong','hspa-promo-title',words.promoTitle);
-  const img=make('img','hspa-promo-img');
-  img.src=url;img.alt=words.promoAlt;
-  img.loading='eager';img.decoding='async';
-  const details=make('details','hspa-promo-details');
-  details.append(make('summary','',words.promoPreview));
-  const post=make('textarea','hspa-promo-text');
-  post.readOnly=true;post.value=message;post.setAttribute('aria-label',words.promoPreview);
-  post.rows=11;post.dir='auto';
-  details.append(post);
-  const tools=make('div','hspa-promo-tools');
-  const local=make('p','hspa-local-feedback');local.setAttribute('role','status');local.setAttribute('aria-live','polite');
-  const combinedPng=buildCompletePosterPng(url,offer,row);
-  combinedPng.catch(()=>{});
-  let shareBlob=null,shareBusy=false;
-  const share=button(words.promoShare,async()=>{
-   if(shareBusy)return;
-   shareBusy=true;share.disabled=true;
-   const isFile=!!shareBlob;
-   try{
-    // Native share runs directly from the tap; an unavailable media file falls
-    // back to sharing the public poster URL instead of a dead button.
-    if(isFile)await sharePromo(message,url,shareBlob);
-    else await navigator.share({text:message,url,title:'HORENOVA | Recrutement'});
-    text(local,isFile?lang().promoShared:lang().promoSharedLink);
-   }catch(error){
-    if(error?.name!=='AbortError')text(local,lang().promoShareError);
-   }finally{shareBusy=false;share.disabled=false}
-  });
-  // Share only appears where supported, but is NEVER a permanently disabled
-  // control: until the photo loads it shares its direct public link.
-  if(typeof navigator.share==='function'){
-   share.disabled=false;
-   void combinedPng.then(blob=>{
-    try{
-     const candidate=new File([blob],'HORENOVA-offre-complete.png',{type:'image/png'});
-     if(typeof navigator.canShare==='function'&&!navigator.canShare({files:[candidate]})){
-      share.dataset.posterReady='link';return;
-     }
-     shareBlob=blob;share.dataset.posterReady='file';
-    }catch{share.dataset.posterReady='link'}
-   }).catch(()=>{share.dataset.posterReady='link'});
-  }else share.hidden=true;
-  share.classList.add('hspa-promo-share');
-  const save=make('a','hspa-action hspa-promo-save',words.promoSave);
-  save.href=url;save.target='_blank';save.rel='noopener noreferrer';
-  const copyCaption=button(words.copyText,async()=>{
-   if(await copyTextOnly(message))text(local,lang().copied);
-   else{details.open=true;post.focus();post.select();text(local,lang().promoManual);}
-  });
-  tools.append(share,copyCaption,save);
-  panel.append(heading,img,details,tools,local);
-  card.append(panel);
-  return {url,message,note:local,combinedPng};
- }
- async function copyWithPoster(card,offer,row){
-  const {url,message,note,combinedPng}=preparePromoCard(card,offer,row);
-  const output=$('hspaFeedback');
-  text(output,'');
-  const words=lang();
-  // iOS WhatsApp can discard text when a file and caption are shared together.
-  // Copy ONE image whose pixels contain poster + job title + city + full URL.
-  // ClipboardItem receives the asynchronous PNG promise inside the original click.
-  if(typeof ClipboardItem!=='undefined'&&navigator.clipboard?.write){
-   try{
-    const item=new ClipboardItem({'image/png':combinedPng});
-    await navigator.clipboard.write([item]);
-    text(note,words.promoRich);text(output,words.promoRich);return;
-   }catch{}
-  }
-  // If image clipboard is unavailable, copy the actual clickable text URL.
+  // Always copy ONLY plain text: the job link stays clickable when pasted.
   const copied=await copyTextOnly(message);
-  if(!copied){
-   const details=card.querySelector('.hspa-promo-details');
-   if(details){details.open=true;details.querySelector('textarea')?.focus()}
-  }
-  const feedback=copied?words.promoText:words.promoManual;
-  text(note,feedback);text(output,feedback);
+  if(!copied)showManualText(card,message);
+  else card.querySelector('.hspa-copy-fallback')?.remove();
+  feedback(card,copied?lang().textCopied:lang().textManual);
  }
- async function copyShare(value,card,success){
-  const content=String(value||'');
-  if(!content)return;
-  try{
-   if(!await copyTextOnly(content))throw Error('clipboard unavailable');
-   text($('hspaFeedback'),success);
-  }catch{
-   const area=make('textarea','hspa-fallback');
-   area.readOnly=true;area.value=content;area.setAttribute('aria-label','Texte à copier');
-   card.append(area);area.focus();area.select();
-   text($('hspaFeedback'),lang().copyError);
+ function copyRandomPhoto(card){
+  // Every click changes the poster; the image contains NO appended caption.
+  const url=nextPromoImage();
+  card.querySelector('.hspa-photo-preview')?.remove();
+  const preview=make('div','hspa-photo-preview');
+  preview.append(make('strong','',lang().imagePreview));
+  const img=make('img','');
+  img.src=url;img.alt=lang().imagePreview;img.loading='eager';
+  preview.append(img);card.append(preview);
+  const error=()=>feedback(card,lang().imageManual);
+  if(typeof ClipboardItem==='undefined'||typeof navigator.clipboard?.write!=='function'){
+   error();return;
   }
+  try{
+   // Image-only ClipboardItem is created DURING the user click, before await.
+   // A preloaded Promise<Blob> is supported by modern Safari and Chromium.
+   const png=posterPng.get(url)||posterAsPng(url);
+   const item=new ClipboardItem({'image/png':png});
+   navigator.clipboard.write([item])
+    .then(()=>feedback(card,lang().imageCopied))
+    .catch(error);
+  }catch{error()}
  }
  function draw(){
   const w=lang();
@@ -205,53 +166,23 @@ export function mountSocialPublications(root,request=hub){
    }
    card.append(state);
    const actions=make('div','hspa-post-actions');
-   const secondaryActions=make('div','hspa-channel-actions');
    if(rows.some(row=>row.status==='cancelled')&&rec.jobStatus==='VALIDEE'&&!rec.removed){
     card.append(make('p','hspa-error',w.syncIssue));
    }
-   const link=make('a','hspa-action',w.view);link.href=rec.publicUrl;link.target='_self';actions.append(link);
-   const whatsapp=rows.find(x=>x.channel==='whatsapp');
-   const telegram=rows.find(x=>x.channel==='telegram');
+   const link=make('a','hspa-action',w.view);
+   link.href=rec.publicUrl||'https://horenova.com/job.html?id='+encodeURIComponent(rec.requestId);
+   link.target='_self';
+   actions.append(link);
    if(!rec.removed&&rec.jobStatus==='VALIDEE'){
-    if(telegram){
-     actions.append(button(w.copyTelegram,()=>copyWithPoster(card,rec,telegram)));
-     if(model.telegramChannel){
-      const tgLink=make('a','hspa-action hspa-telegram',w.openTelegram);
-      tgLink.href=model.telegramChannel;tgLink.target='_blank';tgLink.rel='noopener noreferrer external';
-      tgLink.addEventListener('click',e=>e.stopPropagation());
-      secondaryActions.append(tgLink);
-      secondaryActions.append(button(w.copyTgLink,()=>copyShare(model.telegramChannel,card,lang().copiedLink)));
-     }
-    }
-    if(whatsapp){
-     actions.append(button(w.copy,()=>copyWithPoster(card,rec,whatsapp)));
-     if(model.whatsappChannel){
-      const waLink=make('a','hspa-action hspa-whatsapp',w.openWa);
-      waLink.href=model.whatsappChannel;waLink.target='_blank';waLink.rel='noopener noreferrer external';
-      waLink.addEventListener('click',e=>e.stopPropagation());
-      secondaryActions.append(waLink);
-      secondaryActions.append(button(w.copyWaLink,()=>copyShare(model.whatsappChannel,card,lang().copiedLink)));
-     }
-    }
+    const preferred=rows.find(x=>x.channel==='whatsapp')||rows.find(x=>x.channel==='telegram')||rec;
+    actions.append(button(w.copyMessage,()=>{void copyJobMessage(card,rec,preferred)}));
+    actions.append(button(w.copyPhoto,()=>copyRandomPhoto(card)));
    }
-   if(telegram?.status==='needs_review'&&!rec.removed&&rec.jobStatus==='VALIDEE'){
-    const retry=button(w.retry,async()=>{
-     if(!window.confirm(lang().retryConfirm))return;
-     retry.disabled=true;
-     try{
-      await request('/api/community/publications/'+encodeURIComponent(rec.requestId)+'/retry',
-       {method:'PATCH',body:{confirmedReviewed:true}});
-      text($('hspaFeedback'),lang().retried);void refresh()
-     }catch(err){text($('hspaFeedback'),lang().error+(err?.message||'Erreur'));retry.disabled=false}
-    });secondaryActions.append(retry);
-    if(telegram.lastError)card.append(make('p','hspa-error',w.lastError+' '+telegram.lastError));
+   const telegram=rows.find(x=>x.channel==='telegram');
+   if(telegram?.status==='needs_review'&&telegram.lastError){
+    card.append(make('p','hspa-error',w.lastError+' '+telegram.lastError));
    }
    card.append(actions);
-   if(secondaryActions.childElementCount){
-    const access=make('div','hspa-channel-options');
-    access.append(make('strong','hspa-channel-title',w.moreOptions),secondaryActions);
-    card.append(access);
-   }
    host.append(card);
   }
  }
