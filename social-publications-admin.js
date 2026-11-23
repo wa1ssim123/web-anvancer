@@ -1,5 +1,5 @@
 import {hub} from '/hn-api.js';
-import {nextPromoImage,buildPromoMessage,copyTextOnly,sharePromo,fetchPosterBlob} from '/social-promo-share.js?v=copy-text-first-20261123-r1';
+import {nextPromoImage,buildPromoMessage,copyTextOnly,sharePromo,fetchPosterBlob} from '/social-promo-share.js?v=copy-text-first-20261123-r2';
 /* HORENOVA official publication supervision.
  * WhatsApp = manual copy/paste into the existing channel (official Meta API
  * does not publish Channel posts). Telegram = official Bot API after setup.
