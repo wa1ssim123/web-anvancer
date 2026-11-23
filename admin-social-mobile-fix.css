@@ -270,3 +270,29 @@ body[data-hn12="admin"] #hnAdminSocialPublications .hspa-local-feedback:empty{di
 }
 
 body[data-hn12="admin"] #hnAdminSocialPublications .hspa-promo-share[hidden]{display:none!important}
+
+/* 23 Nov: always-visible channel actions and reliable text-only copy workflow. */
+body[data-hn12="admin"] #hnAdminSocialPublications .hspa-channel-options{
+ display:block!important;margin-top:11px!important;
+ border:1px solid #cfe1d6!important;border-radius:11px!important;
+ padding:9px 12px!important;background:#f9fcfa!important;
+}
+body[data-hn12="admin"] #hnAdminSocialPublications .hspa-channel-title{
+ display:block!important;color:#174a37!important;font:800 13px/1.5 system-ui,sans-serif!important;
+ margin:0 0 9px!important;
+}
+body[data-hn12="admin"] #hnAdminSocialPublications .hspa-channel-actions{
+ display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));
+ gap:8px!important;
+}
+body[data-hn12="admin"] #hnAdminSocialPublications .hspa-promo-tools .hspa-promo-save{
+ text-decoration:none!important;
+}
+body[data-hn12="admin"] #hnAdminSocialPublications .hspa-promo-text{
+ user-select:text!important;-webkit-user-select:text!important;
+}
+@media(max-width:600px){
+ body[data-hn12="admin"] #hnAdminSocialPublications .hspa-channel-actions{
+  grid-template-columns:minmax(0,1fr)!important;
+ }
+}
