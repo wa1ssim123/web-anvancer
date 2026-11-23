@@ -58,7 +58,7 @@ function render(){
  els('[data-hx26-dot]').forEach((el,i)=>el.classList.toggle('is-current',i===state.index));
  const tools=$('.hx26-actions');if(tools)tools.style.left=((state.index+.78)/7*96+3).toFixed(2)+'%';
  const pos=$('[data-hx26-position]');
- if(pos)pos.textContent=String(state.index+1).padStart(2,'0')+' / 07';
+ if(pos)pos.textContent=String(state.index+1).padStart(2,'0')+' / '+String(products.length).padStart(2,'0');
  $('[data-hx26-cat]').textContent=p.cat+'  /  HORENOVA EDITION';
  $('[data-hx26-name]').textContent=p.name;
  $('[data-hx26-desc]').textContent=p.desc;
