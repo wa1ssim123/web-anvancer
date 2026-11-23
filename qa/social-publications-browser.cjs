@@ -38,7 +38,7 @@ const offerId='11111111-1111-4111-8111-111111111111';
    },offerId);
    await page.locator('#hnAdminSocialPublications .hspa-post').waitFor();
    assert.equal(await page.locator('.hspa-post').count(),1);
-   assert.match(await page.locator('#hspaConnections').innerText(),/non configuré/);
+   assert.match(await page.locator('#hspaConnections').innerText(),/Envoi automatique inactif/);
    assert.equal(await page.locator('a[href="https://horenova.com/job.html?id='+offerId+'"]').count(),1);
    assert.equal(await page.locator('.hspa-whatsapp').getAttribute('href'),'https://whatsapp.com/channel/0029Vb9VLZ5A2pLGFYQA6s2u');
    assert.equal(await page.getByRole('button',{name:'Copier le message Telegram'}).count(),1);
