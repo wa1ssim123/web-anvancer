@@ -15,6 +15,13 @@ const checks=[
  {path:'/admin.html',verify:s=>s.includes(expectedAdminScript)&&s.includes(expectedAdminStyles)&&s.includes('horenova-admin-cases-v2.css')},
  {path:'/social-publications-admin.js',verify:s=>s.includes('social-promo-share.js')&&s.includes('copyJobMessage')&&s.includes('copyRandomPhoto')&&!s.includes('secondaryActions')&&!s.includes('copyWithPoster')},
  {path:'/social-promo-share.js',verify:s=>s.includes('nextPromoImage')&&s.includes('buildPromoMessage')&&s.includes('d0158d_94f90047')},
+ {path:'/assets/brand-whatsapp.svg',verify:s=>s.includes('viewBox="0 0 24 24"')&&s.includes('fill="#25D366"')&&s.includes('<path ')},
+ {path:'/assets/brand-telegram.svg',verify:s=>s.includes('viewBox="0 0 24 24"')&&s.includes('fill="#26A5E4"')&&s.includes('<path ')},
+ {path:'/social-brand-icons.js',verify:s=>s.includes('hn-brand-logo')&&s.includes('MutationObserver')&&s.includes('brand-whatsapp.svg')},
+ {path:'/social-brand-icons.css',verify:s=>s.includes('.hn-brand-logo')&&s.includes('hn-brand-symbol')},
+ {path:'/communaute.html',verify:s=>s.includes('brand-whatsapp.svg')&&s.includes('brand-telegram.svg')},
+ {path:'/pwa-register.js',verify:s=>s.includes('social-brand-icons.js?v=20261123-logo1')},
+
  {path:'/admin.js',verify:s=>s.includes('data-quickprint-id')&&s.includes('Imprimer la candidature avec photo')&&s.includes('data-request-remove')},
  {path:'/admin-overview.js',verify:s=>s.includes('data-remove-id')&&s.includes('hn-admin-listing-removed')},
  {path:'/horenova-admin-cases-v2.css',verify:s=>s.includes('#adminGate #hubRecruiterRequests.hub-stack')&&s.includes('hn-admin-remove-btn')},
