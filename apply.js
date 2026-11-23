@@ -59,7 +59,12 @@ const fields=[
  ['Hygiène & sécurité','Hygiène & sécurité'],
  ['Travail en équipe','Travail en équipe'],
  ['Barista & café','Barista & café'],
- ['Cuisine & préparation','Cuisine & préparation']
+ ['Cuisine & préparation','Cuisine & préparation'],
+ ['Entretien des chambres','Entretien des chambres'],
+ ['Nettoyage et désinfection','Nettoyage et désinfection'],
+ ['Gestion du linge','Gestion du linge'],
+ ['Produits d’entretien & sécurité','Produits d’entretien & sécurité'],
+ ['Contrôle qualité des chambres','Contrôle qualité des chambres']
 ];
 box.innerHTML=!jobId?
  '<div class="hn-easy-empty"><h2>Choisissez une annonce</h2><p>Ouvrez une offre pour envoyer votre candidature.</p><a href="/jobs.html">Voir les offres ↗</a></div>':
