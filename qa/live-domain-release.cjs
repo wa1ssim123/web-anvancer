@@ -13,7 +13,7 @@ const checks=[
  {path:'/version.json',verify:s=>{try{return JSON.parse(s).version===release}catch{return false}}},
  {path:'/support.html',verify:s=>s.includes('id="hsQuickDemand"')&&s.includes('support.js?v='+asset)&&s.includes('Assistance 24 h/24')},
  {path:'/admin.html',verify:s=>s.includes(expectedAdminScript)&&s.includes(expectedAdminStyles)&&s.includes('horenova-admin-cases-v2.css')},
- {path:'/social-publications-admin.js',verify:s=>s.includes('social-promo-share.js')&&s.includes('copyWithPoster')},
+ {path:'/social-publications-admin.js',verify:s=>s.includes('social-promo-share.js')&&s.includes('copyJobMessage')&&s.includes('copyRandomPhoto')&&!s.includes('secondaryActions')&&!s.includes('copyWithPoster')},
  {path:'/social-promo-share.js',verify:s=>s.includes('nextPromoImage')&&s.includes('buildPromoMessage')&&s.includes('d0158d_94f90047')},
  {path:'/admin.js',verify:s=>s.includes('data-quickprint-id')&&s.includes('Imprimer la candidature avec photo')&&s.includes('data-request-remove')},
  {path:'/admin-overview.js',verify:s=>s.includes('data-remove-id')&&s.includes('hn-admin-listing-removed')},
