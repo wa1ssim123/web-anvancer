@@ -46,10 +46,10 @@ const onePixelPng=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAAD
    assert.equal(await page.locator('a[href="https://horenova.com/job.html?id='+offerId+'"]').count(),1);
    assert.equal(await page.locator('.hspa-channel-options').count(),1,'Secondary channel links must be grouped');
    assert.equal(await page.locator('#hspaConnections .hspa-connection').count(),2,'No duplicate Telegram status tile');
-   await page.locator('.hspa-channel-options summary').click();
+   assert.equal(await page.locator('.hspa-channel-options .hspa-channel-actions').isVisible(),true,'Channel open buttons must be visible without an extra tap');
    assert.equal(await page.locator('.hspa-whatsapp').getAttribute('href'),'https://whatsapp.com/channel/0029Vb9VLZ5A2pLGFYQA6s2u');
-   assert.equal(await page.getByRole('button',{name:'Copier annonce + photo Telegram'}).count(),1);
-   assert.equal(await page.getByRole('button',{name:'Copier annonce + photo WhatsApp'}).count(),1);
+   assert.equal(await page.getByRole('button',{name:'Copier message + lien Telegram'}).count(),1);
+   assert.equal(await page.getByRole('button',{name:'Copier message + lien WhatsApp'}).count(),1);
    assert.equal(await page.getByRole('button',{name:'Copier le lien WhatsApp'}).count(),1);
    assert.equal(await page.getByRole('link',{name:/Ouvrir le canal Telegram/}).getAttribute('href'),'https://t.me/HORENOVA_Emploi_Maroc');
    assert.equal(await page.locator('.hspa-whatsapp').getAttribute('target'),'_self','Do not open an iOS-blocked popup');
@@ -57,21 +57,17 @@ const onePixelPng=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAAD
    assert.equal(await page.locator('#hspaGuideDetails').count(),0,'Technical setup copy must not appear in the admin panel');
    assert.equal(await page.locator('#hspaRender').count(),0,'No Render setup prompts in public admin outbox');
    await page.evaluate(()=>{
+    window.__writeBinaryCount=0;window.__textCopyCount=0;
     Object.defineProperty(navigator,'clipboard',{configurable:true,value:{
-     write:async items=>{
-      window.__lastCopiedTypes=items[0].types;
-      window.__lastCopied=await (await items[0].getType('text/plain')).text();
-      const png=await items[0].getType('image/png');
-      window.__imageCopied=png.type==='image/png'&&png.size>0;
-     },
-     writeText:async text=>{window.__lastCopied=text}
+     write:async()=>{window.__writeBinaryCount++;throw Error('Image clipboard must never overwrite text')},
+     writeText:async text=>{window.__textCopyCount++;window.__lastCopied=text}
     }});
     Object.defineProperty(navigator,'canShare',{configurable:true,value:()=>true});
     Object.defineProperty(navigator,'share',{configurable:true,value:async ({files,text})=>{
      window.__share={file:files[0]?.name,type:files[0]?.type,text};
     }});
    });
-   await page.getByRole('button',{name:'Copier annonce + photo Telegram'}).click();
+   await page.getByRole('button',{name:'Copier message + lien Telegram'}).click();
    await page.locator('.hspa-promo-preview img').waitFor();
    const first=await page.locator('.hspa-promo-img').getAttribute('src');
    const firstMessage=await page.locator('.hspa-promo-text').inputValue();
@@ -81,23 +77,25 @@ const onePixelPng=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAAD
    assert.match(firstMessage,/Casablanca/);
    assert.match(firstMessage,new RegExp(offerId));
    assert.match(firstMessage,/horenova.com\/job.html\?id=/);
-   await page.getByRole('button',{name:'Copier annonce + photo WhatsApp'}).click();
+   await page.getByRole('button',{name:'Copier message + lien WhatsApp'}).click();
    const second=await page.locator('.hspa-promo-img').getAttribute('src');
    await page.locator('.hspa-local-feedback').waitFor({state:'visible'});
    assert.notEqual(second,first,'Every successive copy rotates to a different actual poster');
    assert.match(await page.locator('.hspa-promo-text').inputValue(),/HORENOVA/);
    const clipboardState=await page.evaluate(()=>({
-    text:window.__lastCopied,types:window.__lastCopiedTypes,image:window.__imageCopied
+    text:window.__lastCopied,binaryCalls:window.__writeBinaryCount,textCalls:window.__textCopyCount
    }));
-   assert.match(clipboardState.text,/horenova.com\/job.html/);
-   assert.ok(clipboardState.types?.includes('image/png')&&clipboardState.types?.includes('text/plain'),'Should attempt image + text clipboard');
-   assert.equal(clipboardState.image,true,'PNG image should really be copied, not just a URL');
-   await page.getByRole('button',{name:'Partager photo + annonce'}).click();
+   assert.match(clipboardState.text,/Serveur/);
+   assert.match(clipboardState.text,/Casablanca/);
+   assert.match(clipboardState.text,/horenova.com\/job.html\?id=/);
+   assert.equal(clipboardState.binaryCalls,0,'Do not write an image: WhatsApp/iOS can discard text and link');
+   assert.equal(clipboardState.textCalls,2,'Both channels copy complete plain-text messages');
+   await page.getByRole('button',{name:'Partager uniquement la photo'}).click();
    await page.waitForFunction(()=>window.__share?.file);
    const shared=await page.evaluate(()=>window.__share);
    assert.ok(shared.file.startsWith('HORENOVA-recrutement.'));
-   assert.match(shared.text,/HORENOVA/);
-   assert.match(shared.text,/horenova.com\/job.html/);
+   assert.equal(shared.text,undefined,'Photo share must never replace the copied job message with media text');
+   assert.match(await page.evaluate(()=>window.__lastCopied),/horenova.com\/job.html\?id=/,'Sharing photo preserves the already-copied text');
    await page.getByRole('button',{name:'Copier le lien WhatsApp'}).click();
    assert.equal(await page.evaluate(()=>window.__lastCopied),'https://whatsapp.com/channel/0029Vb9VLZ5A2pLGFYQA6s2u');
    assert.equal(await page.locator('button').filter({hasText:'Relancer'}).count(),0);
@@ -107,7 +105,7 @@ const onePixelPng=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAAD
    await page.waitForFunction(()=>document.querySelector('#hspaTitle').textContent.includes('كل عرض'));
    assert.equal(await page.locator('.hspa-post').count(),1);
    assert.deepEqual(errors,[]);
-   console.log('PASS HORENOVA admin social approvals '+width+'px: 5 owner posters, rotating image, real rich clipboard, iPhone share, valid job link, FR/AR');
+   console.log('PASS HORENOVA social iPhone '+width+'px: plain text and job URL copied, image separately shared, channel links visible, 5-photo rotation, FR/AR');
    await context.close();
   }
  }finally{await browser.close();server.close()}
