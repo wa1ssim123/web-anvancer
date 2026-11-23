@@ -220,3 +220,7 @@ body.hn-support-page>.mihna-art-canvas .art-glow{
  margin:0!important;overflow:hidden!important
 }
 body.hn-support-page>.hs-top{margin-top:0!important}
+
+
+/* QA follow-up: small contact headings in white cards. */
+.hs-main .hs-contact-card span,.hs-main .hs-telephone span{color:#385248}
