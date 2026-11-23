@@ -125,6 +125,11 @@ const contrast=(a,b)=>{
     assert.equal(popup.url(),expected,'Actual external channel must open after user tap');
     await popup.close();
    }
+   // The Telegram settings button must also work if the admin settings mount late.
+   await page.evaluate(()=>{window.__manageJump=0;Element.prototype.scrollIntoView=function(){window.__manageJump++}});
+   await page.getByRole('link',{name:/Gérer le canal Telegram/}).click();
+   await page.evaluate(()=>{const el=document.createElement('div');el.id='hnTelegramChannelAdmin';document.body.append(el)});
+   await page.waitForFunction(()=>window.__manageJump>=1);
    // Clipboard image unsupported: retain a clickable job URL via plain-text fallback.
    await page.evaluate(()=>Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText:async value=>{window.__lastCopied=value}}}));
    await page.getByRole('button',{name:'Copier affiche complète WhatsApp'}).click();
