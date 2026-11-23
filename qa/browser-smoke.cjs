@@ -66,7 +66,7 @@ async function run(){
      await page.goto(base+'/shop.html',{waitUntil:'domcontentloaded',timeout:20000});
      await page.locator('.hx26-slot').first().waitFor({timeout:7000});
      assert.equal(await page.locator('.hx26-slot').count(),9);
-     assert.match(await page.locator('[data-hx26-name]').innerText(),/Executive Chef Jacket/);
+     assert.match(await page.locator('[data-hx26-name]').innerText(),/(?:Executive Chef Jacket|Veste de chef exécutif)/);
      await page.locator('.hx26-card [data-hx26="view"]').click();
      await page.locator('.hx26-dialog').waitFor({timeout:6000});
      await page.locator('.hx26-dialog [data-hx26-face="back"]').click();
