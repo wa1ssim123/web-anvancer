@@ -27,3 +27,14 @@ body[data-hn12="admin"] #adminGate #hnAdminSocialPublications .hspa-post :is(p,s
 body[data-hn12="admin"] .hn12-dock a{color:var(--adm-muted)!important}body[data-hn12="admin"] .hn12-dock a.active{color:var(--adm-gold)!important}
 body[data-hn12="admin"] .hn12-paper a:not([class]){color:var(--adm-gold)!important}
 body[data-hn12="admin"] .hn12-paper a:focus-visible,body[data-hn12="admin"] button:focus-visible{outline:2px solid var(--adm-gold);outline-offset:3px}
+
+body[data-hn12="admin"] #adminSupportInbox{background:var(--adm-panel)!important;background-color:var(--adm-panel)!important;color:var(--adm-text)!important;border-color:var(--adm-line)!important}
+body[data-hn12="admin"] #adminSupportInbox :is(h2,h3,strong){color:var(--adm-text)!important}
+body[data-hn12="admin"] #adminSupportInbox :is(p,small){color:var(--adm-muted)!important}
+body[data-hn12="admin"] #adminSupportInbox :is(.hn-support-admin-tel,.hn-support-admin-metrics>span,.hn-support-admin-latest a){background:var(--adm-card)!important;color:var(--adm-text)!important;border-color:var(--adm-line)!important}
+body[data-hn12="admin"] #adminSupportInbox .hn-support-admin-cta{background:var(--adm-gold)!important;color:var(--adm-ink)!important;border-color:var(--adm-gold)!important}
+body[data-hn12="admin"] #adminGate :is(.hub-panel,.hub-detail,.hub-case,.hub-field,.hub-panel-head,.hub-controls){background:var(--adm-card)!important;color:var(--adm-text)!important;border-color:var(--adm-line)!important}
+body[data-hn12="admin"] #adminGate .hub-case.active{box-shadow:inset 4px 0 var(--adm-gold)!important}
+body[data-hn12="admin"] #adminGate :is(.hub-case,.hub-field) span{color:var(--adm-muted)!important}
+body[data-hn12="admin"] .hn12-section-head h2{color:var(--adm-text)!important}
+body[data-hn12="admin"] .hn12-section-head p{color:var(--adm-muted)!important}

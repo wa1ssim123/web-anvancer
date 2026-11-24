@@ -1,5 +1,5 @@
 {
-  "version": "2026.11.24.splash-clean-r9",
+  "version": "2026.11.24.interaction-stability-r10",
   "releasedAt": "2026-11-24",
-  "message": "Accueil sans flèches décoratives et boutons sociaux alignés."
+  "message": "Stabilisation des interactions et suppression des boucles de rendu des tableaux de bord."
 }

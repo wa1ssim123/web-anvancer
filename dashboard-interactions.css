@@ -1,0 +1,7 @@
+/* Decorative layers only: preserve auth, disabled states and modal semantics. */
+body:is([data-hn12="admin"],[data-hn12="account"],[data-hn12="recruit"]) .mihna-art-canvas{display:none!important;pointer-events:none!important}
+body:is([data-hn12="admin"],[data-hn12="account"],[data-hn12="recruit"]) :is([data-art-reveal],[data-hn12-reveal]){opacity:1!important;transform:none!important;transition:none!important}
+body:is([data-hn12="admin"],[data-hn12="account"],[data-hn12="recruit"]) .hn12-page::before,body:is([data-hn12="admin"],[data-hn12="account"],[data-hn12="recruit"]) .hn12-page::after{pointer-events:none!important}
+.hs-launcher.hs-fab-v3{pointer-events:none!important}.hs-launcher.hs-fab-v3>a{pointer-events:auto!important}
+.hs-update-banner{max-width:calc(100vw - 30px)}
+body[data-hn12="admin"] :is(#hnCandidateOffersAdmin,#hnAdminAnalytics,#hnWhatsappChannelAdmin,#hnTelegramChannelAdmin,#hnAdminSocialPublications,#adminSupportInbox,#hnAdminPublication,#adminApplications,#adminRecruiterRequests){scroll-margin-top:100px}
