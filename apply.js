@@ -86,7 +86,7 @@ box.innerHTML=!jobId?
  '<label>Disponibilité<select name="availability"><option value="">À préciser plus tard</option><option>Immédiatement</option><option>Sous 7 jours</option><option>Sous 15 jours</option><option>Sous un mois</option><option>À convenir</option></select></label>'+
  '<label>Type de contrat<select name="contractPreference"><option value="">Flexible</option><option>CDI</option><option>CDD</option><option>Shift / mission</option><option>Temps partiel</option></select></label>'+
  '<label class="wide">Compétences<div class="hn-app-chips">'+fields.map(([value,label])=>'<label><input type="checkbox" name="skill" value="'+esc(value)+'"><span>'+esc(label)+'</span></label>').join('')+'</div></label>'+
- '<label class="wide">Ma motivation<textarea name="motivation" maxlength="900" rows="3" placeholder="Quelques mots pour présenter votre candidature (facultatif)"></textarea></label></div></details>'+
+ '<label class="wide">Lettre de motivation (facultative)<textarea name="motivation" maxlength="900" rows="6" placeholder="Présentez votre expérience, vos compétences, ce que vous souhaitez apporter à l’établissement et vos disponibilités."></textarea><small>Personnalisez votre lettre pour cette offre. Elle n’est pas obligatoire et reste modifiable avant l’envoi.</small></label></div></details>'+
  '<label class="hn-app-consent"><input type="checkbox" name="consentToIntro" required><span>J’accepte que HORENOVA étudie ma candidature et partage mon dossier avec un recruteur autorisé. Mes coordonnées et ma photo ne sont jamais publiées.</span></label>'+
  '<p class="hn-app-error" id="applyDossierError" role="alert"></p>'+
  '<button type="submit" class="hn-app-submit" id="applySubmit">Envoyer ma candidature ↗</button>'+

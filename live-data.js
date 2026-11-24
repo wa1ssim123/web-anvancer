@@ -10,10 +10,9 @@ const imageForRole=role=>role==="Barista"?SITE_MEDIA+"barista.jpg":
   role==="Chef de cuisine"?SITE_MEDIA+"chef-action.jpg":SITE_MEDIA+"restaurant.jpg";
 function offsetForShift(schedule){
   const match=String(schedule||"").match(/\b\d{4}-\d{2}-\d{2}\b/);
-  if(!match)return 0; // Legacy shifts without an explicit date still use the old calendar.
-  const date=new Date(match[0]+"T12:00:00");
-  const now=new Date();now.setHours(12,0,0,0);
-  return Math.round((date-now)/86400000);
+  if(!match)return null; // Undated shifts remain available only in the all-shifts view.
+  const [y,m,d]=match[0].split('-').map(Number),now=new Date();
+  return Math.round((Date.UTC(y,m-1,d)-Date.UTC(now.getFullYear(),now.getMonth(),now.getDate()))/86400000);
 }
 const normalizeJob=j=>{
   const role=safeText(j.jobRole||j.role||'Serveur');
@@ -27,7 +26,7 @@ const normalizeJob=j=>{
     openings:Number(j.openings)||1,startDate:safeText(j.startDate||''),
     role,city:safeText(j.city||'Maroc'),pay:safeText(j.salaryText||'À convenir'),
     period:kind==='shift'?'/ shift':'/ mois',
-    time:schedule,dateOffset:kind==='shift'?offsetForShift(j.scheduleText):0,
+    time:schedule,dateOffset:kind==='shift'?offsetForShift([j.scheduleText,j.startDate].filter(Boolean).join(' ')):0,
     img:/^\/api\/jobs\/public\/[0-9a-f-]+\/workplace-photo$/i.test(j.photoUrl||'')
       ?apiBase+j.photoUrl:imageForRole(j.jobRole||j.role),
     hasWorkplacePhoto:!!j.hasWorkplacePhoto,
