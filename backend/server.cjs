@@ -147,6 +147,8 @@ function present(a,user) {
     recruiterRequestId:a.recruiter_request_id
   };
 }
+const {createCandidateOffersHandler}=require('./candidate-offers.cjs');
+const candidateOffersHandler=createCandidateOffersHandler({pool,json,read,rate,auth,requireRole,error,uuid});
 const {createSupportHandler}=require('./support.cjs');
 const supportHandler=createSupportHandler({pool,json,read,rate,auth,error,limit,uuid});
 const {createTechHandler}=require('./tech.cjs');
@@ -170,6 +172,7 @@ const queueReceipt=async event=>{
   }
 };
 async function api(req,res,path,method) {
+  if(path==='/api/candidate-offers'||path.startsWith('/api/candidate-offers/'))return candidateOffersHandler(req,res,path,method);
   if(path.startsWith('/api/community/'))return communityHandler(req,res,path,method);
   if(path.startsWith('/api/analytics/'))return analyticsHandler(req,res,path,method);
   if(path.startsWith('/api/support/'))return supportHandler(req,res,path,method);

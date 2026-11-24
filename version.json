@@ -1,5 +1,5 @@
 {
-  "version": "2026.11.24.tech-art-root-r2",
+  "version": "2026.11.24.reverse-matching-r3",
   "releasedAt": "2026-11-24",
-  "message": "Correction à la source de l’injection décorative sur les pages Tech, garde-fou CSS et traduction de la console."
+  "message": "Suppression de la boucle de mise à jour et annonces de disponibilité candidats, modération et mise en relation réciproque."
 }

@@ -241,3 +241,4 @@ document.addEventListener('hn-admin-listing-removed',()=>{void refresh()});
 $('hubSearch').oninput=list;$('hubRefresh').onclick=refresh;await refresh();
 try{const {mountAdminOverview}=await import('/admin-overview.js?v=admin-delete-scroll-v1');await mountAdminOverview();}catch(error){console.error('Contrôle des publications indisponible',error);}
 }
+if(auth?.role==='admin'){const a=document.createElement('a');a.className='hub-action';a.href='/candidate-offers.html';a.textContent='Annonces candidats · Modération ↗';root.prepend(a);}

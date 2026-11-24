@@ -77,14 +77,14 @@ function injectLang(){const html='<div class="lang-switch"><button data-lang="fr
 // Authenticated role-specific navigation. Never infer a role from URL/localStorage.
 const HN_ROLE_NAV={
   candidate:{
-    fr:[['Mon espace','/account.html','♙'],['Offres','/jobs.html','⌕'],['Shifts','/shifts.html','◷'],['Mes matchs','/matches.html','★'],['Messages','/conversations.html','✉'],['Academy','/academy.html','✦'],['Shop','/shop.html','◇'],['Explore','/explore.html','◉'],['Assistance','/support.html','✉']],
-    ar:[['حسابي','/account.html','♙'],['الوظائف','/jobs.html','⌕'],['المهام','/shifts.html','◷'],['مطابقاتي','/matches.html','★'],['الرسائل','/conversations.html','✉'],['الأكاديمية','/academy.html','✦'],['المتجر','/shop.html','◇'],['استكشف','/explore.html','◉'],['الدعم','/support.html','✉']],
-    en:[['My account','/account.html','♙'],['Jobs','/jobs.html','⌕'],['Shifts','/shifts.html','◷'],['Matches','/matches.html','★'],['Messages','/conversations.html','✉'],['Academy','/academy.html','✦'],['Shop','/shop.html','◇'],['Explore','/explore.html','◉'],['Support','/support.html','✉']]
+    fr:[['Mon espace','/account.html','♙'],['Offres','/jobs.html','⌕'],['Shifts','/shifts.html','◷'],['Mes matchs','/matches.html','★'],['Messages','/conversations.html','✉'],['Academy','/academy.html','✦'],['Shop','/shop.html','◇'],['Explore','/explore.html','◉'],['Mes annonces','/candidate-offers.html','＋'],['Assistance','/support.html','✉']],
+    ar:[['حسابي','/account.html','♙'],['الوظائف','/jobs.html','⌕'],['المهام','/shifts.html','◷'],['مطابقاتي','/matches.html','★'],['الرسائل','/conversations.html','✉'],['الأكاديمية','/academy.html','✦'],['المتجر','/shop.html','◇'],['استكشف','/explore.html','◉'],['إعلاناتي','/candidate-offers.html','＋'],['الدعم','/support.html','✉']],
+    en:[['My account','/account.html','♙'],['Jobs','/jobs.html','⌕'],['Shifts','/shifts.html','◷'],['Matches','/matches.html','★'],['Messages','/conversations.html','✉'],['Academy','/academy.html','✦'],['Shop','/shop.html','◇'],['Explore','/explore.html','◉'],['My listings','/candidate-offers.html','＋'],['Support','/support.html','✉']]
   },
   recruiter:{
-    fr:[['Tableau de bord','/account.html','⌂'],['Annonces & shifts','/recruit.html','▣'],['Talents','/talents.html','★'],['Candidatures','/account.html#recruitment','◷'],['Chat','/conversations.html','✉'],['Shop','/shop.html','◇'],['Explore','/explore.html','◉'],['Assistance','/support.html','✉']],
-    ar:[['لوحة التحكم','/account.html','⌂'],['الوظائف والمهمات','/recruit.html','▣'],['المواهب','/talents.html','★'],['الترشيحات','/account.html#recruitment','◷'],['المحادثات','/conversations.html','✉'],['المتجر','/shop.html','◇'],['استكشف','/explore.html','◉'],['الدعم','/support.html','✉']],
-    en:[['Dashboard','/account.html','⌂'],['Jobs & shifts','/recruit.html','▣'],['Talents','/talents.html','★'],['Applications','/account.html#recruitment','◷'],['Chat','/conversations.html','✉'],['Shop','/shop.html','◇'],['Explore','/explore.html','◉'],['Support','/support.html','✉']]
+    fr:[['Tableau de bord','/account.html','⌂'],['Annonces & shifts','/recruit.html','▣'],['Talents','/candidate-offers.html','★'],['Candidatures','/account.html#recruitment','◷'],['Chat','/conversations.html','✉'],['Shop','/shop.html','◇'],['Explore','/explore.html','◉'],['Assistance','/support.html','✉']],
+    ar:[['لوحة التحكم','/account.html','⌂'],['الوظائف والمهمات','/recruit.html','▣'],['المواهب','/candidate-offers.html','★'],['الترشيحات','/account.html#recruitment','◷'],['المحادثات','/conversations.html','✉'],['المتجر','/shop.html','◇'],['استكشف','/explore.html','◉'],['الدعم','/support.html','✉']],
+    en:[['Dashboard','/account.html','⌂'],['Jobs & shifts','/recruit.html','▣'],['Talents','/candidate-offers.html','★'],['Applications','/account.html#recruitment','◷'],['Chat','/conversations.html','✉'],['Shop','/shop.html','◇'],['Explore','/explore.html','◉'],['Support','/support.html','✉']]
   },
   admin:{
     fr:[['Administration','/admin.html','⌂'],['Demandes','/admin.html','▣'],['Candidatures','/admin.html','✓'],['Chat','/conversations.html','✉'],['Mon espace','/account.html','♙'],['Explore','/explore.html','◉'],['Assistance','/support.html','✉']],
@@ -147,7 +147,7 @@ function initArtSystem(){
   // Standalone support has its own layout and does NOT load the legacy art
   // stylesheet. Injecting art-whisk/chefhat/coffee/zellige here produced four
   // full-size SVG images above the header on iPhone. Never do so on support.
-  if(slug==='support'||slug==='manager'||slug==='professional-reviews'||slug==='tech'||slug.startsWith('tech-')||document.body.classList.contains('hn-support-page')||document.body.classList.contains('tech-page')||document.body.hasAttribute('data-no-legacy-art')){
+  if(slug==='support'||slug==='candidate-offers'||slug==='manager'||slug==='professional-reviews'||slug==='tech'||slug.startsWith('tech-')||document.body.classList.contains('hn-support-page')||document.body.classList.contains('tech-page')||document.body.hasAttribute('data-no-legacy-art')){
     document.querySelector('.mihna-art-canvas')?.remove();
     document.body.classList.remove('mihna-art-app','mihna-page-support','mihna-page-'+slug);
     return;

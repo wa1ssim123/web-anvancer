@@ -49,7 +49,15 @@
  */
 (function(){
   'use strict';
-  const BUILD='2026.11.21.admin-delete-scroll-v9';
+  const BUILD='2026.11.24.reverse-matching-r3';
+  const ACK_KEY='hn-release-ack-v2';
+  function acknowledged(version){
+    try{if(new URL(location.href).searchParams.get('hn_version')===version)return true;}catch{}
+    try{return localStorage.getItem(ACK_KEY)===version;}catch{return false;}
+  }
+  function acknowledge(version){try{localStorage.setItem(ACK_KEY,version);}catch{}}
+  function needsUpdate(version){return typeof version==='string'&&version!==BUILD&&!acknowledged(version);}
+  let pendingVersion=null;
   const CHECK_EVERY_MS=90000;
   const SUPPORT_CSS='/support.css?v=spv7-20261120';
   const tr={
@@ -121,7 +129,8 @@
     // Dock contents can arrive after the user session is resolved.
     requestAnimationFrame(placeLauncher);
   }
-  function showUpdate(){
+  function showUpdate(version){
+    pendingVersion=version;
     if(updateBanner)return;
     ensureCSS();
     const box=document.createElement('aside');box.className='hs-update-banner';
@@ -134,7 +143,11 @@
     button.textContent=words.reload;
     button.addEventListener('click',()=>{
       const url=new URL(location.href);
-      url.searchParams.set('hn_version',String(Date.now()));
+      if(!pendingVersion)return;
+      acknowledge(pendingVersion);
+      url.searchParams.set('hn_version',pendingVersion);
+      button.disabled=true;
+      updateBanner?.remove();updateBanner=null;
       location.replace(url.href);
     });
     box.append(content,button);document.body.append(box);updateBanner=box;
@@ -146,7 +159,8 @@
       const response=await fetch('/version.json?check='+Date.now(),{cache:'no-store',credentials:'same-origin'});
       if(!response.ok)return;
       const manifest=await response.json();
-      if(manifest&&typeof manifest.version==='string'&&manifest.version!==BUILD)showUpdate();
+      if(manifest&&needsUpdate(manifest.version))showUpdate(manifest.version);
+      else if(updateBanner){updateBanner.remove();updateBanner=null;pendingVersion=null;}
     }catch{}finally{checking=false;}
   }
   function start(){
