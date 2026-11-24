@@ -30,9 +30,10 @@ export async function getRole(){
  const cur=getMemberState();
  if(!cur.loggedIn||!cur.member?.id)return null;
  if(VERIFIED_ADMIN_MEMBER_IDS.has(cur.member.id))return 'admin';
+ try{const {hub}=await import('/hn-api.js');const me=await hub('/api/me');if(me.role==='manager')return 'manager';if(me.role==='candidate'||me.role==='recruiter'){syncVerifiedRole(cur.member.id);return me.role;}}catch{/* Fall back to existing verified Wix role for normal accounts. */}
  try{
   const p=await ownRoleQuery(),role=p.items[0]?.role||null;
-  if(role==='admin')return null;
+  if(role==='admin'||role==='manager')return null;
   if(role==='candidate'||role==='recruiter')syncVerifiedRole(cur.member.id);
   return role;
  }catch{return null}

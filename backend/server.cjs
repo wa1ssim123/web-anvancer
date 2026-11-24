@@ -111,9 +111,13 @@ async function auth(req) {
   let role='none';
   if(isAdminId(member.id)) role='admin';
   else {
+    const assigned=await pool.query('SELECT role FROM hr_staff_access WHERE member_wix_id=$1',[member.id]);
+    if(assigned.rows[0]) role=assigned.rows[0].role;
+    else {
     const roles=await wixItems(token,'AccountRoles',5,member.id);
     const own=roles.find(x=>x._owner === member.id);
     role=['candidate','recruiter'].includes(own?.role) ? own.role : 'none';
+    }
   }
   return {id:member.id,email:member.loginEmail||'',displayName:
     [member.contact?.firstName,member.contact?.lastName].filter(Boolean).join(' ')||member.profile?.nickname||'Membre HORENOVA',
@@ -220,6 +224,31 @@ async function api(req,res,path,method) {
   }
   const user=await auth(req);
   if(path==='/api/me' && method==='GET') return json(res,200,{id:user.id,email:user.email,role:user.role,displayName:user.displayName});
+  if(path==='/api/manager/applications' && method==='GET'){
+    requireRole(user,['manager','admin']);
+    const params=new URL(req.url,'http://localhost').searchParams;
+    const offset=Math.min(100000,Math.max(0,Math.trunc(Number(params.get('offset'))||0)));
+    const q=await pool.query("SELECT a.id,a.job_title,a.job_role,a.status,a.created_at,a.profile->>'firstName' AS first_name,a.profile->>'lastName' AS last_name,a.profile->>'city' AS city,COALESCE(r.business_name,source.business_name,'Non affecté') AS business FROM hr_applications a LEFT JOIN hr_recruiter_requests r ON r.id=a.recruiter_request_id LEFT JOIN hr_recruiter_requests source ON source.id::text=a.job_id ORDER BY a.created_at DESC,a.id DESC LIMIT 51 OFFSET $1",[offset]);
+    return json(res,200,{items:q.rows.slice(0,50),hasMore:q.rows.length>50});
+  }
+  if(path==='/api/professional-reviews' && method==='GET'){
+    requireRole(user,['candidate','recruiter']);
+    const q=await pool.query("SELECT a.id,a.job_title,a.status,r.business_name,CASE WHEN $2='recruiter' THEN concat_ws(' ',a.profile->>'firstName',a.profile->>'lastName') ELSE COALESCE(r.business_name,'Établissement') END AS subject,own.rating AS own_rating,own.comment AS own_comment,received.rating AS received_rating,received.comment AS received_comment FROM hr_applications a LEFT JOIN hr_recruiter_requests r ON r.id=a.recruiter_request_id LEFT JOIN hr_professional_reviews own ON own.application_id=a.id AND own.reviewer_wix_id=$1 LEFT JOIN hr_professional_reviews received ON received.application_id=a.id AND received.subject_wix_id=$1 WHERE a.consent_to_intro=true AND a.recruiter_wix_id IS NOT NULL AND a.match_started_at IS NOT NULL AND a.status IN ('RETENUE','CLOTURE') AND (($2='candidate' AND a.candidate_wix_id=$1) OR ($2='recruiter' AND a.recruiter_wix_id=$1)) ORDER BY a.updated_at DESC LIMIT 200",[user.id,user.role]);
+    return json(res,200,{items:q.rows});
+  }
+  if(path==='/api/professional-reviews' && method==='POST'){
+    requireRole(user,['candidate','recruiter']);rate(user.id+':professional-review',15,3600);
+    const d=await read(req);
+    if(!uuid(d.applicationId)||!Number.isInteger(d.rating)||d.rating<1||d.rating>5||typeof d.comment!=='string'||d.comment.trim().length<5||d.comment.trim().length>1500)throw error(422,'Note de 1 à 5 et commentaire de 5 à 1500 caractères requis.');
+    const a=await application(d.applicationId,user);
+    if(!a.consent_to_intro||!a.recruiter_wix_id||!a.match_started_at||!['RETENUE','CLOTURE'].includes(a.status))throw error(403,'Une mise en relation retenue ou clôturée est nécessaire.');
+    const subject=user.role==='candidate'?a.recruiter_wix_id:a.candidate_wix_id;
+    if(subject===user.id)throw error(403,'Auto-évaluation interdite.');
+    const q=await pool.query('INSERT INTO hr_professional_reviews(application_id,reviewer_wix_id,subject_wix_id,reviewer_role,rating,comment) VALUES($1,$2,$3,$4,$5,$6) ON CONFLICT(application_id,reviewer_role) DO NOTHING RETURNING application_id',[a.id,user.id,subject,user.role,d.rating,d.comment.trim()]);
+    if(!q.rows.length)throw error(409,'Un avis a déjà été envoyé pour cette candidature.');
+    return json(res,201,{ok:true});
+  }
+
    if(path==='/api/admin/email-status' && method==='GET'){
      requireRole(user,['admin']);
      return json(res,200,await mailer.stats());

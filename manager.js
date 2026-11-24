@@ -1,0 +1,9 @@
+import {requireRole,currentLang} from '/mihna-global.js';
+import {hub} from '/hn-api.js';
+const auth=await requireRole(['manager','admin']);if(!auth)throw Error('Accès réservé');
+const lang=currentLang(),t=({fr:['Supervision des candidatures','Toutes les nouvelles candidatures, tous recruteurs. Accès en lecture seule.','Actualiser','Précédent','Suivant','Aucune candidature','Sans nom'],en:['Application oversight','New applications across all recruiters. Read-only access.','Refresh','Previous','Next','No applications','Unnamed'],ar:['متابعة الترشيحات','جميع الترشيحات الجديدة لكل المشغلين. صلاحية القراءة فقط.','تحديث','السابق','التالي','لا توجد ترشيحات','بدون اسم']})[lang]||[];
+document.documentElement.lang=lang;document.documentElement.dir=lang==='ar'?'rtl':'ltr';
+const $=id=>document.getElementById(id);$('title').textContent=t[0];$('intro').textContent=t[1];
+let offset=0;const node=(tag,txt,cls)=>{const n=document.createElement(tag);if(txt)n.textContent=txt;if(cls)n.className=cls;return n};
+async function load(){ $('error').textContent='';try{const r=await hub('/api/manager/applications?offset='+offset);const out=$('content');out.replaceChildren();const controls=node('div','','row');for(const [label,action,disabled] of [[t[2],()=>load(),false],[t[3],()=>{offset=Math.max(0,offset-50);load()},offset===0],[t[4],()=>{offset+=50;load()},!r.hasMore]]){const b=node('button',label);b.disabled=disabled;b.onclick=action;controls.append(b)}out.append(controls);if(!r.items.length)out.append(node('p',t[5]));for(const a of r.items){const card=node('article','','panel');card.append(node('h2',[a.first_name,a.last_name].filter(Boolean).join(' ')||t[6]),node('p',[a.job_title,a.job_role,a.city].filter(Boolean).join(' · ')),node('p',a.business+' · '+a.status),node('p',new Date(a.created_at).toLocaleString(lang),'muted'));out.append(card)}}catch(e){$('error').textContent=e.message}}
+await load();

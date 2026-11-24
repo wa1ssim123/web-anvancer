@@ -164,6 +164,7 @@ function go(destination){
   location.replace(destination);
 }
 function roleDestination(role,firstTime=false){
+  if(role==='manager')return '/manager.html';
   if(safeReturn)return safeReturn;
   if(firstTime&&role==='candidate')return '/account.html';
   if(firstTime && role==='recruiter')return '/recruiter-setup.html';
@@ -175,6 +176,7 @@ async function existingRole(){
   // Admin identity is verified against the same Wix member id as mihna-global.js.
   // Never ask the administrator to create a public candidate/recruiter role.
   if(ADMIN_MEMBER_IDS.has(member.id))return 'admin';
+  try{const {hub}=await import('/hn-api.js');const me=await hub('/api/me');if(['manager','candidate','recruiter'].includes(me.role))return me.role;}catch{}
   const result=await queryItems('AccountRoles',{filters:[{field:'_owner',op:'eq',value:member.id}],limit:1});
   const record=result.items?.[0];
   return supportedRoles.includes(record?.role)||record?.role==='admin' ? record.role : null;

@@ -1,7 +1,8 @@
 import {requireRole,currentLang} from '/mihna-global.js';
 import {queryItems} from '/js/wix/items.js';
 import {hub} from '/hn-api.js';
-const auth=await requireRole(['candidate','recruiter','admin'],false);
+const auth=await requireRole(['candidate','recruiter','admin','manager'],false);
+if(auth?.role==='manager'){location.replace('/manager.html');throw Error('Redirection manager');}
 if(!auth){const {getMemberState}=await import('/js/wix/member-store.js');const member=getMemberState().member;location.replace(member?.id?'/enter.html?mode=signup&finish=1':'/enter.html?mode=signin&returnTo=%2Faccount.html');throw Error('Authentification ou rôle à finaliser');}
 const dash=document.getElementById('accountDashboard'),identity=document.getElementById('accountIdentity');
 const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -214,3 +215,5 @@ if((language==='en'||language==='ar')&&roleCopies[language]){
     }
   }
 }
+
+if(['candidate','recruiter'].includes(auth.role)){const link=document.createElement('a');link.href='/professional-reviews.html';link.className='hn-role-primary';link.textContent=currentLang()==='ar'?'التقييمات المهنية ★':currentLang()==='en'?'Professional reviews ★':'Avis professionnels ★';const section=document.createElement('section');section.className='dash-card wide';section.append(link);dash.prepend(section);}
