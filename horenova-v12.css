@@ -533,3 +533,9 @@ body[data-hn12="admin"] .hub-request-actions .hub-action{min-height:44px;touch-a
 /* QA: adequate small-text contrast in ivory panels. */
 .hn12-paper .hn12-label{color:#963b1e!important}
 .hn12-paper .hn12-section-head>p{color:#48545b!important}
+
+/* Native hash destinations must clear fixed bars; decorative layers cannot intercept touches. */
+#hnDashboardTop,#hnCandidateOffersAdmin,#hnCandidateOffersAccount,#hnCandidateOffersRecruit,#adminRecruiterRequests,#adminApplications,#recruitment{scroll-margin-top:100px}
+.hn12-progress,.hn12-page::before,.hn12-page::after,.hn12-logo img{pointer-events:none!important}
+.hn12-top,.hn12-dock{pointer-events:auto}
+.hn12-top a,.hn12-top button,.hn12-top select,.hn12-dock a{touch-action:manipulation;pointer-events:auto}

@@ -1,6 +1,6 @@
 import { subscribeMember, getMemberState, logout } from "/js/wix/member-store.js";
 import { queryItems, insertItem, patchItemFields } from "/js/wix/items.js";
-import "/member-navigation.js?v=r7";
+import "/member-navigation.js?v=r8";
 
 export const DEMO_ACCOUNTS={};
 export const MEDIA={"onboarding_ar": "https://video.wixstatic.com/video/d0158d_5a5f4cbb3bad49eda3d898bbe664cf4d/file", "onboarding_fr": "https://video.wixstatic.com/video/d0158d_ae24988eac5b496ca7db05ad8c4d5c5c/file", "onboarding_en": "https://video.wixstatic.com/video/d0158d_423e146e2ef94cb2a0ebbc04fec23d18/file", "academy_service": "https://video.wixstatic.com/video/d0158d_4badab44e7fe4504b1f1c1312807ffe4/file", "academy_barista": "https://video.wixstatic.com/video/d0158d_40eb2f2b43314bfc8474ad5f101993d8/file", "academy_cuisine": "https://video.wixstatic.com/video/d0158d_ea11b4114cf442648369e16afbd4f1e5/file", "academy_hygiene": "https://video.wixstatic.com/video/d0158d_b48bc288bf1e4458b8ccd3a6d39ea457/file"};
@@ -88,9 +88,9 @@ const HN_ROLE_NAV={
     en:[['Dashboard','/account.html','⌂'],['Jobs & shifts','/recruit.html','▣'],['Talents','/candidate-offers.html','★'],['Applications','/account.html#recruitment','◷'],['Chat','/conversations.html','✉'],['Shop','/shop.html','◇'],['Explore','/explore.html','◉'],['Support','/support.html','✉']]
   },
   admin:{
-    fr:[['Administration','/admin.html','⌂'],['Demandes','/admin.html','▣'],['Offres candidats','/admin.html#hnCandidateOffersAdmin','＋'],['Chat','/conversations.html','✉'],['Mon espace','/account.html','♙'],['Explore','/explore.html','◉'],['Assistance','/support.html','✉']],
-    ar:[['الإدارة','/admin.html','⌂'],['طلبات التوظيف','/admin.html','▣'],['إعلانات المرشحين','/admin.html#hnCandidateOffersAdmin','＋'],['المحادثات','/conversations.html','✉'],['حسابي','/account.html','♙'],['استكشف','/explore.html','◉'],['الدعم','/support.html','✉']],
-    en:[['Admin','/admin.html','⌂'],['Requests','/admin.html','▣'],['Candidate listings','/admin.html#hnCandidateOffersAdmin','＋'],['Chat','/conversations.html','✉'],['My space','/account.html','♙'],['Explore','/explore.html','◉'],['Support','/support.html','✉']]
+    fr:[['Administration','/admin.html','⌂'],['Demandes','/admin.html#adminRecruiterRequests','▣'],['Offres candidats','/admin.html#hnCandidateOffersAdmin','＋'],['Chat','/conversations.html','✉'],['Mon espace','/account.html','♙'],['Explore','/explore.html','◉'],['Assistance','/support.html','✉']],
+    ar:[['الإدارة','/admin.html','⌂'],['طلبات التوظيف','/admin.html#adminRecruiterRequests','▣'],['إعلانات المرشحين','/admin.html#hnCandidateOffersAdmin','＋'],['المحادثات','/conversations.html','✉'],['حسابي','/account.html','♙'],['استكشف','/explore.html','◉'],['الدعم','/support.html','✉']],
+    en:[['Admin','/admin.html','⌂'],['Requests','/admin.html#adminRecruiterRequests','▣'],['Candidate listings','/admin.html#hnCandidateOffersAdmin','＋'],['Chat','/conversations.html','✉'],['My space','/account.html','♙'],['Explore','/explore.html','◉'],['Support','/support.html','✉']]
   }
 };
 let hnRoleNavRequest=0;

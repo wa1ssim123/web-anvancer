@@ -49,7 +49,7 @@
  */
 (function(){
   'use strict';
-  const BUILD='2026.11.24.navigation-theme-r7';
+  const BUILD='2026.11.24.native-navigation-r8';
   const ACK_KEY='hn-release-ack-v2';
   function acknowledged(version){
     try{if(new URL(location.href).searchParams.get('hn_version')===version)return true;}catch{}

@@ -1,5 +1,5 @@
 {
-  "version": "2026.11.24.navigation-theme-r7",
+  "version": "2026.11.24.native-navigation-r8",
   "releasedAt": "2026-11-24",
-  "message": "Navigation des membres connectés vers leur tableau de bord et harmonisation des couleurs de l’administration."
+  "message": "Navigation native sans interception et palette administration vert sombre."
 }
