@@ -1,5 +1,5 @@
 {
-  "version": "2026.11.24.interaction-stability-r10",
+  "version": "2026.11.24.admin-contrast-r11",
   "releasedAt": "2026-11-24",
-  "message": "Stabilisation des interactions et suppression des boucles de rendu des tableaux de bord."
+  "message": "Contraste des textes administratifs, statistiques, support, dossiers et statuts."
 }
