@@ -1,5 +1,5 @@
 import {requireRole,currentLang} from '/mihna-global.js?v=candidate-board-r4';
-import {mountCandidateOffers} from '/candidate-offers.js?v=4';
+import {mountCandidateOffers} from '/candidate-offers.js?v=5';
 const host=document.querySelector('[data-co-dashboard]'),entry=document.querySelector('[data-co-entry]');
 const auth=await requireRole(['candidate','recruiter','admin'],false);
 if(host){
