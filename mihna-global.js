@@ -104,6 +104,7 @@ function roleNavMarkup(links,variant,role=''){
       candidate:{fr:['Profil','Offres','Shifts','Publier','Chat'],en:['Profile','Jobs','Shifts','Post','Chat'],ar:['حسابي','وظائف','مهمات','انشر','رسائل']}
     };
     return links.slice(0,5).map(([label,href,icon],i)=>{
+      if(role==='admin'&&location.pathname==='/admin.html'&&href==='/admin.html')href='#hnDashboardTop';
       const display=short[role]?.[lang]?.[i]||label;
       const active=(new URL(href,location.origin)).pathname===location.pathname && (i===0||!href.includes('#'));
       return '<a href="'+href+'" aria-label="'+label.replace(/"/g,'&quot;')+'"'+(active?' class="active"':'')+'><b aria-hidden="true">'+icon+'</b><span>'+display+'</span></a>';
@@ -126,12 +127,16 @@ function roleNavMarkup(links,variant,role=''){
 }
 async function installMemberRoleNavigation(session){
   const ticket=++hnRoleNavRequest;
-  if(!session?.loggedIn||!session?.member?.id)return;
+  if(!session?.loggedIn||!session?.member?.id){if(!session?.loading){delete document.body.dataset.memberRole;delete document.body.dataset.hnNavKey;}return;}
   const role=await getRole();
   if(ticket!==hnRoleNavRequest||getMemberState().member?.id!==session.member.id)return;
+  if(role==='manager'){document.body.dataset.memberRole=role;document.dispatchEvent(new Event('hn-role-navigation-ready'));return;}
   if(!['candidate','recruiter','admin'].includes(role))return; // Each verified role sees only relevant navigation.
   const links=HN_ROLE_NAV[role][['fr','en','ar'].includes(currentLang())?currentLang():'fr'];
   const top=document.querySelector('.hn12-nav');
+  const navKey=role+':'+currentLang();
+  if(document.body.dataset.hnNavKey===navKey)return;
+  document.body.dataset.hnNavKey=navKey;
   const dock=document.querySelector('.hn12-dock');
   const mobile=document.getElementById('mobileMenu');
   if(top){top.innerHTML=roleNavMarkup(links,'top');top.dataset.roleNavigation=role;}
@@ -171,6 +176,6 @@ function initArtSystem(){
     reveal.forEach(x=>io.observe(x));
   } else reveal.forEach(x=>x.classList.add('art-visible'));
 }
-function init(){initArtSystem();injectLang();const menu=document.getElementById('menuBtn'),panel=document.getElementById('mobileMenu');if(menu&&panel&&!menu.dataset.bound&&!document.querySelector('script[src*="mobile-nav-v15.js"]')){menu.dataset.bound='legacy';menu.onclick=()=>{panel.hidden=!panel.hidden;menu.textContent=panel.hidden?'☰':'×'}}renderSession(getMemberState());subscribeMember(renderSession);document.addEventListener('click',async e=>{if(e.target.closest('[data-global-logout]')){e.preventDefault();localStorage.removeItem('horenova-session-hint-v1');if(getDemoSession()){clearDemoSession();location.assign('/index.html')}else await logout('/index.html')}})}
+function init(){if(document.documentElement.dataset.hnGlobalInit)return;document.documentElement.dataset.hnGlobalInit='r8';initArtSystem();injectLang();const menu=document.getElementById('menuBtn'),panel=document.getElementById('mobileMenu');if(menu&&panel&&!menu.dataset.bound&&!document.querySelector('script[src*="mobile-nav-v15.js"]')){menu.dataset.bound='legacy';menu.onclick=()=>{panel.hidden=!panel.hidden;menu.textContent=panel.hidden?'☰':'×'}}renderSession(getMemberState());subscribeMember(renderSession);document.addEventListener('click',async e=>{if(e.target.closest('[data-global-logout]')){e.preventDefault();localStorage.removeItem('horenova-session-hint-v1');if(getDemoSession()){clearDemoSession();location.assign('/index.html')}else await logout('/index.html')}})}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 const mo=new MutationObserver(()=>{const l=currentLang();if(l!=='fr')translateLegacy(l)});if(document.body)mo.observe(document.body,{childList:true,subtree:true});else document.addEventListener('DOMContentLoaded',()=>mo.observe(document.body,{childList:true,subtree:true}));

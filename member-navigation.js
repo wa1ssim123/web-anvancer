@@ -8,7 +8,7 @@ function sync(){
  for(const a of document.querySelectorAll(selector)){
   if(!original.has(a))original.set(a,{href:a.getAttribute('href')||'/',text:a.textContent});
   if(!s.loggedIn||!s.member?.id){const o=original.get(a);a.href=o.href;if(a.matches('[data-hn-login]'))a.textContent=o.text;continue}
-  const verified=role||document.body.dataset.memberRole;
+  const verified=role||document.body?.dataset.memberRole;
   const dest=dashboardForRole(verified||(location.pathname==='/admin.html'?'admin':location.pathname==='/manager.html'?'manager':null));
   a.href=location.pathname===dest&&document.getElementById('hnDashboardTop')?'#hnDashboardTop':dest;
   if(a.matches('[data-hn-login]'))a.textContent=document.documentElement.lang==='ar'?'حسابي':document.documentElement.lang==='en'?'My account':'Mon espace';
