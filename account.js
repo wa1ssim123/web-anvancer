@@ -1,4 +1,4 @@
-import {requireRole,currentLang} from '/mihna-global.js';
+import {requireRole,currentLang} from '/mihna-global.js?v=candidate-board-r4';
 import {queryItems} from '/js/wix/items.js';
 import {hub} from '/hn-api.js';
 const auth=await requireRole(['candidate','recruiter','admin','manager'],false);
@@ -218,4 +218,3 @@ if((language==='en'||language==='ar')&&roleCopies[language]){
 
 if(['candidate','recruiter'].includes(auth.role)){const link=document.createElement('a');link.href='/professional-reviews.html';link.className='hn-role-primary';link.textContent=currentLang()==='ar'?'التقييمات المهنية ★':currentLang()==='en'?'Professional reviews ★':'Avis professionnels ★';const section=document.createElement('section');section.className='dash-card wide';section.append(link);dash.prepend(section);}
 
-if(['candidate','recruiter','admin'].includes(auth.role)){const l=currentLang(),copy=({candidate:{fr:['Publier ma disponibilité','Proposez votre profil aux recruteurs et recevez des propositions.'],en:['Post my availability','Show recruiters your profile and receive offers.'],ar:['انشر توفرك للعمل','اعرض ملفك على المشغلين واستقبل عروضهم.']},recruiter:{fr:['Candidats disponibles','Consultez les annonces de candidats et proposez une mise en relation.'],en:['Available candidates','Browse candidate listings and request an introduction.'],ar:['المرشحون المتاحون','تصفح إعلانات المرشحين واقترح التواصل.']},admin:{fr:['Modérer les annonces candidats','Validez les annonces et demandes de mise en relation.'],en:['Moderate candidate listings','Review listings and introduction requests.'],ar:['إدارة إعلانات المرشحين','راجع الإعلانات وطلبات الربط.']}})[auth.role][l]||['Annonces candidats','HORENOVA'];const section=document.createElement('section');section.className='dash-card wide';const h=document.createElement('h3');h.textContent=copy[0];const p=document.createElement('p');p.textContent=copy[1];const a=document.createElement('a');a.className='hn-role-primary';a.href='/candidate-offers.html';a.textContent=copy[0]+' ↗';section.append(h,p,a);dash.prepend(section);}

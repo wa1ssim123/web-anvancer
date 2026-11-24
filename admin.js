@@ -1,4 +1,4 @@
-import {requireRole} from '/mihna-global.js';
+import {requireRole} from '/mihna-global.js?v=candidate-board-r4';
 import {hub,hubPhoto} from '/hn-api.js';
 import {printCandidate,printRecruiter,printSupportThread} from '/admin-print.js?v=spv7-20261120';
 const auth=await requireRole(['admin'],false);
@@ -241,4 +241,3 @@ document.addEventListener('hn-admin-listing-removed',()=>{void refresh()});
 $('hubSearch').oninput=list;$('hubRefresh').onclick=refresh;await refresh();
 try{const {mountAdminOverview}=await import('/admin-overview.js?v=admin-delete-scroll-v1');await mountAdminOverview();}catch(error){console.error('Contrôle des publications indisponible',error);}
 }
-if(auth?.role==='admin'){const a=document.createElement('a');a.className='hub-action';a.href='/candidate-offers.html';a.textContent='Annonces candidats · Modération ↗';root.prepend(a);}

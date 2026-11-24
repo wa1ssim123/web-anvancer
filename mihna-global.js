@@ -77,9 +77,9 @@ function injectLang(){const html='<div class="lang-switch"><button data-lang="fr
 // Authenticated role-specific navigation. Never infer a role from URL/localStorage.
 const HN_ROLE_NAV={
   candidate:{
-    fr:[['Mon espace','/account.html','♙'],['Offres','/jobs.html','⌕'],['Shifts','/shifts.html','◷'],['Mes matchs','/matches.html','★'],['Messages','/conversations.html','✉'],['Academy','/academy.html','✦'],['Shop','/shop.html','◇'],['Explore','/explore.html','◉'],['Mes annonces','/candidate-offers.html','＋'],['Assistance','/support.html','✉']],
-    ar:[['حسابي','/account.html','♙'],['الوظائف','/jobs.html','⌕'],['المهام','/shifts.html','◷'],['مطابقاتي','/matches.html','★'],['الرسائل','/conversations.html','✉'],['الأكاديمية','/academy.html','✦'],['المتجر','/shop.html','◇'],['استكشف','/explore.html','◉'],['إعلاناتي','/candidate-offers.html','＋'],['الدعم','/support.html','✉']],
-    en:[['My account','/account.html','♙'],['Jobs','/jobs.html','⌕'],['Shifts','/shifts.html','◷'],['Matches','/matches.html','★'],['Messages','/conversations.html','✉'],['Academy','/academy.html','✦'],['Shop','/shop.html','◇'],['Explore','/explore.html','◉'],['My listings','/candidate-offers.html','＋'],['Support','/support.html','✉']]
+    fr:[['Mon espace','/account.html','♙'],['Offres','/jobs.html','⌕'],['Shifts','/shifts.html','◷'],['Mes annonces','/candidate-offers.html','＋'],['Messages','/conversations.html','✉'],['Academy','/academy.html','✦'],['Shop','/shop.html','◇'],['Explore','/explore.html','◉'],['Mes matchs','/matches.html','★'],['Assistance','/support.html','✉']],
+    ar:[['حسابي','/account.html','♙'],['الوظائف','/jobs.html','⌕'],['المهام','/shifts.html','◷'],['إعلاناتي','/candidate-offers.html','＋'],['الرسائل','/conversations.html','✉'],['الأكاديمية','/academy.html','✦'],['المتجر','/shop.html','◇'],['استكشف','/explore.html','◉'],['مطابقاتي','/matches.html','★'],['الدعم','/support.html','✉']],
+    en:[['My account','/account.html','♙'],['Jobs','/jobs.html','⌕'],['Shifts','/shifts.html','◷'],['My listings','/candidate-offers.html','＋'],['Messages','/conversations.html','✉'],['Academy','/academy.html','✦'],['Shop','/shop.html','◇'],['Explore','/explore.html','◉'],['Matches','/matches.html','★'],['Support','/support.html','✉']]
   },
   recruiter:{
     fr:[['Tableau de bord','/account.html','⌂'],['Annonces & shifts','/recruit.html','▣'],['Talents','/candidate-offers.html','★'],['Candidatures','/account.html#recruitment','◷'],['Chat','/conversations.html','✉'],['Shop','/shop.html','◇'],['Explore','/explore.html','◉'],['Assistance','/support.html','✉']],
@@ -87,9 +87,9 @@ const HN_ROLE_NAV={
     en:[['Dashboard','/account.html','⌂'],['Jobs & shifts','/recruit.html','▣'],['Talents','/candidate-offers.html','★'],['Applications','/account.html#recruitment','◷'],['Chat','/conversations.html','✉'],['Shop','/shop.html','◇'],['Explore','/explore.html','◉'],['Support','/support.html','✉']]
   },
   admin:{
-    fr:[['Administration','/admin.html','⌂'],['Demandes','/admin.html','▣'],['Candidatures','/admin.html','✓'],['Chat','/conversations.html','✉'],['Mon espace','/account.html','♙'],['Explore','/explore.html','◉'],['Assistance','/support.html','✉']],
-    ar:[['الإدارة','/admin.html','⌂'],['طلبات التوظيف','/admin.html','▣'],['الترشيحات','/admin.html','✓'],['المحادثات','/conversations.html','✉'],['حسابي','/account.html','♙'],['استكشف','/explore.html','◉'],['الدعم','/support.html','✉']],
-    en:[['Admin','/admin.html','⌂'],['Requests','/admin.html','▣'],['Applications','/admin.html','✓'],['Chat','/conversations.html','✉'],['My space','/account.html','♙'],['Explore','/explore.html','◉'],['Support','/support.html','✉']]
+    fr:[['Administration','/admin.html','⌂'],['Demandes','/admin.html','▣'],['Offres candidats','/admin.html#hnCandidateOffersAdmin','＋'],['Chat','/conversations.html','✉'],['Mon espace','/account.html','♙'],['Explore','/explore.html','◉'],['Assistance','/support.html','✉']],
+    ar:[['الإدارة','/admin.html','⌂'],['طلبات التوظيف','/admin.html','▣'],['إعلانات المرشحين','/admin.html#hnCandidateOffersAdmin','＋'],['المحادثات','/conversations.html','✉'],['حسابي','/account.html','♙'],['استكشف','/explore.html','◉'],['الدعم','/support.html','✉']],
+    en:[['Admin','/admin.html','⌂'],['Requests','/admin.html','▣'],['Candidate listings','/admin.html#hnCandidateOffersAdmin','＋'],['Chat','/conversations.html','✉'],['My space','/account.html','♙'],['Explore','/explore.html','◉'],['Support','/support.html','✉']]
   }
 };
 let hnRoleNavRequest=0;
@@ -98,9 +98,9 @@ function roleNavMarkup(links,variant,role=''){
   if(variant==='dock'){
     const lang=['fr','en','ar'].includes(currentLang())?currentLang():'fr';
     const short={
-      admin:{fr:['Admin','Demandes','Dossiers','Chat','Profil'],en:['Admin','Requests','Cases','Chat','Profile'],ar:['إدارة','طلبات','ملفات','دردشة','حسابي']},
+      admin:{fr:['Admin','Demandes','Candidats','Chat','Profil'],en:['Admin','Requests','Candidates','Chat','Profile'],ar:['إدارة','طلبات','مرشحون','دردشة','حسابي']},
       recruiter:{fr:['Accueil','Annonces','Talents','Dossiers','Chat'],en:['Home','Jobs','Talents','Cases','Chat'],ar:['الرئيسية','إعلانات','مواهب','ملفات','دردشة']},
-      candidate:{fr:['Profil','Offres','Shifts','Matchs','Chat'],en:['Profile','Jobs','Shifts','Matches','Chat'],ar:['حسابي','وظائف','مهمات','تطابق','رسائل']}
+      candidate:{fr:['Profil','Offres','Shifts','Publier','Chat'],en:['Profile','Jobs','Shifts','Post','Chat'],ar:['حسابي','وظائف','مهمات','انشر','رسائل']}
     };
     return links.slice(0,5).map(([label,href,icon],i)=>{
       const display=short[role]?.[lang]?.[i]||label;

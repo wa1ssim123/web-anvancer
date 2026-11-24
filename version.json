@@ -1,5 +1,5 @@
 {
-  "version": "2026.11.24.reverse-matching-r3",
+  "version": "2026.11.24.candidate-board-r4",
   "releasedAt": "2026-11-24",
-  "message": "Suppression de la boucle de mise à jour et annonces de disponibilité candidats, modération et mise en relation réciproque."
+  "message": "Annonces candidats intégrées directement dans les tableaux de bord admin, candidat et recruteur, accès mobile visible."
 }
