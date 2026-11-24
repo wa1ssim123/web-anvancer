@@ -21,7 +21,7 @@
  }
  function refreshLabels(){
   const t=language();
-  overline.textContent=t.over;
+  if(overline.textContent!==t.over)overline.textContent=t.over;
   if(title.textContent!==t.title)title.textContent=t.title;
   for(const [el,label] of [[wa,t.wa],[tg,t.tg],[pending,t.pending]]){const text=el.querySelector('.hn-social-label');if(text&&text.textContent!==label)text.textContent=label;}
  }
@@ -50,7 +50,8 @@
    else{wa.hidden=true;wa.removeAttribute('href')}
   }catch{/* Keep the verified WhatsApp fallback; unavailable Telegram is never clickable. */}
  }
- const observer=new MutationObserver(refreshLabels);
+ let observedLanguage=document.documentElement.lang;
+ const observer=new MutationObserver(()=>{const next=document.documentElement.lang;if(next===observedLanguage)return;observedLanguage=next;refreshLabels()});
  observer.observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
  refreshLabels();
  void Promise.allSettled([load('whatsapp'),load('telegram')]);

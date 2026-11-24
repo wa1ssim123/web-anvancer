@@ -86,7 +86,7 @@
  }
  function queue(){
   if(queued)return;queued=true;
-  queueMicrotask(refresh);
+  (window.requestAnimationFrame||setTimeout)(refresh);
  }
  function init(){
   if(!document.body)return;
@@ -96,7 +96,7 @@
   document.head.append(style);
   refresh();
   const observer=new MutationObserver(records=>{
-   if(records.some(r=>r.type==='childList'&&(r.addedNodes.length||r.removedNodes.length)))queue();
+   if(records.some(r=>r.type==='childList'&&[...r.addedNodes,...r.removedNodes].some(n=>n.nodeType===1&&!n.classList?.contains('hn-brand-logo'))))queue();
   });
   observer.observe(document.body,{subtree:true,childList:true});
   document.addEventListener('hn-admin-moderation-changed',queue);

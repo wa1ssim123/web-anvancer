@@ -73,7 +73,7 @@ function translateLegacy(lang){if(lang==='fr')return;const map=LEGACY[lang]||{};
 
 export function currentLang(){return localStorage.getItem('mihna-lang')||'fr'}
 export function setLang(lang){localStorage.setItem('mihna-lang',lang);location.reload()}
-export function applyLanguage(lang=currentLang()){document.documentElement.lang=lang;document.documentElement.dir=lang==='ar'?'rtl':'ltr';document.body?.classList.toggle('rtl',lang==='ar');document.querySelectorAll('[data-i18n]').forEach(el=>{const v=I18N[lang]?.[el.dataset.i18n];if(v)el.textContent=v});document.querySelectorAll('[data-fr][data-en][data-ar]').forEach(el=>{el.innerHTML=el.dataset[lang]||el.dataset.fr});document.querySelectorAll('.lang-switch button').forEach(b=>b.classList.toggle('active',b.dataset.lang===lang));translateLegacy(lang);}
+export function applyLanguage(lang=currentLang()){if(document.documentElement.lang!==lang)document.documentElement.lang=lang;const dir=lang==='ar'?'rtl':'ltr';if(document.documentElement.dir!==dir)document.documentElement.dir=dir;document.body?.classList.toggle('rtl',lang==='ar');document.querySelectorAll('[data-i18n]').forEach(el=>{const v=I18N[lang]?.[el.dataset.i18n];if(v&&el.textContent!==v)el.textContent=v});document.querySelectorAll('[data-fr][data-en][data-ar]').forEach(el=>{const next=el.dataset[lang]||el.dataset.fr;if(el.innerHTML!==next)el.innerHTML=next});document.querySelectorAll('.lang-switch button').forEach(b=>b.classList.toggle('active',b.dataset.lang===lang));translateLegacy(lang);}
 function injectLang(){const html='<div class="lang-switch"><button data-lang="fr">FR</button><button data-lang="ar">ع</button><button data-lang="en">EN</button></div>';for(const id of ['langMount','mobileLangMount']){const m=document.getElementById(id);if(m)m.innerHTML=html}document.querySelectorAll('.lang-switch button').forEach(b=>b.onclick=()=>setLang(b.dataset.lang));applyLanguage()}
 // Authenticated role-specific navigation. Never infer a role from URL/localStorage.
 const HN_ROLE_NAV={
@@ -153,9 +153,10 @@ function initArtSystem(){
   // Standalone support has its own layout and does NOT load the legacy art
   // stylesheet. Injecting art-whisk/chefhat/coffee/zellige here produced four
   // full-size SVG images above the header on iPhone. Never do so on support.
-  if(slug==='support'||slug==='candidate-offers'||slug==='manager'||slug==='professional-reviews'||slug==='tech'||slug.startsWith('tech-')||document.body.classList.contains('hn-support-page')||document.body.classList.contains('tech-page')||document.body.hasAttribute('data-no-legacy-art')){
+  if(['admin','account','recruit'].includes(slug)||slug==='support'||slug==='candidate-offers'||slug==='manager'||slug==='professional-reviews'||slug==='tech'||slug.startsWith('tech-')||document.body.classList.contains('hn-support-page')||document.body.classList.contains('tech-page')||document.body.hasAttribute('data-no-legacy-art')){
     document.querySelector('.mihna-art-canvas')?.remove();
     document.body.classList.remove('mihna-art-app','mihna-page-support','mihna-page-'+slug);
+    document.querySelectorAll('[data-art-reveal]').forEach(el=>{el.removeAttribute('data-art-reveal');el.classList.add('art-visible')});
     return;
   }
   document.body.classList.add('mihna-art-app','mihna-page-'+slug);

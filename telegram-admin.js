@@ -63,7 +63,8 @@ export function mountTelegramAdmin(root,request=hub){
   }catch{el('htgFeedback').textContent=phrase().error}
   finally{busy=false;render()}
  });
- const observer=new MutationObserver(render);
+ let observedLanguage=document.documentElement.lang;
+ const observer=new MutationObserver(()=>{const next=document.documentElement.lang;if(next===observedLanguage)return;observedLanguage=next;render()});
  observer.observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
  render();void load();
 }

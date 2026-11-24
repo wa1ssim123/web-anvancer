@@ -37,7 +37,8 @@ const pageTitles={
 const originalNodes=new WeakMap(),originalAttrs=new WeakMap();
 const exclude='script,style,noscript,textarea,pre,code,[contenteditable="true"],[data-no-translate]';
 const normalized=s=>String(s||'').replace(/\u00a0/g,' ').replace(/\s+/g,' ').trim();
-let applying=false,queued=false;
+let applying=false,queued=false,observer=null;
+const observeOptions={childList:true,subtree:true,characterData:true,attributes:true,attributeFilter:['placeholder','title','aria-label']};
 function target(text,lang){const record=catalog.get(normalized(text));return record?record[lang==='ar'?2:lang==='en'?1:0]:null}
 function doText(node,lang){
  if(node.nodeType!==3)return;
@@ -74,19 +75,20 @@ function doAttr(el,attr,lang){
 function translate(){
  if(applying||!document.body)return;
  applying=true;
+ observer?.disconnect();
  try{
   const lang=getLang();
-  document.documentElement.lang=lang;
-  document.documentElement.dir=lang==='ar'?'rtl':'ltr';
+  if(document.documentElement.lang!==lang)document.documentElement.lang=lang;
+  const dir=lang==='ar'?'rtl':'ltr';if(document.documentElement.dir!==dir)document.documentElement.dir=dir;
   const titleTranslations=pageTitles[location.pathname];
-  if(titleTranslations)document.title=lang==='fr'?initialTitle:titleTranslations[lang==='ar'?1:0];
+  if(titleTranslations){const next=lang==='fr'?initialTitle:titleTranslations[lang==='ar'?1:0];if(document.title!==next)document.title=next;}
   document.body.classList.toggle('hn-rtl',lang==='ar');
   const walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);
   let n;const nodes=[];while((n=walker.nextNode()))nodes.push(n);
   for(const text of nodes)doText(text,lang);
   document.querySelectorAll('[placeholder],[title],[aria-label]').forEach(el=>{for(const attr of ['placeholder','title','aria-label'])doAttr(el,attr,lang)});
   document.querySelectorAll('[data-hn-language]').forEach(el=>{if(el.value!==lang)el.value=lang});
- }finally{applying=false}
+ }finally{applying=false;observer?.observe(document.body,observeOptions)}
 }
 function schedule(){if(applying||queued)return;queued=true;(window.requestAnimationFrame||setTimeout)(()=>{queued=false;translate()})}
 function mountStyle(){
@@ -117,8 +119,8 @@ function mountControl(){
 }
 function boot(){
  mountStyle();mountControl();translate();
- const observer=new MutationObserver(records=>{if(!applying&&records.length)schedule()});
- observer.observe(document.body,{childList:true,subtree:true,characterData:true,attributes:true,attributeFilter:['placeholder','title','aria-label']});
+ observer=new MutationObserver(records=>{if(!applying&&records.length)schedule()});
+ observer.observe(document.body,observeOptions);
  window.addEventListener('pageshow',schedule);
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();

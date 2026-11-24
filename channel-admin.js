@@ -89,7 +89,8 @@ export function mountAdminChannel(root,request=hub){
   }catch{el('hcaFeedback').textContent=words().failure}
   finally{busy=false;draw()}
  });
- const observer=new MutationObserver(()=>draw());
+ let observedLanguage=document.documentElement.lang;
+ const observer=new MutationObserver(()=>{const next=document.documentElement.lang;if(next===observedLanguage)return;observedLanguage=next;draw()});
  observer.observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
  draw();void refresh();
 }

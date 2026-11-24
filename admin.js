@@ -1,4 +1,4 @@
-import {requireRole} from '/mihna-global.js?v=candidate-board-r4';
+import {requireRole} from '/mihna-global.js?v=stable-r10';
 import {hub,hubPhoto} from '/hn-api.js';
 import {printCandidate,printRecruiter,printSupportThread} from '/admin-print.js?v=spv7-20261120';
 const auth=await requireRole(['admin'],false);
@@ -8,13 +8,13 @@ if(!auth){root.innerHTML='<div class="hub-error">Accès réservé à l’adminis
 else{
 root.innerHTML='<div class="hub-root"><div class="hub-head"><div><span class="hub-small">HORENOVA · CENTRE PRIVÉ · VERSION 20/11 / SUPPORT & IMPRESSION</span><h2>Candidatures & recrutement</h2><p class="hub-muted">Dossiers détaillés, photos privées, contrôle des mises en relation et conversations. <strong>Impression A4 accessible directement sur chaque dossier.</strong></p></div><div style="display:flex;gap:8px;flex-wrap:wrap"><a class="hub-action secondary" href="#hnAdminAnalytics">▥ Statistiques du site ↗</a><a class="hub-action secondary" href="#hnWhatsappChannelAdmin">◉ Canal WhatsApp ↗</a><a class="hub-action secondary" href="#hnTelegramChannelAdmin">➤ Canal Telegram ↗</a><a class="hub-action secondary" href="#hnAdminSocialPublications">◎ Diffusion des offres ↗</a><a class="hub-action secondary" href="/conversations.html">✉ Messagerie privée ↗</a><a class="hub-action" href="/conversations.html?mode=matching">✦ Rechercher & Matching ↗</a></div></div><div class="hub-error" id="hubError"></div><div class="hub-head"><input id="hubSearch" class="hub-input" placeholder="Rechercher un candidat ou une offre…" aria-label="Rechercher"><button class="hub-action secondary" id="hubRefresh">Actualiser</button></div><div class="hub-layout"><section class="hub-panel" id="adminApplications"><div class="hub-panel-head"><h3 id="hubCount">Candidatures</h3><p class="hub-muted">Nouveaux dossiers transmis à HORENOVA</p></div><div id="hubCases" class="hub-stack"></div></section><section class="hub-panel" id="hubDetail"><div class="hub-detail hub-muted">Choisissez un dossier à examiner.</div></section></div><section class="hub-panel" id="adminRecruiterRequests" style="margin-top:22px"><div class="hub-panel-head"><h3>Demandes de recrutement <span id="hubRequestsCount"></span></h3><p class="hub-muted">Demandes privées reçues des établissements, disponibles pour vérification et association aux candidatures.</p></div><div id="hubRecruiterRequests" class="hub-stack"></div></section><p class="hub-muted" style="margin-top:22px">Dossiers historiques : <a target="_blank" rel="noopener" href="https://manage.wix.com/dashboard/7d0d5cbc-d6b5-483c-adcf-eda65565ae2e/wix-cms">ouvrir le CMS Wix administrateur</a>.</p></div>';
 
-void import('/social-publications-admin.js?v=simple-copy-20261123-v11').then(({mountSocialPublications})=>mountSocialPublications(root))
+void import('/social-publications-admin.js?v=stable-r10').then(({mountSocialPublications})=>mountSocialPublications(root))
  .catch(error=>console.warn('HORENOVA social publications unavailable',error?.message||'unknown'));
-void import('/telegram-admin.js?v=brand-logos-20261123').then(({mountTelegramAdmin})=>mountTelegramAdmin(root))
+void import('/telegram-admin.js?v=stable-r10').then(({mountTelegramAdmin})=>mountTelegramAdmin(root))
  .catch(error=>console.warn('HORENOVA Telegram admin unavailable',error?.message||'unknown'));
-void import('/channel-admin.js?v=brand-logos-20261123').then(({mountAdminChannel})=>mountAdminChannel(root))
+void import('/channel-admin.js?v=stable-r10').then(({mountAdminChannel})=>mountAdminChannel(root))
  .catch(error=>console.warn('HORENOVA WhatsApp Channel admin unavailable',error?.message||'unknown'));
-void import('/admin-analytics.js?v=analytics-20261122').then(({mountAdminAnalytics})=>mountAdminAnalytics(root))
+void import('/admin-analytics.js?v=stable-r10').then(({mountAdminAnalytics})=>mountAdminAnalytics(root))
  .catch(error=>console.warn('HORENOVA private analytics could not load',error?.message||'unknown'));
 
 root.insertAdjacentHTML('afterbegin',

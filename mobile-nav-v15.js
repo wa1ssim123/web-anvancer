@@ -38,7 +38,8 @@
       communityLabel.nodeValue=current==='ar'?'قنوات واتساب وتيليغرام وأخبار هورينوفا ':current==='en'?'News · WhatsApp & Telegram ':'Actualités · WhatsApp & Telegram ';
     };
     setCommunityLanguage();
-    const communityObserver=new MutationObserver(setCommunityLanguage);
+    let observedCommunityLang=document.documentElement.lang;
+    const communityObserver=new MutationObserver(()=>{const next=document.documentElement.lang;if(next===observedCommunityLang)return;observedCommunityLang=next;setCommunityLanguage()});
     communityObserver.observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
     const arrow = document.createElement('span');
     arrow.setAttribute('aria-hidden', 'true');

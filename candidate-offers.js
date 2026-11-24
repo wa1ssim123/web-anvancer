@@ -1,4 +1,4 @@
-import {requireRole,currentLang} from '/mihna-global.js?v=candidate-board-r4';
+import {requireRole,currentLang} from '/mihna-global.js?v=stable-r10';
 import {hub} from '/hn-api.js';
 export async function mountCandidateOffers(host,providedAuth=null){
 if(!host||host.dataset.mounted==='true')return;host.dataset.mounted='true';

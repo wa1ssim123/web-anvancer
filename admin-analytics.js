@@ -90,7 +90,8 @@ export function mountAdminAnalytics(root,request=hub){
  one(section,'haReload').addEventListener('click',()=>void refresh());
  for(const [id,which] of [['haWixTab','wix'],['haLiveTab','live']])
   one(section,id).addEventListener('click',()=>{mode=which;showGraph()});
- const observer=new MutationObserver(()=>render());
+ let observedLanguage=document.documentElement.lang;
+ const observer=new MutationObserver(()=>{const next=document.documentElement.lang;if(next===observedLanguage)return;observedLanguage=next;render()});
  observer.observe(document.documentElement,{attributes:true,attributeFilter:['lang','dir']});
  render();
  void refresh();

@@ -195,6 +195,7 @@ export function mountSocialPublications(root,request=hub){
  document.addEventListener('hn-admin-listing-removed',()=>{void refresh()});
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)void refresh()});
  setInterval(()=>{if(!document.hidden)void refresh()},60000);
- const observer=new MutationObserver(draw);observer.observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
+ let observedLanguage=document.documentElement.lang;
+ const observer=new MutationObserver(()=>{const next=document.documentElement.lang;if(next===observedLanguage)return;observedLanguage=next;draw()});observer.observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
  draw();void refresh();
 }
