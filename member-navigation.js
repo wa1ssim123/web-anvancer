@@ -15,7 +15,7 @@ function updateLinks(){
   if(!logged){a.setAttribute('href',href);continue}
   // Preserve explicit module return anchors, except the ordinary header logo/account buttons.
   if(a.matches('[data-co="back"]'))continue;
-  const target=dashboardForRole(resolved||(ownPage()==='/admin.html'?'admin':ownPage()==='/manager.html'?'manager':null));
+  const target=dashboardForRole(resolved||document.body?.dataset.memberRole||(ownPage()==='/admin.html'?'admin':ownPage()==='/manager.html'?'manager':null));
   a.setAttribute('href',target);
   if(a.matches('.hn12-logo,.hn-home-brand,.hs-brand'))a.setAttribute('aria-label','HORENOVA · '+(document.documentElement.lang==='ar'?'حسابي':document.documentElement.lang==='en'?'My account':'Mon espace'));
   if(a.matches('[data-hn-login]')){const lang=document.documentElement.lang; a.textContent=lang==='ar'?'حسابي':lang==='en'?'My account':'Mon espace';}
@@ -33,7 +33,7 @@ function navigate(e){
  const a=e.target?.closest?.(selector);if(!a||e.defaultPrevented||e.metaKey||e.ctrlKey||e.shiftKey||e.altKey||e.button>0)return;
  const s=getMemberState();if(!s.loggedIn||!s.member?.id)return;
  if(a.matches('[data-co="back"]'))return;
- const dest=dashboardForRole(resolved||(ownPage()==='/admin.html'?'admin':ownPage()==='/manager.html'?'manager':null));
+ const dest=dashboardForRole(resolved||document.body?.dataset.memberRole||(ownPage()==='/admin.html'?'admin':ownPage()==='/manager.html'?'manager':null));
  e.preventDefault();e.stopImmediatePropagation();
  // Do not reload a dashboard the member already has open.
  if(ownPage()===dest){window.scrollTo({top:0,behavior:'auto'});return}

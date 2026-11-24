@@ -30,3 +30,15 @@ body[data-hn12="admin"] :is(.hn-admin-remove-btn,.hspa-cancelled){color:#913a31!
 body[data-hn12="admin"] :is(.hspa-pill.hspa-pending,.hspa-pill.hspa-needs_review){color:#795623!important;background:#fff0d4!important}
 body[data-hn12="admin"] :is(.hn12-logo,.hn12-actions .profile){position:relative;z-index:2;pointer-events:auto!important;touch-action:manipulation}
 body[data-hn12="admin"] .hn12-logo img{pointer-events:none}
+
+/* Override legacy high-specificity social rules, without recoloring brand logos or status meanings. */
+body[data-hn12="admin"] #adminGate #hnAdminSocialPublications .hspa-heading :is(h2,h3),body[data-hn12="admin"] #adminGate #hnAdminSocialPublications .hspa-connection :is(b,span),body[data-hn12="admin"] #adminGate #hnAdminSocialPublications .hspa-guide-details summary{color:var(--hn-admin-ink)!important}
+body[data-hn12="admin"] #adminGate #hnAdminSocialPublications .hspa-heading p,body[data-hn12="admin"] #hnAdminSocialPublications #hspaInfo{color:var(--hn-admin-muted)!important}
+body[data-hn12="admin"] #hnAdminSocialPublications :is(.hspa-guide,.hspa-guide-details,.hspa-post,.hspa-action,.hspa-guidelinks a){background:var(--hn-admin-soft)!important;color:var(--hn-admin-ink)!important;border-color:var(--hn-admin-line)!important}
+body[data-hn12="admin"] #adminGate #hnAdminSocialPublications .hspa-connection:not(.hspa-ready) span{color:#795623!important}
+body[data-hn12="admin"] #hnAdminSocialPublications :is(.hspa-whatsapp,.hspa-telegram){background:var(--hn-admin-soft)!important;color:var(--hn-admin-ink)!important;border-color:var(--hn-admin-line)!important}
+body[data-hn12="admin"] .hn-audience :is(.hn-audience-period,.hn-audience-actions small,.hn-audience-kpi span,.hn-audience-chart small,.hn-audience-chart span){color:var(--hn-admin-muted)!important}
+body[data-hn12="admin"] .hn-admin-publication :is(.hn-pub-list-head p,.hn-pub-row-copy span,.hn-pub-row-copy small,.hn-pub-row-copy p,.hn-pub-preview){color:var(--hn-admin-muted)!important}
+body[data-hn12="admin"] .hn-admin-publication .hn-pub-row-actions b{color:#795623!important}
+body[data-hn12="admin"] .hn-co-embedded .co-hero small{color:#795623!important}
+body[data-hn12="admin"] .hn-co-embedded .chip{color:var(--hn-admin-ink)!important;background:#e0e9df!important;border-color:#b7cdbb!important}
