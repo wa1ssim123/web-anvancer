@@ -1,5 +1,5 @@
 {
-  "version": "2026.11.24.manager-reviews-calendar",
+  "version": "2026.11.24.tech-art-root-r2",
   "releasedAt": "2026-11-24",
-  "message": "Calendrier sans limite hebdomadaire fixe, console directe, motivation, supervision manager et évaluations professionnelles bilatérales."
+  "message": "Correction à la source de l’injection décorative sur les pages Tech, garde-fou CSS et traduction de la console."
 }

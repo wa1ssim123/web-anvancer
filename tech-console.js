@@ -1,4 +1,4 @@
-import {requireRole} from '/mihna-global.js';
+import {requireRole} from '/mihna-global.js?v=20261124-art-root-r2';
 import {hub} from '/hn-api.js';
 
 const $=id=>document.getElementById(id);

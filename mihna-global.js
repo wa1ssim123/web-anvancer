@@ -147,9 +147,9 @@ function initArtSystem(){
   // Standalone support has its own layout and does NOT load the legacy art
   // stylesheet. Injecting art-whisk/chefhat/coffee/zellige here produced four
   // full-size SVG images above the header on iPhone. Never do so on support.
-  if(slug==='support'||document.body.classList.contains('hn-support-page')){
+  if(slug==='support'||slug==='manager'||slug==='professional-reviews'||slug==='tech'||slug.startsWith('tech-')||document.body.classList.contains('hn-support-page')||document.body.classList.contains('tech-page')||document.body.hasAttribute('data-no-legacy-art')){
     document.querySelector('.mihna-art-canvas')?.remove();
-    document.body.classList.remove('mihna-art-app','mihna-page-support');
+    document.body.classList.remove('mihna-art-app','mihna-page-support','mihna-page-'+slug);
     return;
   }
   document.body.classList.add('mihna-art-app','mihna-page-'+slug);
