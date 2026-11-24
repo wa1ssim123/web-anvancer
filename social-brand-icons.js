@@ -45,7 +45,7 @@
    child.classList?.contains('hn-brand-logo')&&child.dataset.hnBrand===brand);
  }
  function inject(el,brand,symbol=false){
-  if(!el)return;
+  if(!el||el.closest('.hn-intro-shortcut-social'))return;
   if(symbol){
    if(el.children.length===1&&isPresent(el,brand))return;
    el.replaceChildren(logo(brand));

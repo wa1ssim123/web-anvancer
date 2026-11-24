@@ -11,9 +11,9 @@
  if(!tg||!pending||!wa||!title||!overline)return;
  const API='https://horenova-hub-api.onrender.com';
  const texts={
-   fr:{over:'POUR RESTER CONNECTÉ',title:'CANAUX',wa:'WhatsApp ↗',tg:'Telegram ↗',pending:'Telegram bientôt'},
-   en:{over:'STAY CONNECTED',title:'CHANNELS',wa:'WhatsApp ↗',tg:'Telegram ↗',pending:'Telegram soon'},
-   ar:{over:'تابع جديدنا',title:'قنواتنا',wa:'واتساب ↗',tg:'تيليغرام ↗',pending:'تيليغرام قريباً'}
+   fr:{over:'POUR RESTER CONNECTÉ',title:'CANAUX',wa:'WhatsApp',tg:'Telegram',pending:'Telegram bientôt'},
+   en:{over:'STAY CONNECTED',title:'CHANNELS',wa:'WhatsApp',tg:'Telegram',pending:'Telegram soon'},
+   ar:{over:'تابع جديدنا',title:'قنواتنا',wa:'واتساب',tg:'تيليغرام',pending:'تيليغرام قريباً'}
  };
  function language(){
   const current=(document.documentElement.lang||'fr').slice(0,2);
@@ -22,8 +22,8 @@
  function refreshLabels(){
   const t=language();
   overline.textContent=t.over;
-  title.firstChild&&title.firstChild.nodeType===3?title.firstChild.nodeValue=t.title+' ':title.insertBefore(document.createTextNode(t.title+' '),title.firstChild);
-  wa.textContent=t.wa;tg.textContent=t.tg;pending.textContent=t.pending;
+  if(title.textContent!==t.title)title.textContent=t.title;
+  for(const [el,label] of [[wa,t.wa],[tg,t.tg],[pending,t.pending]]){const text=el.querySelector('.hn-social-label');if(text&&text.textContent!==label)text.textContent=label;}
  }
  function safeWhatsApp(value){
   try{
@@ -39,7 +39,7 @@
  }
  async function load(kind){
   try{
-   const response=await fetch(API+'/api/community/'+(kind==='telegram'?'telegram':'channel'),{cache:'no-store',signal:AbortSignal.timeout(10000)});
+   const response=await fetch(API+'/api/community/'+(kind==='telegram'?'telegram':'channel'),{cache:'no-store',...(typeof AbortSignal!=='undefined'&&typeof AbortSignal.timeout==='function'?{signal:AbortSignal.timeout(10000)}:{})});
    if(!response.ok)return;
    const data=await response.json();
    const url=data.active?(kind==='telegram'?safeTelegram(data.url):safeWhatsApp(data.url)):null;
