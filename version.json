@@ -1,5 +1,5 @@
 {
-  "version": "2026.11.24.candidate-board-r4",
+  "version": "2026.11.24.candidate-inline-r6",
   "releasedAt": "2026-11-24",
-  "message": "Annonces candidats intégrées directement dans les tableaux de bord admin, candidat et recruteur, accès mobile visible."
+  "message": "Ouverture native du module candidat dans le tableau de bord, sans changement de page."
 }
