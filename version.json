@@ -1,5 +1,5 @@
 {
-  "version": "2026.11.24.candidate-inline-r6",
+  "version": "2026.11.24.navigation-theme-r7",
   "releasedAt": "2026-11-24",
-  "message": "Ouverture native du module candidat dans le tableau de bord, sans changement de page."
+  "message": "Navigation des membres connectés vers leur tableau de bord et harmonisation des couleurs de l’administration."
 }

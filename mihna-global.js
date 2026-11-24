@@ -1,5 +1,6 @@
 import { subscribeMember, getMemberState, logout } from "/js/wix/member-store.js";
 import { queryItems, insertItem, patchItemFields } from "/js/wix/items.js";
+import "/member-navigation.js?v=r7";
 
 export const DEMO_ACCOUNTS={};
 export const MEDIA={"onboarding_ar": "https://video.wixstatic.com/video/d0158d_5a5f4cbb3bad49eda3d898bbe664cf4d/file", "onboarding_fr": "https://video.wixstatic.com/video/d0158d_ae24988eac5b496ca7db05ad8c4d5c5c/file", "onboarding_en": "https://video.wixstatic.com/video/d0158d_423e146e2ef94cb2a0ebbc04fec23d18/file", "academy_service": "https://video.wixstatic.com/video/d0158d_4badab44e7fe4504b1f1c1312807ffe4/file", "academy_barista": "https://video.wixstatic.com/video/d0158d_40eb2f2b43314bfc8474ad5f101993d8/file", "academy_cuisine": "https://video.wixstatic.com/video/d0158d_ea11b4114cf442648369e16afbd4f1e5/file", "academy_hygiene": "https://video.wixstatic.com/video/d0158d_b48bc288bf1e4458b8ccd3a6d39ea457/file"};

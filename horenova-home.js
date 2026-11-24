@@ -1,4 +1,5 @@
 import { subscribeMember,getMemberState } from '/js/wix/member-store.js';
+import '/member-navigation.js?v=r7';
 const demo=()=>{try{return !!JSON.parse(localStorage.getItem('mihna-demo-session-v1')||'null')}catch{return false}};
 function session(){const go=()=>location.href='/account.html';document.querySelectorAll('[data-hn-login]').forEach(a=>a.onclick=e=>{if(getMemberState().loggedIn && getMemberState().member?.id){e.preventDefault();go()}});subscribeMember(()=>{})}
 function reveal(){const io=new IntersectionObserver(es=>es.forEach(x=>{if(x.isIntersecting){x.target.classList.add('show');io.unobserve(x.target)}}),{threshold:.12});document.querySelectorAll('[data-hn-reveal]').forEach(x=>io.observe(x))}
