@@ -15,11 +15,11 @@ const field=(label,el,wide=false)=>{const l=node('label',label,wide?'wide':'');l
 const panel=()=>node('article',null,'panel'),fail=e=>{error.textContent=e?.message||String(e)},say=m=>{notice.textContent=m};
 async function act(b,fn){b.disabled=true;error.textContent='';try{await fn()}catch(e){fail(e)}finally{b.disabled=false}}
 host.dir=lang==='ar'?'rtl':'ltr';if($('lang')){$('lang').value=lang;$('lang').onchange=()=>{try{localStorage.setItem('mihna-lang',$('lang').value)}catch{}location.reload()}}if($('back'))$('back').textContent=t.back;
-const auth=providedAuth||await requireRole(['candidate','recruiter','admin'],false);
+const auth=providedAuth||await requireRole(['candidate','recruiter','admin','manager'],false);
 if(!auth){$('intro').textContent=t.forbidden;body.replaceChildren();body.append(link(t.login,'/enter.html?mode=signin&returnTo=%2Fcandidate-offers.html'));return}
-const role=auth.role;if(!['candidate','recruiter','admin'].includes(role)){host.hidden=true;return}
+const role=auth.role==='manager'?'admin':auth.role;if(!['candidate','recruiter','admin'].includes(role)){host.hidden=true;return}
 body.replaceChildren();$('title').textContent=t[role+'Title'];$('intro').textContent=t[role+'Intro'];
-if($('back')){const dest=role==='admin'?'/admin.html#hnCandidateOffersAdmin':role==='recruiter'?'/recruit.html#hnCandidateOffersRecruit':'/account.html#hnCandidateOffersAccount';$('back').href=dest;$('back').textContent=role==='admin'?({fr:'← Administration',en:'← Administration',ar:'← الإدارة'})[lang]:role==='recruiter'?({fr:'← Recrutement',en:'← Recruitment',ar:'← التوظيف'})[lang]:({fr:'← Mon espace',en:'← My account',ar:'← حسابي'})[lang];}
+if($('back')){const dest=auth.role==='manager'?'/manager.html#hnCandidateOffersAdmin':role==='admin'?'/admin.html#hnCandidateOffersAdmin':role==='recruiter'?'/recruit.html#hnCandidateOffersRecruit':'/account.html#hnCandidateOffersAccount';$('back').href=dest;$('back').textContent=role==='admin'?({fr:'← Administration',en:'← Administration',ar:'← الإدارة'})[lang]:role==='recruiter'?({fr:'← Recrutement',en:'← Recruitment',ar:'← التوظيف'})[lang]:({fr:'← Mon espace',en:'← My account',ar:'← حسابي'})[lang];}
 if($('full-label'))$('full-label').textContent=({fr:'HORENOVA / MATCHING · MODULE COMPLET',en:'HORENOVA / MATCHING · FULL MODULE',ar:'هورينوفا / المطابقة · القسم الكامل'})[lang];
 const details=host.querySelector('[data-co-details]'),openLabel=$('open-label');
 if(details&&openLabel){

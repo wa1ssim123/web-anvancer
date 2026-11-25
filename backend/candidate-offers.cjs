@@ -6,14 +6,14 @@ function createCandidateOffersHandler({pool,json,read,rate,auth,requireRole,erro
  const types=['SHIFT','PART_TIME','FULL_TIME'];
  const validDate=x=>typeof x==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(x)&&Number.isFinite(Date.parse(x+'T12:00:00Z'))&&new Date(x+'T12:00:00Z').toISOString().slice(0,10)===x;
  return async function(req,res,path,method){
- const user=await auth(req);requireRole(user,['candidate','recruiter','admin']);
+ const user=await auth(req);requireRole(user,['candidate','recruiter','admin','manager']);
  const params=new URL(req.url,'http://localhost').searchParams;
  const page=Math.min(10000,Math.max(0,Math.trunc(Number(params.get('offset'))||0)));
  if(path==='/api/candidate-offers'&&method==='GET'){
   const fields='id,display_name,job_role,city,work_type,experience_years,available_from,description,status,created_at,updated_at';
   let q;
   if(user.role==='candidate')q=await pool.query('SELECT '+fields+' FROM hr_candidate_offers WHERE candidate_wix_id=$1 ORDER BY created_at DESC,id DESC LIMIT 51 OFFSET $2',[user.id,page]);
-  else if(user.role==='admin')q=await pool.query("SELECT "+fields+" FROM hr_candidate_offers ORDER BY (status='PENDING') DESC,created_at DESC,id DESC LIMIT 51 OFFSET $1",[page]);
+  else if(['admin','manager'].includes(user.role))q=await pool.query("SELECT "+fields+" FROM hr_candidate_offers ORDER BY (status='PENDING') DESC,created_at DESC,id DESC LIMIT 51 OFFSET $1",[page]);
   else q=await pool.query("SELECT "+fields+" FROM hr_candidate_offers WHERE status='APPROVED' AND ($1='' OR job_role ILIKE '%'||$1||'%') AND ($2='' OR city ILIKE '%'||$2||'%') AND ($3='' OR work_type=$3) ORDER BY created_at DESC,id DESC LIMIT 51 OFFSET $4",[clean(params.get('role'),90),clean(params.get('city'),80),types.includes(params.get('type'))?params.get('type'):'',page]);
   return json(res,200,{items:q.rows.slice(0,50),hasMore:q.rows.length>50});
  }
@@ -41,7 +41,7 @@ function createCandidateOffersHandler({pool,json,read,rate,auth,requireRole,erro
  const interest=path.match(/^\/api\/candidate-offers\/interests\/([0-9a-f-]+)$/i);
  if(interest&&method==='PATCH'){
   if(!uuid(interest[1]))throw error(400,'Identifiant invalide.');const d=await read(req);
-  if(user.role==='admin'){
+  if(['admin','manager'].includes(user.role)){
    if(!['APPROVED','REJECTED'].includes(d.status))throw error(422,'Statut invalide.');
    const q=await pool.query("UPDATE hr_candidate_offer_interests i SET status=$1,updated_at=now() FROM hr_candidate_offers o,hr_recruiter_requests r WHERE i.id=$2 AND i.status='PENDING' AND o.id=i.offer_id AND r.id=i.recruiter_request_id AND ($1='REJECTED' OR (o.status='APPROVED' AND r.status='VALIDEE' AND r.removed_at IS NULL)) RETURNING i.id",[d.status,interest[1]]);
    if(!q.rows.length)throw error(409,'Demande indisponible ou déjà traitée.');return json(res,200,{ok:true});
@@ -71,7 +71,7 @@ function createCandidateOffersHandler({pool,json,read,rate,auth,requireRole,erro
   }
   if(!m[2]&&method==='PATCH'){
    const d=await read(req);let q;
-   if(user.role==='admin'&&['APPROVED','REJECTED'].includes(d.status))q=await pool.query("UPDATE hr_candidate_offers SET status=$1,updated_at=now() WHERE id=$2 AND status='PENDING' RETURNING id",[d.status,m[1]]);
+   if(['admin','manager'].includes(user.role)&&['APPROVED','REJECTED'].includes(d.status))q=await pool.query("UPDATE hr_candidate_offers SET status=$1,updated_at=now() WHERE id=$2 AND status='PENDING' RETURNING id",[d.status,m[1]]);
    else if(user.role==='candidate'&&d.status==='WITHDRAWN')q=await pool.query("UPDATE hr_candidate_offers SET status='WITHDRAWN',updated_at=now() WHERE id=$1 AND candidate_wix_id=$2 AND status IN ('PENDING','APPROVED') RETURNING id",[m[1],user.id]);
    else throw error(403,'Action non autorisée.');
    if(!q.rows.length)throw error(409,'Annonce indisponible ou déjà traitée.');return json(res,200,{ok:true});

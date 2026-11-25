@@ -131,7 +131,7 @@ async function application(id,user) {
   const q=await pool.query('SELECT * FROM hr_applications WHERE id=$1',[id]);
   const a=q.rows[0];
   if(!a) throw error(404,'Candidature introuvable.');
-  if(user.role==='admin' || (user.role==='candidate' && a.candidate_wix_id===user.id) ||
+  if(['admin','manager'].includes(user.role) || (user.role==='candidate' && a.candidate_wix_id===user.id) ||
     (user.role==='recruiter' && a.recruiter_wix_id===user.id && a.consent_to_intro)) return a;
   throw error(403,'Vous ne pouvez pas consulter ce dossier.');
 }
@@ -324,11 +324,11 @@ async function api(req,res,path,method) {
   }
   const securedWorkplace=path.match(/^\/api\/recruiter-requests\/([0-9a-f-]+)\/workplace-photo$/i);
   if(securedWorkplace && method==='GET'){
-    requireRole(user,['admin','recruiter']);
+    requireRole(user,['admin','manager','recruiter']);
     if(!uuid(securedWorkplace[1]))throw error(400,'Identifiant de demande invalide.');
     const rows=await pool.query(
       'SELECT p.image FROM hr_job_photos p JOIN hr_recruiter_requests r ON r.id=p.request_id WHERE r.id=$1 AND ($2::boolean OR r.recruiter_wix_id=$3) LIMIT 1',
-      [securedWorkplace[1],user.role==='admin',user.id]
+      [securedWorkplace[1],['admin','manager'].includes(user.role),user.id]
     );
     if(!rows.rows[0])throw error(404,'Photo du lieu de travail absente.');
     res.writeHead(200,{'Content-Type':'image/jpeg','Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff'});
@@ -389,8 +389,8 @@ async function api(req,res,path,method) {
     return json(res,201,{id:q.rows[0].id,ok:true,emailQueued:receipt.queued,emailEnabled:mailer.configured()});
   }
   if(path==='/api/recruiter-requests' && method==='GET') {
-    requireRole(user,['recruiter','admin']);
-    const q=user.role==='admin' ?
+    requireRole(user,['recruiter','admin','manager']);
+    const q=['admin','manager'].includes(user.role) ?
       await pool.query('SELECT r.*, EXISTS(SELECT 1 FROM hr_job_photos p WHERE p.request_id=r.id) AS has_workplace_photo FROM hr_recruiter_requests r WHERE r.removed_at IS NULL ORDER BY r.created_at DESC LIMIT 150') :
       await pool.query('SELECT r.*, EXISTS(SELECT 1 FROM hr_job_photos p WHERE p.request_id=r.id) AS has_workplace_photo FROM hr_recruiter_requests r WHERE r.recruiter_wix_id=$1 AND r.removed_at IS NULL ORDER BY r.created_at DESC LIMIT 150',[user.id]);
     return json(res,200,{items:q.rows});
@@ -398,7 +398,7 @@ async function api(req,res,path,method) {
   // Only the verified HORENOVA administrator can moderate employer requests.
   const removeRecruiterRequest=path.match(/^\/api\/recruiter-requests\/([0-9a-f-]+)$/i);
    if(removeRecruiterRequest && method==='DELETE'){
-     requireRole(user,['admin']);
+     requireRole(user,['admin','manager']);
      const id=removeRecruiterRequest[1];
      if(!uuid(id))throw error(400,'Identifiant de demande invalide.');
      // Reversible soft removal: all public links, shifts and vacancy application gates
@@ -422,7 +422,7 @@ async function api(req,res,path,method) {
    }
    const recruiterStatus=path.match(/^\/api\/recruiter-requests\/([0-9a-f-]+)\/status$/i);
   if(recruiterStatus && method==='PATCH'){
-    requireRole(user,['admin']);
+    requireRole(user,['admin','manager']);
     const requestId=recruiterStatus[1];
     if(!uuid(requestId))throw error(400,'Identifiant de demande invalide.');
     const d=await read(req,3000);
@@ -543,8 +543,8 @@ async function api(req,res,path,method) {
     return json(res,201,{ok:true,item:present(created.rows[0],user),emailQueued:receipt.queued,emailEnabled:mailer.configured()});
   }
   if(path==='/api/applications' && method==='GET') {
-    requireRole(user,['candidate','recruiter','admin']);
-    const q=user.role==='admin' ?
+    requireRole(user,['candidate','recruiter','admin','manager']);
+    const q=['admin','manager'].includes(user.role) ?
       await pool.query('SELECT * FROM hr_applications ORDER BY created_at DESC LIMIT 200') :
       user.role==='candidate' ?
       await pool.query('SELECT * FROM hr_applications WHERE candidate_wix_id=$1 ORDER BY created_at DESC LIMIT 100',[user.id]) :
@@ -553,7 +553,9 @@ async function api(req,res,path,method) {
   }
   const m=path.match(/^\/api\/applications\/([0-9a-f-]+)(?:\/(messages|photo|assign|status))?$/i);
   if(m){
-    const id=m[1],action=m[2]||'',a=await application(id,user);
+    const id=m[1],action=m[2]||'';
+    if(user.role==='manager'&&!((method==='GET'&&['','photo'].includes(action))||(method==='PATCH'&&['status','assign'].includes(action))))throw error(403,'Action manager non autorisée.');
+    const a=await application(id,user);
     if(!action && method==='GET') return json(res,200,{item:present(a,user)});
     if(action==='messages' && method==='GET'){
       // Pre-introduction messages are private to the candidate and HORENOVA.
@@ -576,7 +578,7 @@ async function api(req,res,path,method) {
       return;
     }
     if(action==='status' && method==='PATCH') {
-      requireRole(user,['admin']);
+      requireRole(user,['admin','manager']);
       const d=await read(req);
       const allowed=['EN_ETUDE','PRESELECTION','ENTRETIEN','MISE_EN_RELATION','RETENUE','REFUSEE','CLOTURE'];
       if(!allowed.includes(d.status)) throw error(422,'Statut invalide.');
@@ -585,7 +587,7 @@ async function api(req,res,path,method) {
       return json(res,200,{ok:true});
     }
     if(action==='assign' && method==='PATCH') {
-      requireRole(user,['admin']);
+      requireRole(user,['admin','manager']);
       if(!a.consent_to_intro) throw error(403,'Le candidat n’a pas consenti à la mise en relation.');
       const d=await read(req);
       if(!uuid(d.requestId)) throw error(422,'Demande recruteur invalide.');

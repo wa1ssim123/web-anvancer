@@ -1,13 +1,15 @@
 import {requireRole} from '/mihna-global.js?v=stable-r10';
 import {hub,hubPhoto} from '/hn-api.js';
 import {printCandidate,printRecruiter,printSupportThread} from '/admin-print.js?v=spv7-20261120';
-const auth=await requireRole(['admin'],false);
+const managerPage=location.pathname==='/manager.html';
+const auth=await requireRole(managerPage?['manager','admin']:['admin'],false);
 const root=document.getElementById('adminGate');
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-if(!auth){root.innerHTML='<div class="hub-error">Accès réservé à l’administration HORENOVA. <a href="/enter.html?mode=signin">Se connecter</a></div>';}
+if(!auth||auth.demo){root.innerHTML='<div class="hub-error">Accès réservé à l’administration HORENOVA. <a href="/enter.html?mode=signin">Se connecter</a></div>';}
 else{
 root.innerHTML='<div class="hub-root"><div class="hub-head"><div><span class="hub-small">HORENOVA · CENTRE PRIVÉ · VERSION 20/11 / SUPPORT & IMPRESSION</span><h2>Candidatures & recrutement</h2><p class="hub-muted">Dossiers détaillés, photos privées, contrôle des mises en relation et conversations. <strong>Impression A4 accessible directement sur chaque dossier.</strong></p></div><div style="display:flex;gap:8px;flex-wrap:wrap"><a class="hub-action secondary" href="#hnAdminAnalytics">▥ Statistiques du site ↗</a><a class="hub-action secondary" href="#hnWhatsappChannelAdmin">◉ Canal WhatsApp ↗</a><a class="hub-action secondary" href="#hnTelegramChannelAdmin">➤ Canal Telegram ↗</a><a class="hub-action secondary" href="#hnAdminSocialPublications">◎ Diffusion des offres ↗</a><a class="hub-action secondary" href="/conversations.html">✉ Messagerie privée ↗</a><a class="hub-action" href="/conversations.html?mode=matching">✦ Rechercher & Matching ↗</a></div></div><div class="hub-error" id="hubError"></div><div class="hub-head"><input id="hubSearch" class="hub-input" placeholder="Rechercher un candidat ou une offre…" aria-label="Rechercher"><button class="hub-action secondary" id="hubRefresh">Actualiser</button></div><div class="hub-layout"><section class="hub-panel" id="adminApplications"><div class="hub-panel-head"><h3 id="hubCount">Candidatures</h3><p class="hub-muted">Nouveaux dossiers transmis à HORENOVA</p></div><div id="hubCases" class="hub-stack"></div></section><section class="hub-panel" id="hubDetail"><div class="hub-detail hub-muted">Choisissez un dossier à examiner.</div></section></div><section class="hub-panel" id="adminRecruiterRequests" style="margin-top:22px"><div class="hub-panel-head"><h3>Demandes de recrutement <span id="hubRequestsCount"></span></h3><p class="hub-muted">Demandes privées reçues des établissements, disponibles pour vérification et association aux candidatures.</p></div><div id="hubRecruiterRequests" class="hub-stack"></div></section><p class="hub-muted" style="margin-top:22px">Dossiers historiques : <a target="_blank" rel="noopener" href="https://manage.wix.com/dashboard/7d0d5cbc-d6b5-483c-adcf-eda65565ae2e/wix-cms">ouvrir le CMS Wix administrateur</a>.</p></div>';
 
+if(!managerPage){
 void import('/social-publications-admin.js?v=stable-r10').then(({mountSocialPublications})=>mountSocialPublications(root))
  .catch(error=>console.warn('HORENOVA social publications unavailable',error?.message||'unknown'));
 void import('/telegram-admin.js?v=stable-r10').then(({mountTelegramAdmin})=>mountTelegramAdmin(root))
@@ -49,6 +51,10 @@ async function refreshSupportInbox(){
 }
 void refreshSupportInbox();
 setInterval(()=>{if(!document.hidden)void refreshSupportInbox();},14000);
+}else{
+root.querySelectorAll('a[href^="#hnAdmin"],a[href^="#hnWhatsapp"],a[href^="#hnTelegram"],a[href*="manage.wix.com"],a[href*="mode=matching"]').forEach(a=>{if(a.href.includes('manage.wix.com'))a.closest('p')?.remove();else a.remove()});
+const eyebrow=root.querySelector('.hub-small');if(eyebrow)eyebrow.textContent='HORENOVA · MANAGER · RECRUTEMENT';
+}
 const $=id=>document.getElementById(id);
 const names={EN_ETUDE:'En étude',PRESELECTION:'Présélection',ENTRETIEN:'Entretien',MISE_EN_RELATION:'Mise en relation',RETENUE:'Retenue',REFUSEE:'Refusée',CLOTURE:'Clôturée'};
 const statuses=['EN_ETUDE','PRESELECTION','ENTRETIEN','MISE_EN_RELATION','RETENUE','REFUSEE','CLOTURE'];
@@ -74,7 +80,7 @@ function listRequests(){
       field('Rémunération',r.salary_text)+field('Date et horaires',r.schedule_text)+
       field('Description à examiner',r.description,true)+
       field('Contact privé du recruteur',r.contact_name,true)+
-      field('Téléphone privé',r.phone,true)+
+      field('Téléphone privé',r.contact_phone||r.phone,true)+
       '<p class="hub-muted">Assurez-vous qu’aucune coordonnée personnelle n’est incluse dans le titre ou la description publique.</p>'+
       '</div></details>'+
       '<div class="hub-request-actions"><label>Décision administrative <select class="hub-select" data-request-status>'+options+'</select></label>'+
@@ -180,7 +186,7 @@ async function detail(id,scrollToDetail=false){
  const group=(title,subtitle,fields,icon)=>'<section class="hn-case-section"><div class="hn-case-section-head"><span class="hn-case-section-icon" aria-hidden="true">'+icon+'</span><div><h4>'+title+'</h4><p>'+subtitle+'</p></div></div><div class="hub-grid hn-case-fields">'+fields+'</div></section>';
  const markup='<div class="hub-detail hn-case-detail">'+
   '<button type="button" class="hn-case-back" id="hnBackToCases">← Retour aux candidatures</button>'+
-  '<div class="hn-case-printbar"><button type="button" class="hn-admin-print-btn" id="hnCasePrint">⎙ Imprimer le dossier complet avec photo</button><span>Fiche A4 · accès administrateur</span></div>'+
+  '<div class="hn-case-printbar"><button type="button" class="hn-admin-print-btn" id="hnCasePrint">⎙ Imprimer le dossier complet avec photo</button><span>Fiche A4 · accès professionnel</span></div>'+
   '<div class="hn-case-heading"><span class="hub-small">DOSSIER PRIVÉ · '+esc(id.slice(0,8))+'</span><div class="hn-case-profile">'+
   '<div class="hn-case-portrait-wrap"><div id="hubPortrait" class="hub-photo hub-photo-placeholder" aria-label="Photo du candidat">◉</div></div>'+
   '<div class="hn-case-profile-copy"><h3>'+esc(fullname)+'</h3><p>'+esc(a.jobTitle||'Candidature')+'</p><span class="hub-tag">'+esc(names[a.status]||a.status)+'</span></div></div></div>'+
@@ -195,7 +201,7 @@ async function detail(id,scrollToDetail=false){
   '<label>Associer une demande d’établissement<select class="hub-select" id="recruitRequest">'+reqOptions+'</select></label>'+
   '<button class="hub-action secondary" type="button" id="assignRequest" '+(a.recruiterWixId?'disabled':'')+'>Autoriser la mise en relation</button>'+
   '<button type="button" class="hub-action secondary" id="hnPrivateCandidateMessage">✉ Contacter le candidat en privé</button>'+
-   (a.recruiterWixId?'<a class="hub-action secondary" href="/conversations.html?id='+encodeURIComponent(id)+'">Ouvrir la conversation à trois ↗</a>':'<a class="hub-action secondary" href="/conversations.html?mode=matching">✦ Rechercher un recruteur compatible ↗</a>')+
+   (a.recruiterWixId?'<a class="hub-action secondary" href="/conversations.html?id='+encodeURIComponent(id)+'">Ouvrir la conversation à trois ↗</a>':(managerPage?'':'<a class="hub-action secondary" href="/conversations.html?mode=matching">✦ Rechercher un recruteur compatible ↗</a>'))+
   '<p class="hub-error" id="caseError" role="alert"></p></div></section></div>';
  const target=$('hubDetail');
  target.innerHTML=markup;
@@ -235,9 +241,9 @@ async function detail(id,scrollToDetail=false){
 
 async function refresh(){
 try{showError('');const [a,r]=await Promise.all([hub('/api/applications'),hub('/api/recruiter-requests')]);applications=a.items||[];requests=r.items||[];list();listRequests();if(selected&&applications.some(a=>a.id===selected))await detail(selected,false);else root.classList.remove('hn-case-open');}
-catch(e){showError(e.message+' Les dossiers privés restent accessibles dans le CMS administrateur Wix.');$('hubCases').innerHTML='<div class="hub-detail hub-muted">Service des dossiers non disponible.</div>';}
+catch(e){showError(e.message+'');$('hubCases').innerHTML='<div class="hub-detail hub-muted">Service des dossiers non disponible.</div>';}
 }
 document.addEventListener('hn-admin-listing-removed',()=>{void refresh()});
 $('hubSearch').oninput=list;$('hubRefresh').onclick=refresh;await refresh();
-try{const {mountAdminOverview}=await import('/admin-overview.js?v=admin-delete-scroll-v1');await mountAdminOverview();}catch(error){console.error('Contrôle des publications indisponible',error);}
+if(!managerPage)try{const {mountAdminOverview}=await import('/admin-overview.js?v=admin-delete-scroll-v1');await mountAdminOverview();}catch(error){console.error('Contrôle des publications indisponible',error);}
 }

@@ -14,7 +14,7 @@ function createChatHandler({pool,json,read,rate,auth,requireRole,error,limit,uui
   const bad=(msg,status=422)=>{throw error(status,msg);};
   const protect=async req=>{
     const user=await auth(req);
-    requireRole(user,['admin','candidate','recruiter']);
+    requireRole(user,['admin','manager','candidate','recruiter']);
     return user;
   };
   const safe=(value,n)=>limit(value,n);
@@ -39,13 +39,13 @@ function createChatHandler({pool,json,read,rate,auth,requireRole,error,limit,uui
       FROM hr_direct_threads d
       LEFT JOIN hr_applications a ON a.id=d.application_id
       LEFT JOIN hr_recruiter_requests r ON r.id=d.recruiter_request_id
-      WHERE ($1='admin' OR (d.recipient_role=$1 AND d.recipient_wix_id=$2))
+      WHERE ($1 IN ('admin','manager') OR (d.recipient_role=$1 AND d.recipient_wix_id=$2))
       ORDER BY d.last_message_at DESC LIMIT 150`;
   async function directAccess(id,user){
     if(!uuid(id))bad('Identifiant de conversation invalide.',400);
     const q=await pool.query('SELECT id,recipient_wix_id,recipient_role FROM hr_direct_threads WHERE id=$1',[id]);
     const row=q.rows[0];
-    if(!row || !(user.role==='admin'||(row.recipient_wix_id===user.id&&row.recipient_role===user.role)))
+    if(!row || !(['admin','manager'].includes(user.role)||(row.recipient_wix_id===user.id&&row.recipient_role===user.role)))
       bad('Conversation introuvable.',404);
     return row;
   }
@@ -105,7 +105,7 @@ function createChatHandler({pool,json,read,rate,auth,requireRole,error,limit,uui
           FROM hr_applications a
           LEFT JOIN hr_recruiter_requests r ON r.id=a.recruiter_request_id
           WHERE a.consent_to_intro=true AND a.recruiter_wix_id IS NOT NULL
-          AND ($1='admin' OR ($1='candidate' AND a.candidate_wix_id=$2)
+          AND ($1 IN ('admin','manager') OR ($1='candidate' AND a.candidate_wix_id=$2)
           OR ($1='recruiter' AND a.recruiter_wix_id=$2))
           ORDER BY a.updated_at DESC LIMIT 150`,[user.role,user.id])
       ]);
@@ -116,7 +116,7 @@ function createChatHandler({pool,json,read,rate,auth,requireRole,error,limit,uui
       return json(res,200,{items});
     }
     if(path==='/api/chat/direct-threads'&&method==='POST'){
-      requireRole(user,['admin']);rate(user.id+':start-chat',35,3600);
+      requireRole(user,['admin','manager']);rate(user.id+':start-chat',35,3600);
       const d=await read(req,5000),kind=d.kind;
       if(!['candidate','recruiter'].includes(kind)||!uuid(String(d.sourceId||'')))
         bad('Dossier ou type de destinataire invalide.');

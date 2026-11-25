@@ -1,10 +1,10 @@
 import {requireRole,currentLang} from '/mihna-global.js?v=stable-r10';
-import {mountCandidateOffers} from '/candidate-offers.js?v=stable-r10';
+import {mountCandidateOffers} from '/candidate-offers.js?v=manager-r12';
 const host=document.querySelector('[data-co-dashboard]'),entry=document.querySelector('[data-co-entry]');
-const auth=await requireRole(['candidate','recruiter','admin'],false);
+const auth=await requireRole(['candidate','recruiter','admin','manager'],false);
 if(host){
  if(!auth||auth.demo){host.hidden=true;}
- else if(location.pathname==='/admin.html'&&auth.role!=='admin'||location.pathname==='/recruit.html'&&auth.role!=='recruiter'){host.hidden=true;}
+ else if(location.pathname==='/manager.html'&&!['admin','manager'].includes(auth.role)||location.pathname==='/admin.html'&&auth.role!=='admin'||location.pathname==='/recruit.html'&&auth.role!=='recruiter'){host.hidden=true;}
  else{try{await mountCandidateOffers(host,auth)}catch(e){host.querySelector('[data-co="error"]').textContent=e.message;}}
 }
 if(entry){

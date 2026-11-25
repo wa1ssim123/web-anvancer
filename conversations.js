@@ -28,7 +28,7 @@ function renderThreads(){
   const btn=node('button','hc-thread'+(on?' active':''));btn.type='button';btn.dataset.id=item.id;btn.setAttribute('aria-pressed',String(on));
   const a=node('span','hc-thread-avatar'+(item.kind==='match'?' match':''),item.kind==='match'?'✦':'H');
   const label=node('span','hc-thread-content');
-  label.append(node('strong','hc-thread-title',item.kind==='match'?item.title:(auth?.role==='admin'?item.title:'HORENOVA')));
+  label.append(node('strong','hc-thread-title',item.kind==='match'?item.title:(['admin','manager'].includes(auth?.role)?item.title:'HORENOVA')));
   label.append(node('span','hc-thread-sub',item.subtitle||''));
   label.append(node('span','hc-thread-preview',item.messagePreview||t(item.kind==='match'?'allRoles':'twoRoles','Conversation privée')));
   btn.append(a,label,node('span','hc-thread-type'+(item.kind==='match'?' match':''),t(item.kind==='match'?'trio':'private',item.kind==='match'?'À trois':'Privé')));
@@ -39,8 +39,8 @@ function renderThreads(){
 function head(item){
  $('hcRoomAvatar').textContent=item.kind==='match'?'✦':'H';
  $('hcRoomKicker').textContent=t(item.kind==='match'?'roomMatch':'roomDirect',item.kind==='match'?'DISCUSSION À TROIS':'ÉCHANGE PRIVÉ');
- $('conversationTitle').textContent=item.kind==='match'?item.title:(auth?.role==='admin'?item.title:'HORENOVA');
- $('hcParticipants').textContent=item.kind==='match'?[item.candidateName,item.businessName,'HORENOVA'].filter(Boolean).join(' · '):auth?.role==='admin'?'HORENOVA · '+item.title:t('twoRoles','HORENOVA + membre');
+ $('conversationTitle').textContent=item.kind==='match'?item.title:(['admin','manager'].includes(auth?.role)?item.title:'HORENOVA');
+ $('hcParticipants').textContent=item.kind==='match'?[item.candidateName,item.businessName,'HORENOVA'].filter(Boolean).join(' · '):['admin','manager'].includes(auth?.role)?'HORENOVA · '+item.title:t('twoRoles','HORENOVA + membre');
  $('conversationForm').hidden=false;$('hcRoomStatus').hidden=false;$('hcRoomStatus').textContent=t(item.kind==='match'?'allRoles':'private',item.kind==='match'?'Candidat · Recruteur · HORENOVA':'Privé');
 }
 async function messages(force=false){
@@ -56,8 +56,8 @@ async function messages(force=false){
   if(!items.length)root.append(node('p','hc-chat-blank',t('noMessages','Vous pouvez écrire le premier message.')));
   for(const m of items){
    const mine=m.senderWixId===auth.member?.id;
-   const name=t(m.senderRole==='admin'?'adminRole':m.senderRole==='recruiter'?'recruiterRole':'candidateRole',m.senderRole==='admin'?'HORENOVA':m.senderRole==='recruiter'?'Recruteur':'Candidat');
-   const bubble=node('article','hc-bubble'+(mine?' mine':'')+(m.senderRole==='admin'?' admin':''));
+   const name=t(['admin','manager'].includes(m.senderRole)?'adminRole':m.senderRole==='recruiter'?'recruiterRole':'candidateRole',['admin','manager'].includes(m.senderRole)?'HORENOVA':m.senderRole==='recruiter'?'Recruteur':'Candidat');
+   const bubble=node('article','hc-bubble'+(mine?' mine':'')+(['admin','manager'].includes(m.senderRole)?' admin':''));
    bubble.append(node('small','',name+' · '+time(m.createdAt)),node('div','',m.body));root.append(bubble);
   }
   if(force||bottom)root.scrollTop=root.scrollHeight;
@@ -177,7 +177,7 @@ document.addEventListener('change',e=>{if(e.target.matches?.('[data-hn-language]
 window.addEventListener('pageshow',()=>{try{const v=localStorage.getItem('mihna-lang');if(['fr','en','ar'].includes(v)&&v!==lang){lang=v;loc();void messages(true)}}catch{}});
 loc();
 try{
- auth=await requireRole(['admin','candidate','recruiter'],false);
+ auth=await requireRole(['admin','manager','candidate','recruiter'],false);
  if(!auth){
   banner(t('login','Connexion nécessaire'),true);$('hcModes').hidden=true;
   const link=node('a','hc-send',t('login','Se connecter'));link.href='/enter.html?mode=signin&returnTo=%2Fconversations.html';$('conversationMessages').replaceChildren(link);
