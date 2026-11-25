@@ -1,7 +1,7 @@
 import {getMemberState,subscribeMember} from '/js/wix/member-store.js';
 import {hub} from '/hn-api.js';
 export function dashboardForRole(role){return role==='admin'?'/admin.html':role==='manager'?'/manager.html':'/account.html'}
-const selector='.hn12-logo,.hn-home-brand,.hs-brand,.hn12-actions .profile,[data-hn-login]';
+const selector='.hn-shop-exit,.hx26-menu-right a[href="/account.html"],.hn12-logo,.hn-home-brand,.hs-brand,.hn12-actions .profile,[data-hn-login]';
 let role=null,owner=null,seq=0;const original=new WeakMap();
 function sync(){
  const s=getMemberState();if(s.loading)return;

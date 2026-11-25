@@ -38,7 +38,7 @@ return '<section class="hx26-hero" aria-label="Showroom de mode professionnelle 
 +'<div class="hx26-halo"></div>'
 +'<header class="hx26-header"><nav class="hx26-menu"><a href="#hx-showroom" aria-current="page">SHOP</a><a href="#products">COLLECTIONS</a><a href="/academy.html">ABOUT</a></nav><div class="hx26-brand" aria-label="HORENOVA SHOP"><strong>HORENOVA</strong><span>SHOP</span></div><nav class="hx26-menu-right"><a href="#products" aria-label="Chercher des articles">⌕ <span>SEARCH</span></a><a href="/account.html">♙ <span>ACCOUNT</span></a><button type="button" data-hx26="cart">♧ <span>CART (<b data-hx26-count>0</b>)</span></button></nav></header>'
 +'<div class="hx26-layout"><div class="hx26-showcase"><div class="hx26-rack" tabindex="0" aria-label="Penderie interactive : flèches gauche et droite pour choisir un vêtement"><div class="hx26-rail"></div><div class="hx26-items">'
-+products.map((p,i)=>'<button type="button" data-hx26-item="'+i+'" class="hx26-slot'+(i===state.index?' is-selected':'')+'" style="--idx:'+i+'" aria-label="'+safe(p.short)+'"><span class="hx26-sway"><img loading="eager" decoding="async" src="'+p.image+'" alt="'+safe(p.short)+'" draggable="false"></span><span class="hx26-item-label">'+safe(p.short)+'</span></button>').join('')
++products.map((p,i)=>'<button type="button" data-hx26-item="'+i+'" class="hx26-slot'+(i===state.index?' is-selected':'')+'" style="--idx:'+i+'" aria-label="'+safe(p.short)+'"><span class="hx26-sway">'+(p.id==='housekeeping-jacket'||p.id==='housekeeping-duo'?'<span class="hx26-added-hanger" aria-hidden="true"><svg viewBox="0 0 160 86" xmlns="http://www.w3.org/2000/svg"><path d="M80 37V29C80 22 95 21 95 11C95 -1 76 -1 72 10" fill="none" stroke="#d8b779" stroke-width="3.5" stroke-linecap="round"/><path d="M80 36L9 68Q4 72 11 77H149Q156 72 151 68L80 36Z" fill="#60432d" stroke="#c3a16e" stroke-width="2"/><path d="M76 55h8m-4 -5v10" stroke="#dfba7d" stroke-width="2"/></svg></span>':'')+'<img loading="eager" decoding="async" src="'+p.image+'" alt="'+safe(p.short)+'" draggable="false"></span><span class="hx26-item-label">'+safe(p.short)+'</span></button>').join('')
 +'</div><div class="hx26-actions"><button type="button" data-hx26="view" aria-label="Voir le vêtement">'+icons.eye+'</button><button type="button" data-hx26="rotate" aria-label="Tourner le vêtement">'+icons.rotate+'</button><button type="button" data-hx26="zoom" aria-label="Agrandir le vêtement">'+icons.zoom+'</button></div></div>'
 +'<div class="hx26-floor"><button type="button" data-hx26="prev" aria-label="Article précédent">‹</button><div class="hx26-pagination"><span data-hx26-position>03 / 09</span><div class="hx26-dots">'+products.map((p,i)=>'<button type="button" data-hx26-dot="'+i+'" aria-label="Afficher '+safe(p.short)+'" class="'+(i===state.index?'is-current':'')+'"></button>').join('')+'</div></div><button type="button" data-hx26="next" aria-label="Article suivant">›</button></div>'
 +'<button type="button" class="hx26-collection" data-hx26="collection">SEE COLLECTION '+arrow+'</button></div>'
@@ -51,13 +51,17 @@ const overlay=document.createElement('div');overlay.className='hx26-overlay';ove
 function render(){
  const p=item();
  els('.hx26-slot').forEach((el,i)=>{
+   const n=products.length,offset=((i-state.index+Math.floor(n/2)+n)%n)-Math.floor(n/2);
+   el.style.setProperty('--hx-offset',offset);el.style.setProperty('--hx-distance',Math.abs(offset));
+   el.classList.toggle('is-near',Math.abs(offset)===1);el.classList.toggle('is-far',Math.abs(offset)===2);el.classList.toggle('is-away',Math.abs(offset)>2);
+   el.tabIndex=Math.abs(offset)>1?-1:0;el.setAttribute('aria-hidden',String(Math.abs(offset)>2));
    el.classList.toggle('is-selected',i===state.index);
    el.setAttribute('aria-pressed',String(i===state.index));
    el.querySelector('img').style.filter=(i===state.index?color()[2]:'none');
    el.classList.toggle('is-back',i===state.index&&state.face==='back');
  });
  els('[data-hx26-dot]').forEach((el,i)=>el.classList.toggle('is-current',i===state.index));
- const tools=$('.hx26-actions');if(tools)tools.style.left=((state.index+.78)/products.length*96+3).toFixed(2)+'%';
+ const tools=$('.hx26-actions');if(tools)tools.style.left='50%';
  const pos=$('[data-hx26-position]');
  if(pos)pos.textContent=String(state.index+1).padStart(2,'0')+' / '+String(products.length).padStart(2,'0');
  $('[data-hx26-cat]').textContent=p.cat+'  /  HORENOVA EDITION';
@@ -69,7 +73,7 @@ function render(){
  els('[data-hx26-count]').forEach(e=>e.textContent=String(qtyTotal()));
  const favorite=$('[data-hx26="save"]');if(favorite)favorite.textContent=cart.some(v=>v.id===p.id)?'♥':'♡';
 }
-function select(i){state.index=(i+products.length)%products.length;state.color=0;state.face='front';state.size=null;state.qty=1;render();if(innerWidth<=900){const rack=$('.hx26-rack'),button=els('.hx26-slot')[state.index];if(rack&&button)rack.scrollTo({left:Math.max(0,button.offsetLeft-rack.clientWidth/2+button.clientWidth/2),behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth'});}}
+function select(i){const next=(i+products.length)%products.length;if(next===state.index)return;state.index=next;state.color=0;state.face='front';state.size=null;state.qty=1;render();}
 function flip(){state.face=state.face==='front'?'back':'front';render();}
 function open(step=0){state.step=step;state.modal=true;overlay.hidden=false;document.body.classList.add('hx26-dialog-open');drawDialog();overlay.querySelector('button[data-hx26-close]')?.focus();}
 function close(){state.modal=false;overlay.hidden=true;document.body.classList.remove('hx26-dialog-open');const b=$('.hx26-slot.is-selected');if(b)b.focus();}
@@ -109,7 +113,7 @@ function exportCart(){
 }
 root.addEventListener('click',event=>{
  const c=event.target.closest('button');if(!c)return;
- if(c.hasAttribute('data-hx26-item')){const i=Number(c.dataset.hx26Item);if(state.index!==i)select(i);open(0);return;}
+ if(c.hasAttribute('data-hx26-item')){const i=Number(c.dataset.hx26Item);if(state.index!==i){select(i);return;}open(0);return;}
  if(c.hasAttribute('data-hx26-dot')){select(Number(c.dataset.hx26Dot));return;}
  if(c.hasAttribute('data-hx26-color')){state.color=Number(c.dataset.hx26Color);render();return;}
  if(c.hasAttribute('data-hx26-face')){state.face=c.dataset.hx26Face;render();return;}
@@ -121,11 +125,7 @@ root.addEventListener('click',event=>{
  if(op==='collection'){document.getElementById('products')?.scrollIntoView({behavior:'smooth',block:'start'});return;}
  if(op==='save'){open(1);return;}
 });
-root.addEventListener('pointerover',e=>{
- if(!matchMedia('(hover:hover)').matches)return;
- const b=e.target.closest('[data-hx26-item]');
- if(b&&state.index!==Number(b.dataset.hx26Item))select(Number(b.dataset.hx26Item));
-});
+// Hover adds depth only: selection moves by explicit click, arrow, swipe or keyboard.
 overlay.addEventListener('click',event=>{
  const b=event.target.closest('button');if(event.target.hasAttribute('data-hx26-close')||b?.hasAttribute('data-hx26-close')){close();return;}
  if(!b)return;
@@ -141,9 +141,9 @@ overlay.addEventListener('click',event=>{
    state.step=Number(action);drawDialog();return;
  }
 });
-let touchStart=0;
-$('.hx26-rack')?.addEventListener('touchstart',e=>{touchStart=e.changedTouches[0]?.clientX||0;},{passive:true});
-$('.hx26-rack')?.addEventListener('touchend',e=>{const dx=(e.changedTouches[0]?.clientX||0)-touchStart;if(Math.abs(dx)>42)select(state.index+(dx<0?1:-1));},{passive:true});
+let touchStart=0,touchY=0;
+$('.hx26-rack')?.addEventListener('touchstart',e=>{touchStart=e.changedTouches[0]?.clientX||0;touchY=e.changedTouches[0]?.clientY||0;},{passive:true});
+$('.hx26-rack')?.addEventListener('touchend',e=>{const dx=(e.changedTouches[0]?.clientX||0)-touchStart;const dy=(e.changedTouches[0]?.clientY||0)-touchY;if(Math.abs(dx)>45&&Math.abs(dx)>Math.abs(dy)*1.35)select(state.index+(dx<0?1:-1));},{passive:true});
 document.addEventListener('keydown',e=>{
  if(state.modal){if(e.key==='Escape'){e.preventDefault();close();}if(e.key==='Tab'){const cs=Array.from(overlay.querySelectorAll('button:not([disabled]),a[href]')).filter(c=>c.getClientRects().length);if(!cs.length)return;const n=cs.indexOf(document.activeElement);if(e.shiftKey&&(n<=0)){e.preventDefault();cs[cs.length-1].focus();}else if(!e.shiftKey&&n===cs.length-1){e.preventDefault();cs[0].focus();}}return;}
  if(document.activeElement?.closest('#hx-showroom')&&['ArrowLeft','ArrowRight'].includes(e.key)){e.preventDefault();select(state.index+(e.key==='ArrowRight'?1:-1));}
@@ -168,10 +168,4 @@ if(rackForMotion){
 
 window.HORENOVA_SHOWROOM={open:openById,getSelection:()=>cart.map(x=>({...x})),products:products.map(p=>({id:p.id,name:p.name}))};
 render();
-if(window.innerWidth<=900){
-  requestAnimationFrame(()=>{
-    const rack=$('.hx26-rack'),selectedGarment=$('.hx26-slot.is-selected');
-    if(rack&&selectedGarment)rack.scrollLeft=Math.max(0,selectedGarment.offsetLeft-rack.clientWidth/2+selectedGarment.clientWidth/2);
-  });
-}
 })();
