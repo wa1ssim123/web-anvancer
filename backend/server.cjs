@@ -544,7 +544,14 @@ async function api(req,res,path,method) {
     snapshot.city=snapshot.city||desiredCity;snapshot.jobFamily=snapshot.jobFamily||limit(job.role,90);
     snapshot.quizScore=best?.score??null;snapshot.quizPassed=!!best;
     snapshot.profileComplete=!!(snapshot.age&&snapshot.bio&&['arabic','french','english'].every(k=>typeof snapshot[k]==='boolean'));
-    if(d.profileRequired===true&&!snapshot.age)throw error(422,'Indiquez un âge valide (16 à 99 ans).');
+    if(d.profileRequired===true){
+      if(!snapshot.age||!snapshot.bio||!['arabic','french','english'].every(k=>typeof submitted[k]==='boolean'&&(submitted[k]===false||Number.isInteger(submitted[k+'Level']))))
+        throw error(422,'Complétez votre âge, présentation et langues (niveau de 1 à 5).');
+      for(const k of ['arabic','french','english'])if(snapshot[k]===false)delete snapshot[k+'Level'];
+      const verified=cleanCandidateProfile(snapshot);
+      await pool.query('INSERT INTO hr_candidate_profiles(candidate_wix_id,profile) VALUES($1,$2::jsonb) ON CONFLICT(candidate_wix_id) DO UPDATE SET profile=EXCLUDED.profile,updated_at=now()',[user.id,JSON.stringify(verified)]);
+      await pool.query(`WITH patches AS (SELECT a.id,jsonb_object_agg(e.key,e.value) AS patch FROM hr_applications a CROSS JOIN LATERAL jsonb_each($2::jsonb) e WHERE a.candidate_wix_id=$1 AND e.key IN ('age','bio','arabic','arabicLevel','french','frenchLevel','english','englishLevel','otherLanguage','otherLanguageLevel','preferredLanguage') AND (a.profile->e.key IS NULL OR a.profile->e.key='null'::jsonb OR a.profile->e.key='""'::jsonb) GROUP BY a.id) UPDATE hr_applications a SET profile=a.profile||p.patch||jsonb_build_object('profileRecoveredAt',now()),updated_at=now() FROM patches p WHERE a.id=p.id`,[user.id,JSON.stringify(verified)]);
+    }
     const experienceYears=form.experienceYears===''||form.experienceYears==null?null:Number(form.experienceYears);
     if(experienceYears!==null&&(!Number.isFinite(experienceYears)||experienceYears<0||experienceYears>60))
       throw error(422,'Les années d’expérience doivent être comprises entre 0 et 60.');

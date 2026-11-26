@@ -150,16 +150,17 @@ function listRequests(){
     }finally{button.disabled=false;}
   }));
 }
+function missingFields(a){const p=a.profile||{};return [!p.age?'Âge':null,!String(p.bio||'').trim()?'Présentation':null,...['arabic','french','english'].map((k,i)=>typeof p[k]!=='boolean'?['Arabe','Français','Anglais'][i]:null)].filter(Boolean);}
 function list(){
  const term=$('hubSearch').value.toLowerCase().trim();
  const shown=applications.filter(a=>[a.jobTitle,a.candidateEmail,a.profile?.firstName,a.profile?.lastName,a.profile?.city].join(' ').toLowerCase().includes(term));
- $('hubCount').textContent=applications.length+' dossier(s)';
+ $('hubCount').textContent=applications.length+' dossier(s) · '+applications.filter(a=>missingFields(a).length).length+' à compléter';
  $('hubCases').innerHTML=shown.map(a=>'<article class="hn-case-list-item">'+
    '<button type="button" class="hub-case '+(a.id===selected?'active':'')+'" data-id="'+esc(a.id)+'" aria-label="Ouvrir le dossier de '+esc([a.profile?.firstName,a.profile?.lastName].filter(Boolean).join(' ')||a.candidateEmail)+'">'+
    '<span>'+esc(new Date(a.createdAt).toLocaleDateString('fr-MA'))+'</span>'+
    '<strong>'+esc([a.profile?.firstName,a.profile?.lastName].filter(Boolean).join(' ')||a.candidateEmail)+'</strong>'+
    '<span>'+esc(a.jobTitle)+' · '+esc(a.profile?.city||'')+'</span>'+
-   '<p class="hub-tag">'+esc(names[a.status]||a.status)+'</p></button>'+
+   '<p class="hub-tag">'+esc(names[a.status]||a.status)+'</p>'+(missingFields(a).length?'<p style="color:#92400e;background:#fff4db;padding:6px 8px;border-radius:7px">À compléter : '+esc(missingFields(a).join(', '))+'</p>':'<p style="color:#166534;background:#e9f9ef;padding:6px 8px;border-radius:7px">Profil renseigné ✓</p>')+'</button>'+
    '<button class="hn-admin-print-btn hn-case-quickprint" type="button" data-quickprint-id="'+esc(a.id)+'" aria-label="Imprimer le dossier complet de '+esc([a.profile?.firstName,a.profile?.lastName].filter(Boolean).join(' ')||a.candidateEmail)+' avec photo">⎙ Imprimer la candidature avec photo</button>'+
    '</article>').join('')||'<div class="hub-detail hub-muted">Aucune candidature.</div>';
  $('hubCases').querySelectorAll('button[data-id]').forEach(b=>b.onclick=()=>detail(b.dataset.id,true));

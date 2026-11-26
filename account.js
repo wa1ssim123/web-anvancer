@@ -55,10 +55,16 @@ if(auth.role==='candidate'){
  const t=translations[language]||translations.fr;
  document.getElementById('accountTitle').innerHTML=t.title;
  document.getElementById('accountSubtitle').textContent=t.intro;
- const fetched=await Promise.allSettled([hub('/api/applications'),queryItems('CandidateProfiles',{filters:[{field:'_owner',op:'eq',value:auth.member.id}],limit:1})]);
+ const fetched=await Promise.allSettled([hub('/api/applications'),queryItems('CandidateProfiles',{filters:[{field:'_owner',op:'eq',value:auth.member.id}],limit:1}),hub('/api/profile/candidate')]);
  const apps=fetched[0].status==='fulfilled'?fetched[0].value.items||[]:null;
- const profile=fetched[1].status==='fulfilled'?fetched[1].value.items?.[0]||null:null;
- dash.innerHTML='<section class="hn-candidate-progress hn-easy-dashboard"><span class="small-title">HORENOVA · '+esc(t.my)+'</span>'+
+ const wixProfile=fetched[1].status==='fulfilled'?fetched[1].value.items?.[0]||null:null;
+ const central=fetched[2].status==='fulfilled'?fetched[2].value.profile:null;
+ const profile={...wixProfile,...central};
+ const incomplete=(apps||[]).filter(a=>!a.profile?.age||!String(a.profile?.bio||'').trim()||!['arabic','french','english'].every(k=>typeof a.profile?.[k]==='boolean'));
+ const repairText={fr:['Complétez vos dossiers existants','Votre âge, votre présentation ou vos langues manquent dans un ou plusieurs dossiers. Enregistrez votre profil une seule fois : vos candidatures seront complétées automatiquement, sans postuler à nouveau.','Compléter mes informations'],en:['Complete your existing applications','Your age, introduction or languages are missing from one or more applications. Save your profile once to update your existing applications automatically; no need to apply again.','Complete my information'],ar:['أكمل طلباتك الحالية','ينقص العمر أو النبذة الشخصية أو اللغات في أحد طلباتك. احفظ ملفك مرة واحدة وسيتم استكمال طلباتك تلقائيا دون إعادة التقديم.','أكمل معلوماتي']};
+ const rt=repairText[language]||repairText.fr;
+ const repair=incomplete.length?'<section class="dash-card wide" role="status" style="border:2px solid #b45309;background:#fff7ed;color:#432407"><h3 style="color:#432407">'+esc(rt[0])+' · '+incomplete.length+'</h3><p style="color:#432407">'+esc(rt[1])+'</p><a class="hn-role-primary" href="/candidate-setup.html?returnTo=%2Faccount.html">'+esc(rt[2])+' ↗</a></section>':'';
+ dash.innerHTML=repair+'<section class="hn-candidate-progress hn-easy-dashboard"><span class="small-title">HORENOVA · '+esc(t.my)+'</span>'+
   '<h3>'+esc(t.heading)+'</h3><p>'+esc(t.subtitle)+'</p>'+
   '<div class="hn-easy-dashboard-actions"><a class="hn-role-primary" href="/jobs.html">'+esc(t.jobs)+' ↗</a><a class="soft-btn" href="/shifts.html">'+esc(t.shifts)+' ↗</a></div></section>'+
   '<section class="dash-card wide"><span>'+esc(t.status)+'</span><h3>'+esc(t.my)+(apps===null?'': ' · '+apps.length)+'</h3>'+

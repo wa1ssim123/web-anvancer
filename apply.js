@@ -39,6 +39,9 @@ try{
 }catch(error){console.warn('Optional prior application prefill unavailable',error?.message||'network');}
 try{const saved=await hub('/api/profile/candidate');if(saved.profile&&Object.keys(saved.profile).length)profile={...profile,...saved.profile};}catch(error){console.warn('Central profile unavailable',error?.message||'network');}
 const professional={...previousApplication,...profile};
+const lang=currentLang();
+const L={fr:{bio:'Présentation professionnelle',language:'Langues parlées',yes:'Oui',no:'Non',choose:'Choisir',level:'Niveau',age:'Âge',labels:['Arabe','Français','Anglais']},en:{bio:'Professional introduction',language:'Spoken languages',yes:'Yes',no:'No',choose:'Choose',level:'Level',age:'Age',labels:['Arabic','French','English']},ar:{bio:'نبذة مهنية',language:'اللغات',yes:'نعم',no:'لا',choose:'اختر',level:'المستوى',age:'العمر',labels:['العربية','الفرنسية','الإنجليزية']}}[lang]||{bio:'Présentation professionnelle',language:'Langues parlées',yes:'Oui',no:'Non',choose:'Choisir',level:'Niveau',age:'Âge',labels:['Arabe','Français','Anglais']};
+const languageFields=['arabic','french','english'].map((k,i)=>'<label>'+esc(L.labels[i])+' *<select name="'+k+'" required><option value="">'+esc(L.choose)+'</option><option value="yes"'+(professional[k]===true?' selected':'')+'>'+esc(L.yes)+'</option><option value="no"'+(professional[k]===false?' selected':'')+'>'+esc(L.no)+'</option></select></label><label>'+esc(L.level)+' (1–5)<select name="'+k+'Level"><option value="">'+esc(L.choose)+'</option>'+[1,2,3,4,5].map(v=>'<option value="'+v+'"'+(professional[k]===true&&Number(professional[k+'Level'])===v?' selected':'')+'>'+v+'/5</option>').join('')+'</select></label>').join('');
 const previousDetails=previousApplication?.application||{};
 try{const r=await hub('/api/profile/photo/status');hasPhoto=!!r.hasPhoto;}catch{}
 if(hasPhoto){
@@ -78,8 +81,9 @@ box.innerHTML=!jobId?
  '<label>Nom *<input name="lastName" autocomplete="family-name" maxlength="80" minlength="2" required value="'+esc(lastName)+'" placeholder="Votre nom"></label>'+
  '<label>Ville *<input name="desiredCity" autocomplete="address-level2" maxlength="80" minlength="2" required value="'+esc(savedCity)+'" placeholder="Ex. Casablanca"></label>'+
  '<label>Téléphone *<input name="phone" type="tel" autocomplete="tel" inputmode="tel" maxlength="25" required value="'+esc(savedPhone)+'" placeholder="+212 6 XX XX XX XX"></label>'+
- '<label>Âge *<input name="age" type="number" min="16" max="99" step="1" required value="'+esc(professional.age??'')+'" placeholder="Ex. 24"></label>'+
- '<label class="wide">Présentation professionnelle<textarea name="bio" rows="3" maxlength="450" placeholder="Votre expérience et vos qualités">'+esc(professional.bio||'')+'</textarea></label>'+
+ '<label>'+esc(L.age)+' *<input name="age" type="number" min="16" max="99" step="1" required value="'+esc(professional.age??'')+'" placeholder="Ex. 24"></label>'+
+ '<label class="wide">'+esc(L.bio)+' *<textarea name="bio" rows="3" maxlength="450" required placeholder="Votre expérience et vos qualités">'+esc(professional.bio||'')+'</textarea></label>'+
+ '<h4 class="wide">'+esc(L.language)+'</h4>'+languageFields+
  '<p class="wide"><a href="/candidate-setup.html?returnTo='+encodeURIComponent(location.pathname+location.search)+'">Compléter ou modifier mon profil et mes langues ↗</a></p>'+
  '</div></section>'+
  '<section class="hn-easy-section"><h3>02 · Votre photo</h3><p>Ajoutez une photo claire. Elle reste privée et accessible uniquement à HORENOVA et aux recruteurs autorisés.</p>'+
@@ -97,6 +101,11 @@ box.innerHTML=!jobId?
  '<button type="submit" class="hn-app-submit" id="applySubmit">Envoyer ma candidature ↗</button>'+
  '<p class="hn-easy-secure">✓ Photo confidentielle · ✓ Aucun quiz requis · ✓ Aucun enregistrement vidéo requis</p></form>';
 const form=document.getElementById('applyDossierForm');
+if(form)for(const k of ['arabic','french','english']){
+ const spoken=form.elements[k],level=form.elements[k+'Level'];
+ const sync=()=>{level.disabled=spoken.value!=='yes';level.required=spoken.value==='yes';if(level.disabled)level.value='';};
+ spoken.addEventListener('change',sync);sync();
+}
 // Pre-fill optional details from a previous application, never change the
 // consent checkbox or upload a photo without this candidate's interaction.
 if(form&&previousDetails){
@@ -183,6 +192,7 @@ if(form){
    button.textContent='Enregistrement de votre candidature…';
    const profileData=Object.fromEntries(['city','jobFamily','arabic','arabicLevel','french','frenchLevel','english','englishLevel','otherLanguage','otherLanguageLevel','preferredLanguage'].filter(k=>professional[k]!=null).map(k=>[k,professional[k]]));
    profileData.age=Number(fd.get('age'));profileData.bio=String(fd.get('bio')||'').trim();
+   for(const k of ['arabic','french','english']){profileData[k]=fd.get(k)==='yes';profileData[k+'Level']=profileData[k]?Number(fd.get(k+'Level')):null;}
    const result=await hub('/api/applications',{method:'POST',body:{jobId,consentToIntro:true,locale:currentLang(),application,profile:profileData,profileRequired:true}});
    const caseId=result?.item?.id;
    if(!caseId)throw Error('HORENOVA n’a pas confirmé l’enregistrement du dossier.');
