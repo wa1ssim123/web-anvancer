@@ -140,6 +140,13 @@ function cleanCandidateProfile(input) {
   if(out.otherLanguage&&Number.isInteger(Number(s.otherLanguageLevel))&&Number(s.otherLanguageLevel)>=1&&Number(s.otherLanguageLevel)<=5)out.otherLanguageLevel=Number(s.otherLanguageLevel);
   return out;
 }
+function requiredProfileComplete(p) {
+  return Number.isInteger(p?.age)&&p.age>=16&&p.age<=99&&typeof p.bio==='string'&&p.bio.trim().length>0&&
+    ['arabic','french','english'].every(k=>typeof p[k]==='boolean'&&(p[k]===false||(Number.isInteger(p[k+'Level'])&&p[k+'Level']>=1&&p[k+'Level']<=5)));
+}
+function profileValidationMessage(locale) {
+  return ({fr:'Renseignez votre âge (16 à 99 ans), votre présentation et les trois langues. Choisissez Oui ou Non, puis le niveau de 1 à 5 pour chaque langue parlée.',en:'Enter your age (16–99), introduction and all three languages. Select Yes or No, then a level from 1 to 5 for each spoken language.',ar:'أدخل عمرك (من 16 إلى 99 سنة) ونبذتك المهنية وحدد اللغات الثلاث. اختر نعم أو لا، ثم المستوى من 1 إلى 5 لكل لغة تتحدثها.'})[locale]||'Complétez votre âge, présentation et langues (niveau de 1 à 5).';
+}
 async function savedCandidateProfile(user) {
   const stored=await pool.query('SELECT profile FROM hr_candidate_profiles WHERE candidate_wix_id=$1',[user.id]);
   return stored.rows[0]?.profile||{};
@@ -254,6 +261,7 @@ async function api(req,res,path,method) {
     const d=await read(req,20000),profile=cleanCandidateProfile(d.profile);
     if(!profile.firstName||!profile.lastName||!profile.age||!profile.city||!profile.jobFamily)
       throw error(422,'Complétez votre identité, âge, ville et métier.');
+    if(!requiredProfileComplete(profile))throw error(422,profileValidationMessage(d.profile?.preferredLanguage));
     const fields=JSON.stringify(profile);
     await pool.query('INSERT INTO hr_candidate_profiles(candidate_wix_id,profile) VALUES($1,$2::jsonb) ON CONFLICT(candidate_wix_id) DO UPDATE SET profile=EXCLUDED.profile,updated_at=now()',[user.id,fields]);
     await pool.query(`WITH patches AS (SELECT a.id,jsonb_object_agg(e.key,e.value) AS patch FROM hr_applications a CROSS JOIN LATERAL jsonb_each($2::jsonb) e WHERE a.candidate_wix_id=$1 AND e.key IN ('age','bio','arabic','arabicLevel','french','frenchLevel','english','englishLevel','otherLanguage','otherLanguageLevel','preferredLanguage') AND (a.profile->e.key IS NULL OR a.profile->e.key='null'::jsonb OR a.profile->e.key='""'::jsonb) GROUP BY a.id) UPDATE hr_applications a SET profile=a.profile||p.patch||jsonb_build_object('profileRecoveredAt',now()),updated_at=now() FROM patches p WHERE a.id=p.id`,[user.id,fields]);
@@ -543,10 +551,12 @@ async function api(req,res,path,method) {
     snapshot.firstName=firstName;snapshot.lastName=lastName;
     snapshot.city=snapshot.city||desiredCity;snapshot.jobFamily=snapshot.jobFamily||limit(job.role,90);
     snapshot.quizScore=best?.score??null;snapshot.quizPassed=!!best;
-    snapshot.profileComplete=!!(snapshot.age&&snapshot.bio&&['arabic','french','english'].every(k=>typeof snapshot[k]==='boolean'));
-    if(d.profileRequired===true){
-      if(!snapshot.age||!snapshot.bio||!['arabic','french','english'].every(k=>typeof submitted[k]==='boolean'&&(submitted[k]===false||Number.isInteger(submitted[k+'Level']))))
-        throw error(422,'Complétez votre âge, présentation et langues (niveau de 1 à 5).');
+    // Mandatory on every request, including old clients and direct API calls.
+    // Never let a client flag bypass the validation.
+    for(const k of ['arabic','french','english'])if(submitted[k]===true&&!Number.isInteger(submitted[k+'Level']))delete snapshot[k+'Level'];
+    snapshot.profileComplete=requiredProfileComplete(snapshot);
+    if(!snapshot.profileComplete)throw error(422,profileValidationMessage(d.locale));
+    {
       for(const k of ['arabic','french','english'])if(snapshot[k]===false)delete snapshot[k+'Level'];
       const verified=cleanCandidateProfile(snapshot);
       await pool.query('INSERT INTO hr_candidate_profiles(candidate_wix_id,profile) VALUES($1,$2::jsonb) ON CONFLICT(candidate_wix_id) DO UPDATE SET profile=EXCLUDED.profile,updated_at=now()',[user.id,JSON.stringify(verified)]);

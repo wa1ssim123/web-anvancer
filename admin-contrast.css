@@ -36,3 +36,8 @@ body[data-hn12="admin"] #hnDashboardTop #adminGate #adminRecruiterRequests .hub-
 body[data-hn12="admin"] #hnDashboardTop #adminGate #adminRecruiterRequests summary{color:var(--adm-gold)!important;-webkit-text-fill-color:currentColor!important;text-shadow:none!important;opacity:1!important}
 body[data-hn12="admin"] #hnDashboardTop #adminGate #hubRecruiterRequests .hub-case strong{color:var(--adm-text)!important;-webkit-text-fill-color:currentColor!important;text-shadow:none!important;opacity:1!important}
 body[data-hn12="admin"] #hnDashboardTop #adminGate #hubRecruiterRequests .hub-case details>div{background:var(--adm-card)!important;border-color:var(--adm-line)!important;color:var(--adm-text)!important;-webkit-text-fill-color:currentColor!important;text-shadow:none!important;opacity:1!important}
+
+/* High contrast status blocks override the broad admin paragraph palette, including Safari text fill. */
+body #hnDashboardTop #adminGate #hubCases .hub-case p.hn-profile-status{display:block!important;white-space:normal!important;overflow-wrap:anywhere!important;text-align:start!important;font-weight:750!important;font-size:14px!important;line-height:1.5!important;padding:10px 12px!important;border:1px solid!important;border-radius:9px!important;opacity:1!important;text-shadow:none!important}
+body #hnDashboardTop #adminGate #hubCases .hub-case p.hn-profile-status.hn-profile-status-missing{background:#492b12!important;color:#ffedc2!important;-webkit-text-fill-color:#ffedc2!important;border-color:#d99b45!important}
+body #hnDashboardTop #adminGate #hubCases .hub-case p.hn-profile-status.hn-profile-status-complete{background:#123b28!important;color:#e0ffeb!important;-webkit-text-fill-color:#e0ffeb!important;border-color:#65b88b!important}

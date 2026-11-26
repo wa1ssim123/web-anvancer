@@ -101,6 +101,7 @@ box.innerHTML=!jobId?
  '<button type="submit" class="hn-app-submit" id="applySubmit">Envoyer ma candidature ↗</button>'+
  '<p class="hn-easy-secure">✓ Photo confidentielle · ✓ Aucun quiz requis · ✓ Aucun enregistrement vidéo requis</p></form>';
 const form=document.getElementById('applyDossierForm');
+if(form)form.elements.bio.addEventListener('input',()=>form.elements.bio.setCustomValidity(''));
 if(form)for(const k of ['arabic','french','english']){
  const spoken=form.elements[k],level=form.elements[k+'Level'];
  const sync=()=>{level.disabled=spoken.value!=='yes';level.required=spoken.value==='yes';if(level.disabled)level.value='';};
@@ -190,6 +191,7 @@ if(form){
   try{
    if(file){button.textContent='Enregistrement de la photo…';await hubUploadPhoto(await optimizedPortrait(file));hasPhoto=true;}
    button.textContent='Enregistrement de votre candidature…';
+   if(!String(fd.get('bio')||'').trim())throw Error(({fr:'La présentation est obligatoire.',en:'Your introduction is required.',ar:'النبذة المهنية إلزامية.'})[lang]||'La présentation est obligatoire.');
    const profileData=Object.fromEntries(['city','jobFamily','arabic','arabicLevel','french','frenchLevel','english','englishLevel','otherLanguage','otherLanguageLevel','preferredLanguage'].filter(k=>professional[k]!=null).map(k=>[k,professional[k]]));
    profileData.age=Number(fd.get('age'));profileData.bio=String(fd.get('bio')||'').trim();
    for(const k of ['arabic','french','english']){profileData[k]=fd.get(k)==='yes';profileData[k+'Level']=profileData[k]?Number(fd.get(k+'Level')):null;}
