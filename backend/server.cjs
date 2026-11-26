@@ -94,7 +94,7 @@ async function wixItems(token, collection, pageLimit=50, ownerId='') {
   // Always scope private collections to the Wix-verified member. Paging a global
   // collection and then searching locally can select an unrelated account.
   const r=await wixFetch(token,'/wix-data/v2/items/query',{
-    dataCollectionId: collection,query:{
+    dataCollectionId: collection,consistentRead:true,query:{
       ...(ownerId ? {filter:{_owner:{$eq:ownerId}}} : {}),
       paging:{limit:pageLimit,offset:0}
     }
@@ -125,6 +125,24 @@ async function auth(req) {
 }
 function requireRole(user,roles) {
   if(!roles.includes(user.role)) throw error(403,'Accès non autorisé pour ce type de compte.');
+}
+// Candidate details are validated and scoped to the authenticated account.
+function cleanCandidateProfile(input) {
+  const s=input&&typeof input==='object'&&!Array.isArray(input)?input:{}, out={};
+  for(const [k,max] of Object.entries({firstName:80,lastName:80,city:80,jobFamily:90,bio:450,otherLanguage:80,preferredLanguage:10})){
+    if(typeof s[k]==='string'&&s[k].trim())out[k]=limit(s[k],max);
+  }
+  if(s.age!==null&&s.age!==undefined&&s.age!==''&&Number.isInteger(Number(s.age))&&Number(s.age)>=16&&Number(s.age)<=99)out.age=Number(s.age);
+  for(const k of ['arabic','french','english']){
+    if(typeof s[k]==='boolean')out[k]=s[k];
+    const v=s[k+'Level'];if(s[k]===true&&Number.isInteger(Number(v))&&Number(v)>=1&&Number(v)<=5)out[k+'Level']=Number(v);
+  }
+  if(out.otherLanguage&&Number.isInteger(Number(s.otherLanguageLevel))&&Number(s.otherLanguageLevel)>=1&&Number(s.otherLanguageLevel)<=5)out.otherLanguageLevel=Number(s.otherLanguageLevel);
+  return out;
+}
+async function savedCandidateProfile(user) {
+  const stored=await pool.query('SELECT profile FROM hr_candidate_profiles WHERE candidate_wix_id=$1',[user.id]);
+  return stored.rows[0]?.profile||{};
 }
 async function application(id,user) {
   if(!uuid(id)) throw error(400,'Identifiant invalide.');
@@ -227,6 +245,20 @@ async function api(req,res,path,method) {
   }
   const user=await auth(req);
   if(path==='/api/me' && method==='GET') return json(res,200,{id:user.id,email:user.email,role:user.role,displayName:user.displayName});
+  if(path==='/api/profile/candidate' && method==='GET'){
+    requireRole(user,['candidate']);
+    return json(res,200,{profile:await savedCandidateProfile(user)});
+  }
+  if(path==='/api/profile/candidate' && method==='POST'){
+    requireRole(user,['candidate']);rate(user.id+':profile',20,3600);
+    const d=await read(req,20000),profile=cleanCandidateProfile(d.profile);
+    if(!profile.firstName||!profile.lastName||!profile.age||!profile.city||!profile.jobFamily)
+      throw error(422,'Complétez votre identité, âge, ville et métier.');
+    const fields=JSON.stringify(profile);
+    await pool.query('INSERT INTO hr_candidate_profiles(candidate_wix_id,profile) VALUES($1,$2::jsonb) ON CONFLICT(candidate_wix_id) DO UPDATE SET profile=EXCLUDED.profile,updated_at=now()',[user.id,fields]);
+    await pool.query(`WITH patches AS (SELECT a.id,jsonb_object_agg(e.key,e.value) AS patch FROM hr_applications a CROSS JOIN LATERAL jsonb_each($2::jsonb) e WHERE a.candidate_wix_id=$1 AND e.key IN ('age','bio','arabic','arabicLevel','french','frenchLevel','english','englishLevel','otherLanguage','otherLanguageLevel','preferredLanguage') AND (a.profile->e.key IS NULL OR a.profile->e.key='null'::jsonb OR a.profile->e.key='""'::jsonb) GROUP BY a.id) UPDATE hr_applications a SET profile=a.profile||p.patch||jsonb_build_object('profileRecoveredAt',now()),updated_at=now() FROM patches p WHERE a.id=p.id`,[user.id,fields]);
+    return json(res,200,{ok:true,profile});
+  }
   if(path==='/api/manager/applications' && method==='GET'){
     requireRole(user,['manager','admin']);
     const params=new URL(req.url,'http://localhost').searchParams;
@@ -494,23 +526,25 @@ async function api(req,res,path,method) {
     if(desiredCity.length<2)throw error(422,'Précisez votre ville.');
     const uploaded=await pool.query('SELECT 1 FROM hr_candidate_photos WHERE candidate_wix_id=$1 LIMIT 1',[user.id]);
     if(!uploaded.rows[0])throw error(422,'Ajoutez une photo de profil à votre candidature.');
-    const exists=await pool.query('SELECT * FROM hr_applications WHERE candidate_wix_id=$1 AND job_id=$2 LIMIT 1',[user.id,job._id]);
-    if(exists.rows[0])return json(res,200,{ok:true,alreadyApplied:true,item:present(exists.rows[0],user)});
     let profile=null,best=null;
     try{
       const profiles=await wixItems(user.token,'CandidateProfiles',10,user.id);
-      profile=profiles.find(x=>x._owner===user.id)||null;
+      profile=profiles.filter(x=>x._owner===user.id).sort((a,b)=>String(b._updatedDate||'').localeCompare(String(a._updatedDate||'')))[0]||null;
     }catch(e){console.warn('Optional candidate profile unavailable',e?.message||'unavailable');}
     try{
       const attempts=await wixItems(user.token,'QuizAttempts',100,user.id);
       best=attempts.filter(a=>a.passed && a.jobFamily===job.role).sort((a,b)=>(b.score||0)-(a.score||0))[0]||null;
     }catch(e){console.warn('Optional quiz result unavailable',e?.message||'unavailable');}
-    const allowed=['age','bio','arabic','arabicLevel','french','frenchLevel','english','englishLevel','otherLanguage','otherLanguageLevel','preferredLanguage','videoFileId','videoConsent'];
-    const snapshot=Object.fromEntries(allowed.map(k=>[k,profile?.[k]??null]));
+    const central=await savedCandidateProfile(user);
+    const submitted=cleanCandidateProfile(d.profile);
+    const snapshot={...cleanCandidateProfile(profile),...central,...submitted};
+    snapshot.videoFileId=profile?.videoConsent===true?limit(profile.videoFileId,250):null;
+    snapshot.videoConsent=!!snapshot.videoFileId;
     snapshot.firstName=firstName;snapshot.lastName=lastName;
-    snapshot.city=desiredCity;snapshot.jobFamily=limit(job.role,90);
+    snapshot.city=snapshot.city||desiredCity;snapshot.jobFamily=snapshot.jobFamily||limit(job.role,90);
     snapshot.quizScore=best?.score??null;snapshot.quizPassed=!!best;
-    snapshot.profileComplete=true;
+    snapshot.profileComplete=!!(snapshot.age&&snapshot.bio&&['arabic','french','english'].every(k=>typeof snapshot[k]==='boolean'));
+    if(d.profileRequired===true&&!snapshot.age)throw error(422,'Indiquez un âge valide (16 à 99 ans).');
     const experienceYears=form.experienceYears===''||form.experienceYears==null?null:Number(form.experienceYears);
     if(experienceYears!==null&&(!Number.isFinite(experienceYears)||experienceYears<0||experienceYears>60))
       throw error(422,'Les années d’expérience doivent être comprises entre 0 et 60.');
@@ -523,6 +557,15 @@ async function api(req,res,path,method) {
       desiredCity,contractPreference:limit(form.contractPreference,60),
       motivation,earliestStart:limit(form.earliestStart,10)
     };
+    const exists=await pool.query('SELECT * FROM hr_applications WHERE candidate_wix_id=$1 AND job_id=$2 LIMIT 1',[user.id,job._id]);
+    if(exists.rows[0]){
+      const patch=Object.fromEntries(Object.entries(snapshot).filter(([k,v])=>!['application','firstName','lastName','city','jobFamily','profileComplete','quizPassed','quizScore'].includes(k)&&v!==null&&v!==undefined&&v!==''&&(exists.rows[0].profile?.[k]==null||exists.rows[0].profile?.[k]==='')));
+      if(Object.keys(patch).length){
+        const q=await pool.query("UPDATE hr_applications SET profile=profile||$2::jsonb||jsonb_build_object('profileRecoveredAt',now()),updated_at=now() WHERE id=$1 AND candidate_wix_id=$3 RETURNING *",[exists.rows[0].id,JSON.stringify(patch),user.id]);
+        return json(res,200,{ok:true,alreadyApplied:true,item:present(q.rows[0],user)});
+      }
+      return json(res,200,{ok:true,alreadyApplied:true,item:present(exists.rows[0],user)});
+    }
     const params=[user.id,user.email,job._id,limit(job.title,150),limit(job.role,90),JSON.stringify(snapshot)];
     let created;
     try {

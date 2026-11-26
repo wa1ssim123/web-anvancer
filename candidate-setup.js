@@ -19,24 +19,28 @@ try{
  const results=await Promise.allSettled([
   queryItems('CandidateProfiles',{filters:[{field:'_owner',op:'eq',value:auth.member.id}],limit:1}),
   queryItems('CandidatePublicProfiles',{filters:[{field:'_owner',op:'eq',value:auth.member.id}],limit:1}),
-  hub('/api/profile/photo/status')
+  hub('/api/profile/photo/status'),
+  hub('/api/profile/candidate')
  ]);
  if(results[0].status==='fulfilled')existing=results[0].value.items?.[0]||null;
  if(results[1].status==='fulfilled'&&f.elements.publicIdentityConsent)f.elements.publicIdentityConsent.checked=!!(results[1].value.items?.[0]?.displayName&&!['Talent Horenova','Talent HORENOVA','Profil confidentiel'].includes(results[1].value.items[0].displayName));
  if(results[2].status==='fulfilled')hasPortrait=!!results[2].value.hasPhoto;
- if(existing){
-  for(const key of ['firstName','lastName','age','city','jobFamily','bio','otherLanguage','otherLanguageLevel'])if(f.elements[key]&&existing[key]!=null)f.elements[key].value=existing[key];
+ const stored=results[3].status==='fulfilled'?results[3].value.profile:null;
+ const saved=stored&&Object.keys(stored).length?{...existing,...stored}:existing;
+ if(saved){
+  for(const key of ['firstName','lastName','age','city','jobFamily','bio','otherLanguage','otherLanguageLevel'])if(f.elements[key]&&saved[key]!=null)f.elements[key].value=saved[key];
   for(const language of ['arabic','french','english']){
-   const yes=Boolean(existing[language]);
+   if(typeof saved[language]!=='boolean')continue;
+   const yes=saved[language];
    const radio=f.querySelector('input[name="'+language+'"][value="'+(yes?'yes':'no')+'"]');if(radio)radio.checked=true;
-   const slider=f.elements[language+'Level'];if(slider&&existing[language+'Level']!=null){slider.value=existing[language+'Level'];slider.dispatchEvent(new Event('input'));}
+   const slider=f.elements[language+'Level'];if(slider&&saved[language+'Level']!=null){slider.value=saved[language+'Level'];slider.dispatchEvent(new Event('input'));}
   }
   f.video.required=false;
  }
 }catch(error){console.warn('HORENOVA profile prefilling temporarily unavailable',error?.message||'network');}
 f.elements.photo.required=!hasPortrait;
 const photoLabel=f.elements.photo.closest('label')?.querySelector('small');
-if(photoLabel)photoLabel.textContent=hasPortrait?'PHOTO PROFESSIONNELLE · OPTIONNELLE (déjà enregistrée)':'PHOTO PROFESSIONNELLE · OBLIGATOIRE';
+if(photoLabel){const labels={fr:['PHOTO PROFESSIONNELLE · OPTIONNELLE (déjà enregistrée)','PHOTO PROFESSIONNELLE · OBLIGATOIRE'],ar:['الصورة المهنية · اختيارية (مسجلة مسبقًا)','الصورة المهنية · إلزامية'],en:['PROFESSIONAL PHOTO · OPTIONAL (already saved)','PROFESSIONAL PHOTO · REQUIRED']};photoLabel.textContent=(labels[currentLang()]||labels.fr)[hasPortrait?0:1];}
 
 const MAX_PRIVATE_VIDEO_BYTES=500*1024*1024;
 const DIRECT_VIDEO_LIMIT=10*1024*1024;
@@ -165,6 +169,7 @@ if(photoFile){
   await hubUploadPhoto(compressed);
   status.textContent='Photo privée enregistrée ✓';
 }
+if(!auth.demo){const result=await hub('/api/profile/candidate',{method:'POST',body:{profile:privateData}});if(!result.ok)throw Error('Le serveur n’a pas confirmé l’enregistrement du profil.');}
 const target=new URLSearchParams(location.search).get('returnTo')||'';
 const safeTarget=target.startsWith('/')&&!target.startsWith('//')&&!target.includes('\\')?target:'';
 location.assign(safeTarget||'/account.html')}catch(x){err.textContent=x.message||String(x)}finally{btn.disabled=false}};

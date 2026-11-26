@@ -40,7 +40,7 @@ const header=(kicker,name,subtitle,photo,photoLabel,reference)=>
  '<div class="summary"><div><div class="kicker">'+escapeHtml(kicker)+'</div><h1>'+escapeHtml(name)+'</h1><p>'+escapeHtml(subtitle)+'</p><p>Référence : '+escapeHtml(reference||'Non renseignée')+'</p></div>'+
  (photoLabel?imageSlot(photo,photoLabel):'')+'</div>';
 const footer=()=>'<footer class="foot"><span>HORENOVA · Document privé à ne pas diffuser sans autorisation</span><span>Édité le '+escapeHtml(date(new Date()))+'</span></footer>';
-const languages=p=>[['Arabe',p.arabic,p.arabicLevel],['Français',p.french,p.frenchLevel],['Anglais',p.english,p.englishLevel],['Autre',p.otherLanguage,p.otherLanguageLevel]]
+const languages=p=>[['Arabe',p.arabic,p.arabicLevel],['Français',p.french,p.frenchLevel],['Anglais',p.english,p.englishLevel],[p.otherLanguage||'Autre',p.otherLanguage,p.otherLanguageLevel]]
  .filter(([name,present])=>present).map(([name,present,level])=>name+(level?' · '+level+'/5':'')).join(' · ')||'Non renseignées';
 const candidateDoc=(record,photo)=>{
  const p=record?.profile||{},d=p.application||{},full=[p.firstName,p.lastName].filter(Boolean).join(' ').trim()||'Candidat HORENOVA';
@@ -61,7 +61,7 @@ const candidateDoc=(record,photo)=>{
   ['Consentement à la mise en relation',record.consentToIntro?'Oui':'Non']
  ])+
  section('04','Suivi du dossier',[
-  ['Date de dépôt',date(record.createdAt)],['État de la candidature',record.status],
+  ['Date de dépôt',date(record.createdAt)],['Complément depuis le profil',p.profileRecoveredAt?date(p.profileRecoveredAt):'Non'],['État de la candidature',record.status],
   ['Référence du dossier',record.id],['Référence de l’offre',record.jobId],
   ['Recruteur associé',record.recruiterWixId?'Association enregistrée':'Non associé']
  ])+footer();

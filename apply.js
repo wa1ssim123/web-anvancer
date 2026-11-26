@@ -37,6 +37,8 @@ try{
  const r=await hub('/api/applications');
  previousApplication=r.items?.[0]?.profile||null;
 }catch(error){console.warn('Optional prior application prefill unavailable',error?.message||'network');}
+try{const saved=await hub('/api/profile/candidate');if(saved.profile&&Object.keys(saved.profile).length)profile={...profile,...saved.profile};}catch(error){console.warn('Central profile unavailable',error?.message||'network');}
+const professional={...previousApplication,...profile};
 const previousDetails=previousApplication?.application||{};
 try{const r=await hub('/api/profile/photo/status');hasPhoto=!!r.hasPhoto;}catch{}
 if(hasPhoto){
@@ -76,6 +78,9 @@ box.innerHTML=!jobId?
  '<label>Nom *<input name="lastName" autocomplete="family-name" maxlength="80" minlength="2" required value="'+esc(lastName)+'" placeholder="Votre nom"></label>'+
  '<label>Ville *<input name="desiredCity" autocomplete="address-level2" maxlength="80" minlength="2" required value="'+esc(savedCity)+'" placeholder="Ex. Casablanca"></label>'+
  '<label>Téléphone *<input name="phone" type="tel" autocomplete="tel" inputmode="tel" maxlength="25" required value="'+esc(savedPhone)+'" placeholder="+212 6 XX XX XX XX"></label>'+
+ '<label>Âge *<input name="age" type="number" min="16" max="99" step="1" required value="'+esc(professional.age??'')+'" placeholder="Ex. 24"></label>'+
+ '<label class="wide">Présentation professionnelle<textarea name="bio" rows="3" maxlength="450" placeholder="Votre expérience et vos qualités">'+esc(professional.bio||'')+'</textarea></label>'+
+ '<p class="wide"><a href="/candidate-setup.html?returnTo='+encodeURIComponent(location.pathname+location.search)+'">Compléter ou modifier mon profil et mes langues ↗</a></p>'+
  '</div></section>'+
  '<section class="hn-easy-section"><h3>02 · Votre photo</h3><p>Ajoutez une photo claire. Elle reste privée et accessible uniquement à HORENOVA et aux recruteurs autorisés.</p>'+
  '<div class="hn-app-photo-upload"><input type="file" name="candidatePhoto" id="applyPhotoFile" accept="image/*" '+(hasPhoto?'':'required')+'>'+
@@ -176,7 +181,9 @@ if(form){
   try{
    if(file){button.textContent='Enregistrement de la photo…';await hubUploadPhoto(await optimizedPortrait(file));hasPhoto=true;}
    button.textContent='Enregistrement de votre candidature…';
-   const result=await hub('/api/applications',{method:'POST',body:{jobId,consentToIntro:true,locale:currentLang(),application}});
+   const profileData=Object.fromEntries(['city','jobFamily','arabic','arabicLevel','french','frenchLevel','english','englishLevel','otherLanguage','otherLanguageLevel','preferredLanguage'].filter(k=>professional[k]!=null).map(k=>[k,professional[k]]));
+   profileData.age=Number(fd.get('age'));profileData.bio=String(fd.get('bio')||'').trim();
+   const result=await hub('/api/applications',{method:'POST',body:{jobId,consentToIntro:true,locale:currentLang(),application,profile:profileData,profileRequired:true}});
    const caseId=result?.item?.id;
    if(!caseId)throw Error('HORENOVA n’a pas confirmé l’enregistrement du dossier.');
    const receiptNote=!result.alreadyApplied&&result.emailQueued&&result.emailEnabled

@@ -173,13 +173,13 @@ async function detail(id,scrollToDetail=false){
  const a=applications.find(x=>x.id===id);
  if(!a)return;
  const p=a.profile||{},d=p.application||{};
- const languages=[['Arabe',p.arabic,p.arabicLevel],['Français',p.french,p.frenchLevel],['Anglais',p.english,p.englishLevel]]
+ const languages=[['Arabe',p.arabic,p.arabicLevel],['Français',p.french,p.frenchLevel],['Anglais',p.english,p.englishLevel],[p.otherLanguage||'Autre',p.otherLanguage,p.otherLanguageLevel]]
   .filter(x=>x[1]).map(x=>x[0]+(x[2]?' · '+x[2]+'/5':'')).join(' · ')||'Non renseignées';
  const fullname=[p.firstName,p.lastName].filter(Boolean).join(' ').trim()||'Candidat HORENOVA';
  const select=statuses.map(k=>'<option value="'+k+'"'+(a.status===k?' selected':'')+'>'+esc(names[k])+'</option>').join('');
  const reqOptions='<option value="">Sélectionner une demande validée…</option>'+
   requests.filter(r=>r.status==='VALIDEE'&&(!r.job_role||r.job_role===a.jobRole)).map(r=>'<option value="'+esc(r.id)+'">'+esc(r.business_name+' · '+r.job_title)+'</option>').join('');
- const personFields=field('E-mail',a.candidateEmail,true)+field('Âge',p.age)+field('Ville',p.city);
+ const personFields=field('Prénom',p.firstName)+field('Nom',p.lastName)+field('E-mail',a.candidateEmail,true)+field('Âge',p.age)+field('Ville',p.city);
  const workFields=field('Métier',p.jobFamily)+field('Langues',languages,true)+field('Années d’expérience',d.experienceYears)+field('Dernier poste',d.lastPosition)+field('Compétences',Array.isArray(d.skills)?d.skills.join(' · '):d.skills,true)+field('Disponibilité',d.availability)+field('Date souhaitée',d.earliestStart)+field('Ville souhaitée',d.desiredCity)+field('Contrat préféré',d.contractPreference);
  const candidateFields=field('Quiz (facultatif)',p.quizPassed?String(p.quizScore)+' %':'Non fourni')+field('Vidéo (facultative)',p.videoFileId?'Enregistrée':'Non fournie')+field('Présentation',p.bio,true)+field('Motivation détaillée',d.motivation,true);
  const privateFields=field('Téléphone privé du candidat',d.phone,true)+field('Consentement candidat',a.consentToIntro?'Oui':'Non');
@@ -190,7 +190,7 @@ async function detail(id,scrollToDetail=false){
   '<div class="hn-case-heading"><span class="hub-small">DOSSIER PRIVÉ · '+esc(id.slice(0,8))+'</span><div class="hn-case-profile">'+
   '<div class="hn-case-portrait-wrap"><div id="hubPortrait" class="hub-photo hub-photo-placeholder" aria-label="Photo du candidat">◉</div></div>'+
   '<div class="hn-case-profile-copy"><h3>'+esc(fullname)+'</h3><p>'+esc(a.jobTitle||'Candidature')+'</p><span class="hub-tag">'+esc(names[a.status]||a.status)+'</span></div></div></div>'+
-  group('Identité et contact','Informations transmises par le candidat',personFields,'01')+
+  group('Identité et contact',p.profileRecoveredAt?'Dossier complété depuis le profil enregistré du candidat':'Informations transmises par le candidat',personFields,'01')+
   group('Profil professionnel','Métier, expérience et disponibilité',workFields,'02')+
   group('Informations complémentaires','Quiz et vidéo facultatifs · la candidature reste valide sans eux',candidateFields,'03')+
   '<details class="hn-case-private"><summary>Informations confidentielles · accès administrateur</summary>'+
